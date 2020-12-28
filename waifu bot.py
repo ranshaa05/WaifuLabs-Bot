@@ -33,7 +33,7 @@ async def main():
     )
     page = await browser.newPage()
     await page.goto('https://waifulabs.com/')
-    page.click(await find_start_btn(page))
+    await page.click(await find_start_btn(page))
     time.sleep(5)
     positions = []
     for x_pos, y_pos in zip(x, y):
