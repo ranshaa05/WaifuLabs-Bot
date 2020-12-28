@@ -8,6 +8,9 @@ import time
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
+x = []
+y = []
+
 print("pick a row (1-4)")
 x.append(int(input()) - 1)
 print("pick a position (1-4)")
