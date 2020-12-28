@@ -46,7 +46,7 @@ async def main():
     await actual_click(page)
     time.sleep(5)
     positions = []
-    for x_pos, y_pos in x, y:
+    for x_pos, y_pos in zip(x, y):
         positions.append(x+4*y)
     
     girls = await find_all_girls(page)
