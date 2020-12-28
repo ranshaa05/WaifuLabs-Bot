@@ -12,11 +12,6 @@ async def find_all_girls(page):
 async def find_start_btn(page):
 	return await page.querySelector(".button.block.blue")
 
-async def actual_click(page):
-    page.mouse.down()
-    page.mouse.up()
-
-
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
 x = []
@@ -32,8 +27,6 @@ for i in range(3):
   print(f"---stage #{i+1}---\npick a position(1-4)")
   y.append(int(input()))
 
-
-
 async def main():
     browser = await launch(
         headless=False,
@@ -42,8 +35,7 @@ async def main():
     page = await browser.newPage()
     await page.goto('https://waifulabs.com/')
     await page.evaluate("""{window.scrollBy(0, document.body.scrollHeight);}""")
-    page.hover(await find_start_btn(page))
-    await actual_click(page)
+    page.click(await find_start_btn(page))
     time.sleep(5)
     positions = []
     for x_pos, y_pos in zip(x, y):
@@ -51,8 +43,7 @@ async def main():
     
     girls = await find_all_girls(page)
     for i in range(4):
-        await page.hover(girls[i])
-        actual_click(page)
+        await page.click(girls[i])
         time.sleep(5)
 	
 
