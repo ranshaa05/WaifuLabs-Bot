@@ -49,7 +49,7 @@ async def main():
     for x_pos, y_pos in x, y:
         positions.append(x+4*y)
     
-    await girls = find_all_girls(page)
+    girls = await find_all_girls(page)
     for i in range(4):
         await page.hover(girls[i])
         actual_click(page)
