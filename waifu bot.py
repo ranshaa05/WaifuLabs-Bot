@@ -33,7 +33,6 @@ async def main():
     )
     page = await browser.newPage()
     await page.goto('https://waifulabs.com/')
-    await page.evaluate("""{window.scrollBy(0, document.body.scrollHeight);}""")
     page.click(await find_start_btn(page))
     time.sleep(5)
     positions = []
