@@ -6,6 +6,17 @@ import os
 import asyncio
 import time
 
+async def find_all_girls(page):
+	return page.querySelectorAll(".girl")
+
+async def find_start_btn(page):
+	return page.querySelector(".button.block.blue")
+
+async def actual_click(page):
+    page.mouse.down()
+    page.mouse.up()
+
+
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
 x = []
@@ -38,20 +49,11 @@ async def main():
     for x_pos, y_pos in x, y:
         positions.append(x+4*y)
     
-    girls = find_all_girls(page)
+    await girls = find_all_girls(page)
     for i in range(4):
         await page.hover(girls[i])
         actual_click(page)
         time.sleep(5)
 	
-async def find_all_girls(page):
-	return page.querySelectorAll(".girl")
-
-async def find_start_btn(page):
-	return page.querySelector(".button.block.blue")
-
-async def actual_click(page):
-    page.mouse.down()
-    page.mouse.up()
 
 asyncio.get_event_loop().run_until_complete(main())
