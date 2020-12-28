@@ -1,4 +1,3 @@
-#imports
 import pyppeteer as pp
 from pyppeteer import launch
 import appdirs
