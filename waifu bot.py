@@ -7,10 +7,10 @@ import asyncio
 import time
 
 async def find_all_girls(page):
-	return page.querySelectorAll(".girl")
+	return await page.querySelectorAll(".girl")
 
 async def find_start_btn(page):
-	return page.querySelector(".button.block.blue")
+	return await page.querySelector(".button.block.blue")
 
 async def actual_click(page):
     page.mouse.down()
