@@ -43,7 +43,12 @@ async def main():
     
 
 
-
+	
+async def FindAllGirls(page):
+	list = page.querySelectorAll(".girl")
+	return list
+async def FindStartBtn(page)
+	return page.querySelector(".button.block.blue")
 
 
 
