@@ -31,15 +31,15 @@ async def main():
     page = await browser.newPage()
     await page.goto('https://waifulabs.com/')
     await page.evaluate("""{window.scrollBy(0, document.body.scrollHeight);}""")
-    await page.mouse.hover(find_start_btn())
-    await page.mouse.click()
+    await page.hover(find_start_btn())
+    await actual_click(page)
     time.sleep(5)
     positions = []
     for x_pos, y_pos in x, y:
         positions.append(x+4*y)
     for i in range(4):
         girls = []
-        await page.mouse.hover(girls[i])
+        await page.hover(girls[i])
         actual_click(page)
         time.sleep(5)
 	
