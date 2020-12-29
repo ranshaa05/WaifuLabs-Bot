@@ -23,21 +23,21 @@ os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 x = []
 y = []
 
-#print("pick a row (1-4)")
-#x.append(int(input()) - 1)
-x.append(int(random()*4))
-#print("pick a position (1-4)")
-#y.append(int(input()) - 1)
-y.append(int(random()*4))
+print("pick a row (1-4)")
+x.append(int(input()) - 1)
+
+print("pick a position (1-4)")
+y.append(int(input()) - 1)
+
 for i in range(3):
-#    print(f"---stage #{i + 1}---\npick a row (1-4)")
-#    x.append(int(input()) - 1)
-    x.append(int(random() * 4))
+    print(f"---stage #{i + 1}---\npick a row (1-4)")
+    x.append(int(input()) - 1)
 
 
-#    print(f"---stage #{i + 1}---\npick a position(1-4)")
-#    y.append(int(input()) - 1)
-    y.append(int(random()*4))
+
+    print(f"---stage #{i + 1}---\npick a position(1-4)")
+    y.append(int(input()) - 1)
+    
 
 
 
