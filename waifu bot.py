@@ -1,4 +1,3 @@
-import pyppeteer as pp
 from pyppeteer import launch
 import appdirs
 import os
@@ -23,23 +22,20 @@ os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 x = []
 y = []
 
-print("pick a row (1-4)")
-x.append(int(input()) - 1)
-
-print("pick a position (1-4)")
-y.append(int(input()) - 1)
-
+#print("pick a row (1-4)")
+#x.append(int(input()) - 1)
+x.append(int(random()*4))
+#print("pick a position (1-4)")
+#y.append(int(input()) - 1)
+y.append(int(random()*4))
 for i in range(3):
-    print(f"---stage #{i + 1}---\npick a row (1-4)")
-    x.append(int(input()) - 1)
+#    print(f"---stage #{i + 1}---\npick a row (1-4)")
+#    x.append(int(input()) - 1)
+    x.append(int(random() * 4))
 
-
-
-    print(f"---stage #{i + 1}---\npick a position(1-4)")
-    y.append(int(input()) - 1)
-    
-
-
+#    print(f"---stage #{i + 1}---\npick a position(1-4)")
+#    y.append(int(input()) - 1)
+    y.append(int(random()*4))
 
 async def main():
     browser = await launch(
@@ -47,17 +43,23 @@ async def main():
         autoClose=False
     )
     page = await browser.newPage()
+    #await page.setViewport({'width': 700, 'height': 800})
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
+    while not await find_close_button(page):
+        print("test")
+        print(not await find_close_button(page))
     await (await find_close_button(page)).click()
     positions = []
     for x_pos, y_pos in zip(x, y):
         positions.append(x_pos + 4 * y_pos)
 
     for pos in positions:
-        time.sleep(5)
+        print(pos)
+        time.sleep(0.5)
+        while len(await find_all_girls(page)) < 16:
+            pass
         girls = await find_all_girls(page)
         await girls[pos].click()
-
 
 asyncio.get_event_loop().run_until_complete(main())
