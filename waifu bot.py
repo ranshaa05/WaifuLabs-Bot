@@ -4,28 +4,42 @@ import appdirs
 import os
 import asyncio
 import time
+from random import random
 
 async def find_all_girls(page):
-	return await page.querySelectorAll(".girl")
+    return await page.querySelectorAll(".girl")
+
 
 async def find_start_btn(page):
-	return await page.querySelector('.button.block.blue')
+    return await page.querySelector('.button.block.blue')
+
+
 async def find_close_button(page):
     return await page.querySelector('.sc-bxivhb.eTpeTG.sc-bdVaJa.cYQqRL')
+
+
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
 x = []
 y = []
 
-print("pick a row (1-4)")
-x.append(int(input()) - 1)
-print("pick a position (1-4)")
-y.append(int(input()) - 1)
+#print("pick a row (1-4)")
+#x.append(int(input()) - 1)
+x.append(int(random()*4))
+#print("pick a position (1-4)")
+#y.append(int(input()) - 1)
+y.append(int(random()*4))
 for i in range(3):
-  print(f"---stage #{i+1}---\npick a row (1-4)")
-  x.append(int(input()))
-  print(f"---stage #{i+1}---\npick a position(1-4)")
-  y.append(int(input()))
+#    print(f"---stage #{i + 1}---\npick a row (1-4)")
+#    x.append(int(input()) - 1)
+    x.append(int(random() * 4))
+
+
+#    print(f"---stage #{i + 1}---\npick a position(1-4)")
+#    y.append(int(input()) - 1)
+    y.append(int(random()*4))
+
+
 
 async def main():
     browser = await launch(
@@ -38,12 +52,12 @@ async def main():
     await (await find_close_button(page)).click()
     positions = []
     for x_pos, y_pos in zip(x, y):
-        positions.append(x+4*y)
-    
-    girls = await find_all_girls(page)
-    for i in range(4):
-        await page.click(girls[i])
+        positions.append(x_pos + 4 * y_pos)
+
+    for pos in positions:
         time.sleep(5)
-	
+        girls = await find_all_girls(page)
+        await girls[pos].click()
+
 
 asyncio.get_event_loop().run_until_complete(main())
