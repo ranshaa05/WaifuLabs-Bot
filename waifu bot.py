@@ -33,7 +33,6 @@ async def main():
     )
     page = await browser.newPage()
     await page.goto('https://waifulabs.com/')
-    time.sleep(10)
     btn = await find_start_btn(page)
     await btn.click()
     time.sleep(5)
