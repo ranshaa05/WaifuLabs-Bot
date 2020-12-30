@@ -1,2 +1,2 @@
-pyppeteer2
+pyppeteer
 appdirs
