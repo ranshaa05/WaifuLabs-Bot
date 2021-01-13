@@ -44,7 +44,7 @@ async def main():
         autoClose=False
     )
     page = await browser.newPage()
-    #await page.setViewport({'width': 700, 'height': 800})
+    await page.setViewport({'width': 600, 'height': 800})
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
     while not await find_close_button(page):
@@ -61,6 +61,6 @@ async def main():
         while len(await find_all_girls(page)) < 16:
             pass
         girls = await find_all_girls(page)
-        await girls[pos].click()
-
+        await girls[pos].click()                                         #to fix: gets stuck on details page
+                                      
 asyncio.get_event_loop().run_until_complete(main())
