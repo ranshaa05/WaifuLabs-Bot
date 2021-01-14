@@ -61,10 +61,12 @@ async def main():
     
     for pos in positions:
         print(pos)
-        time.sleep(1.2)
+        time.sleep(1.5)
         while len(await find_all_girls(page)) < 16:
             pass
         girls = await find_all_girls(page)
-        await girls[pos].click()                                        #to fix: gets stuck on details page
+        await girls[pos].click()
+    
+    
         
 asyncio.get_event_loop().run_until_complete(main())
