@@ -52,7 +52,7 @@ async def main():
     while not await find_close_button(page):
         print(not await find_close_button(page))
     
-    time.sleep(3)
+    
     await (await find_close_button(page)).click()
   
     positions = []
