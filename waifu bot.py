@@ -61,7 +61,7 @@ async def main():
     
     for pos in positions:
         print(pos)
-        time.sleep(1)
+        time.sleep(1.2)
         while len(await find_all_girls(page)) < 16:
             pass
         girls = await find_all_girls(page)
