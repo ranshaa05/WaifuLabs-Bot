@@ -44,17 +44,21 @@ async def main():
         autoClose=False
     )
     page = await browser.newPage()
+    
     await page.setViewport({'width': 600, 'height': 800})
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
+
     while not await find_close_button(page):
-        print("test")
         print(not await find_close_button(page))
+    
+    time.sleep(3)
     await (await find_close_button(page)).click()
+  
     positions = []
     for x_pos, y_pos in zip(x, y):
         positions.append(x_pos + 4 * y_pos)
-
+    
     for pos in positions:
         print(pos)
         time.sleep(0.5)
@@ -62,5 +66,5 @@ async def main():
             pass
         girls = await find_all_girls(page)
         await girls[pos].click()                                        #to fix: gets stuck on details page
-                                      
+        
 asyncio.get_event_loop().run_until_complete(main())
