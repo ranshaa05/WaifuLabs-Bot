@@ -45,7 +45,7 @@ async def main():
     )
     page = await browser.newPage()
     
-    await page.setViewport({'width': 600, 'height': 800})
+    await page.setViewport({'width': 750, 'height': 800})
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
 
