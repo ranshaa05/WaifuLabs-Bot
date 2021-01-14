@@ -66,7 +66,10 @@ async def main():
             pass
         girls = await find_all_girls(page)
         await girls[pos].click()
-    
+
+    time.sleep(2)
+    await page.screenshot({'path': 'example.png'})             #saves screenshot of result page
+
     
         
 asyncio.get_event_loop().run_until_complete(main())
