@@ -17,7 +17,14 @@ async def find_start_btn(page):
 async def find_close_button(page):
     return await page.querySelector('.sc-bxivhb.eTpeTG.sc-bdVaJa.cYQqRL')
 
+async def wait_for_close_button(page):
+    while not await find_close_button(page):
+        print(not await find_close_button(page))
 
+async def wait_for_all_girls(page):
+        while len(await find_all_girls(page)) < 16:
+            pass
+        
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
 x = []
@@ -49,8 +56,7 @@ async def main():
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
 
-    while not await find_close_button(page):
-        print(not await find_close_button(page))
+    await wait_for_close_button(page)
     
     
     await (await find_close_button(page)).click()
@@ -62,8 +68,7 @@ async def main():
     for pos in positions:
         print(pos)
         time.sleep(1.5)
-        while len(await find_all_girls(page)) < 16:
-            pass
+        await wait_for_all_girls(page)
         girls = await find_all_girls(page)
         await girls[pos].click()
 
