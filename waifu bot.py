@@ -66,7 +66,6 @@ async def main():
         positions.append(x_pos + 4 * y_pos)
     
     for pos in positions:
-        print(pos)
         time.sleep(1.5)
         await wait_for_all_girls(page)
         girls = await find_all_girls(page)
