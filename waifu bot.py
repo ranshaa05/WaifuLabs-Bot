@@ -32,19 +32,19 @@ y = []
 
 #print("pick a row (1-4)")
 #x.append(int(input()) - 1)
-x.append(int(random()*4))
+x.append(3)
 #print("pick a position (1-4)")
 #y.append(int(input()) - 1)
-y.append(int(random()*4))
+y.append(3)
 for i in range(3):
 #    print(f"---stage #{i + 1}---\npick a row (1-4)")
 #    x.append(int(input()) - 1)
-    x.append(int(random() * 4))
+    x.append(3)
 
 #    print(f"---stage #{i + 1}---\npick a position(1-4)")
 #    y.append(int(input()) - 1)
-    y.append(int(random()*4))
-
+    y.append(3)
+print(str(x) + str(y))
 async def main():
     browser = await launch(
         headless=False,
@@ -52,7 +52,7 @@ async def main():
     )
     page = await browser.newPage()
     
-    await page.setViewport({'width': 750, 'height': 800})
+    await page.setViewport({'width': 1550, 'height': 1000})
     await page.goto('https://waifulabs.com/')
     await (await find_start_btn(page)).click()
 
@@ -71,7 +71,7 @@ async def main():
         await wait_for_all_girls(page)
         girls = await find_all_girls(page)
         await girls[pos].click()
-
+        
     time.sleep(2)
     await page.screenshot({'path': 'example.png'})             #saves screenshot of result page
 
