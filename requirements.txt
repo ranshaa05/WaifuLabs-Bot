@@ -1,2 +1,1 @@
-pyppeteer
-appdirs
+selenium
