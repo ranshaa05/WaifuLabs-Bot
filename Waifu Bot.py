@@ -11,35 +11,45 @@ from discord.ext import commands
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-secret = ""
+os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
+
+secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.PItlTYokiM82pW6gJKSr1oz-yAY"
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
 
 
 async def waifu(ctx, *, start):
-    os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
+    await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nStart by telling me the position of your waifu on the following grid:")
+       
+    await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left cornet of the grid.\nYour answer:")
 
-    x = []
-    y = []
 
-    #print("pick a row (1-4)")
-    #x.append(int(input()) - 1)
-    x.append(3)
-    #print("pick a position (1-4)")
-    #y.append(int(input()) - 1)
-    y.append(3)
-    for i in range(3):
-    #    print(f"---stage #{i + 1}---\npick a row (1-4)")
-    #    x.append(int(input()) - 1)
-        x.append(3)
+    async def check(msg):
+        retvalue = True
+        if not (msg.author == ctx.author and msg.channel == ctx.channel):
+            retvalue = False
+        
+        msg = msg.content
 
-    #    print(f"---stage #{i + 1}---\npick a position(1-4)")
-    #    y.append(int(input()) - 1)
-        y.append(3)
-    print(str(x) + str(y))
+        try:
+            if not 0 < int(msg[0]) < 5 and 0 < int(msg[3]) < 5 and msg.find(", ") == 1 and len(msg) == 5:              #makes sure the user input is valid. to do: for some reason it accepts inputs higher or lower than 4 and longer or shorter than 5 chars, but does not accept non-integers
+                await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
+                return False
+
+        except IndexError:
+            await ctx.channel.send("Whoops! Numbers too big! Try something between 1 and 4 :)")                        # no idea if we even need this
+
+        except ValueError:
+            await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
+            return False
+        
+        return retvalue
+            
+
+
     async def main():
-        browser = await launch(
+        browser = await launch(                                             #opens browser
             headless=False,
             autoClose=False
         )
@@ -51,14 +61,18 @@ async def waifu(ctx, *, start):
 
         await wait_for_close_button(page)
         
-        
         await (await find_close_button(page)).click()
-    
-        positions = []
-        for x_pos, y_pos in zip(x, y):
-            positions.append(x_pos + 4 * y_pos)
+
         
-        for pos in positions:
+        for i in range(0,4):
+            msg = await client.wait_for("message")
+            while not await check(msg):
+                msg = await client.wait_for("message")
+            msg = msg.content
+            x = int(msg[0]) - 1
+            y = int(msg[3]) - 1
+            pos = x + 4 * y
+
             time.sleep(1.5)
             await wait_for_all_girls(page)
             girls = await find_all_girls(page)
@@ -67,7 +81,9 @@ async def waifu(ctx, *, start):
         time.sleep(2)
         await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\end_result.png'})             #saves screenshot of result page
 
-        await ctx.channel.send(file=discord.File('end_result.png'))
+        await ctx.channel.send(file=discord.File(dir_path + '\end_result.png'))
+        await ctx.channel.send("Here you go! :)")
+
         
             
     asyncio.get_event_loop().run_until_complete(await main())
