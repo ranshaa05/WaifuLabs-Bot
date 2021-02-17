@@ -11,11 +11,10 @@ from discord.ext import commands
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA._GpYgiCjlSJ4AkkPBxi-cO98mok"
+secret = ""
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
-
 
 
 async def waifu(ctx, *, start):
@@ -68,6 +67,7 @@ async def waifu(ctx, *, start):
         time.sleep(2)
         await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\end_result.png'})             #saves screenshot of result page
 
+        await ctx.channel.send(file=discord.File('end_result.png'))
         
             
     asyncio.get_event_loop().run_until_complete(await main())
