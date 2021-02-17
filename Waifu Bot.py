@@ -9,10 +9,14 @@ import discord
 from discord.ext import commands
 
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.9uJXf4aQSpG7EZ4Ysi5aCX9QeiI"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA._GpYgiCjlSJ4AkkPBxi-cO98mok"
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
+
+
 
 async def waifu(ctx, *, start):
     os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
@@ -62,7 +66,7 @@ async def waifu(ctx, *, start):
             await girls[pos].click()
             
         time.sleep(2)
-        await (await page.querySelector(".my-girl-image")).screenshot({'path': 'example.png'})             #saves screenshot of result page
+        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\end_result.png'})             #saves screenshot of result page
 
         
             
@@ -90,4 +94,3 @@ async def wait_for_all_girls(page):
         
 
 client.run(secret)
-© 2021 GitHub, Inc.
