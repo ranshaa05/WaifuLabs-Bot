@@ -1,2 +1,2 @@
 # WaifuLabs-BlindSelect
-Discord bot that goes through WaifuLabs(.com) blindly
+Discord bot that goes through WaifuLabs(.com)
