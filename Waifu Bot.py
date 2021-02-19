@@ -13,7 +13,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
-secret = ""
+secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.B5mqayZGL7QskKtbCbIQVGcUjyo"
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
@@ -96,7 +96,7 @@ async def waifu(ctx, *, start):
             await askposclick(page)
             time.sleep(3)
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await page.screenshot({'path': dir_path + '\Screenshots\grid2.png'}, clip = {"x": 160, "y": 250, "height": 690, "width": 1250})
+            await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
             
         await askposclick(page)
