@@ -88,23 +88,23 @@ async def waifu(ctx, *, start):
 
         await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nStart by telling me the position of your waifu on the following grid:")
         time.sleep(3)
-        await page.screenshot({'path': dir_path + '\grid1.png'}, clip = {"x": 430, "y": 250, "height": 690, "width": 690})
-        await ctx.channel.send(file=discord.File(dir_path + '\grid1.png'))
+        await page.screenshot({'path': dir_path + '\Screenshots\grid1.png'}, clip = {"x": 430, "y": 250, "height": 690, "width": 690})
+        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid1.png'))
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid. You can also type 'keep' to continue with your current waifu.\nYour answer:")
         
         for i in range(0,3):
             await askposclick(page)
             time.sleep(3)
-            await page.screenshot({'path': dir_path + '\grid2.png'}, clip = {"x": 160, "y": 250, "height": 690, "width": 1250})
+            await page.screenshot({'path': dir_path + '\Screenshots\grid2.png'}, clip = {"x": 160, "y": 250, "height": 690, "width": 1250})
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await ctx.channel.send(file=discord.File(dir_path + '\grid2.png'))
+            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
             
         await askposclick(page)
 
         time.sleep(2)
-        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\end_result.png'})             #saves screenshot of result page
+        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
 
-        await ctx.channel.send(file=discord.File(dir_path + '\end_result.png'))
+        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
         await ctx.channel.send("Here you go! :)")
 
         time.sleep(5)
