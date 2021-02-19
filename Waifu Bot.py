@@ -88,7 +88,7 @@ async def waifu(ctx, *, start):
 
         await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
         time.sleep(3)
-        await page.screenshot({'path': dir_path + '\Screenshots\grid1.png'}, clip = {"x": 430, "y": 250, "height": 690, "width": 690})
+        await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid1.png'})
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid1.png'))
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid. You can also type 'keep' to continue with your current waifu.\nYour answer:")
         
