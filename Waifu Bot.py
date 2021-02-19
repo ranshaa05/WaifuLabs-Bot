@@ -83,7 +83,7 @@ async def waifu(ctx, *, start):
         
 
         await wait_for_close_button(page)
-
+        time.sleep(1)                                                       #executing these too quickly fails sometimes.
         await (await find_close_button(page)).click()
 
         await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nStart by telling me the position of your waifu on the following grid:")
@@ -95,8 +95,8 @@ async def waifu(ctx, *, start):
         for i in range(0,3):
             await askposclick(page)
             time.sleep(3)
-            await page.screenshot({'path': dir_path + '\Screenshots\grid2.png'}, clip = {"x": 160, "y": 250, "height": 690, "width": 1250})
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+            await page.screenshot({'path': dir_path + '\Screenshots\grid2.png'}, clip = {"x": 160, "y": 250, "height": 690, "width": 1250})
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
             
         await askposclick(page)
