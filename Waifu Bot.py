@@ -65,10 +65,6 @@ async def waifu(ctx, *, start):
                 await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
                 return False
 
-                if msg == "stop":
-                    await browser.close()
-                    ctx.channel.send("Okay! See you next time :)")
-
 
         return True
             
@@ -136,5 +132,3 @@ async def wait_for_all_girls(page):
         
 
 client.run(secret)
-
-
