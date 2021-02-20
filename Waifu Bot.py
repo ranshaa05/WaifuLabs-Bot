@@ -13,16 +13,16 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.B5mqayZGL7QskKtbCbIQVGcUjyo"
+secret = ""
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
 
 
 async def waifu(ctx, *, start):
-    async def askposclick(page):
+    async def askposclick(page, browser):
         msg = await client.wait_for("message")
-        while not await check(msg, page):
+        while not await check(msg, page, browser):
             msg = await client.wait_for("message")
         msg = msg.content
         if not msg == "keep":
@@ -39,13 +39,15 @@ async def waifu(ctx, *, start):
 
 
 
-    async def check(msg, page):
+    async def check(msg, page, browser):
         if not (msg.author == ctx.author and msg.channel == ctx.channel):
             return False
         
         msg = msg.content
 
         if msg == "$waifu start":
+            await browser.close()
+            await ctx.channel.send("Whoops! One user cannot start me twice. Starting over!")                                  #starts the bot over in case someone types $waifu start twice
             return False
 
         if msg == "keep" and len(await page.querySelectorAll(".keep-button")) < 1:
@@ -93,13 +95,13 @@ async def waifu(ctx, *, start):
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid. You can also type 'keep' to continue with your current waifu.\nYour answer:")
         
         for i in range(0,3):
-            await askposclick(page)
+            await askposclick(page, browser)
             time.sleep(3)
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
             await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
             
-        await askposclick(page)
+        await askposclick(page, browser)
 
         time.sleep(2)
         await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
