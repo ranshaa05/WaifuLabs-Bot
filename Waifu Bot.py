@@ -19,6 +19,7 @@ client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
 
 
+
 async def waifu(ctx, *, start):
     async def askposclick(page, browser):
         msg = await client.wait_for("message")
@@ -103,10 +104,18 @@ async def waifu(ctx, *, start):
             
         await askposclick(page, browser)
 
-        time.sleep(2)
-        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
+        num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.        to do: make this a function.
+        file_num = num_read.read()
+        file_num = (int(file_num) + 1)
+        num_write = open(dir_path + "\end_num.txt", "w")
+        num_write.write(str(file_num))
+        num_read.close()
+        num_write.close()
 
-        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
+        time.sleep(2)
+        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result\end_result' + str(file_num) + '.png'})             #saves screenshot of result page
+        
+        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result\end_result' + str(file_num) + '.png'))
         await ctx.channel.send("Here you go! :)")
 
         time.sleep(5)
@@ -131,6 +140,9 @@ async def wait_for_close_button(page):
 async def wait_for_all_girls(page):
         while len(await find_all_girls(page)) < 16:
             time.sleep(0.01)
+
+
+
         
 
 client.run(secret)
