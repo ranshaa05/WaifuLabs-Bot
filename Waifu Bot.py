@@ -13,7 +13,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
-secret = ""
+secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.9DKPHdRFa9OWwvtNo3SfzokvKZM"
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
@@ -105,8 +105,7 @@ async def waifu(ctx, *, start):
         await askposclick(page, browser)
 
         num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.        to do: make this a function.
-        file_num = num_read.read()
-        file_num = (int(file_num) + 1)
+        file_num = (int(num_read.read()) + 1)
         num_write = open(dir_path + "\end_num.txt", "w")
         num_write.write(str(file_num))
         num_read.close()
