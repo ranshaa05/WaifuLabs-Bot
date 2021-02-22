@@ -136,12 +136,24 @@ async def wait_for_all_girls(page):
             time.sleep(0.01)
 
 async def num_file_overwrite():
-        num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.        to do: make this a function.
-        file_num = (int(num_read.read()) + 1)
+    try:
+        num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.
+        file_num = int(num_read.read()) + 1
         num_write = open(dir_path + "\end_num.txt", "w")
         num_write.write(str(file_num))
         num_read.close()
         num_write.close()
-        return file_num
+    
+    except FileNotFoundError:
+        print("Could not find end_num.txt. Creating...")
+        num_write = open(dir_path + "\end_num.txt", "w+")
+        num_write.write(str(0))
+        num_write.close()
+
+
+        return (await num_file_overwrite())
+        
+    return file_num
 
 client.run(secret)
+
