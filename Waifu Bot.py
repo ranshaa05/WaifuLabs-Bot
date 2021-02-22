@@ -13,7 +13,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy.YCPZhA.9DKPHdRFa9OWwvtNo3SfzokvKZM"
+secret = ""
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
@@ -104,13 +104,8 @@ async def waifu(ctx, *, start):
             
         await askposclick(page, browser)
 
-        num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.        to do: make this a function.
-        file_num = (int(num_read.read()) + 1)
-        num_write = open(dir_path + "\end_num.txt", "w")
-        num_write.write(str(file_num))
-        num_read.close()
-        num_write.close()
-
+        file_num = await num_file_overwrite()
+        
         time.sleep(2)
         await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result\end_result' + str(file_num) + '.png'})             #saves screenshot of result page
         
@@ -140,8 +135,13 @@ async def wait_for_all_girls(page):
         while len(await find_all_girls(page)) < 16:
             time.sleep(0.01)
 
-
-
-        
+async def num_file_overwrite():
+        num_read = open(dir_path + "\end_num.txt", "r")                                         #changes the number inside end_num.txt.        to do: make this a function.
+        file_num = (int(num_read.read()) + 1)
+        num_write = open(dir_path + "\end_num.txt", "w")
+        num_write.write(str(file_num))
+        num_read.close()
+        num_write.close()
+        return file_num
 
 client.run(secret)
