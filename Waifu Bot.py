@@ -29,8 +29,6 @@ async def waifu(ctx, *, start):
             x = int(msg[0]) - 1
             y = int(msg[3]) - 1
             pos = x + 4 * y
-            time.sleep(1.5)
-            await wait_for_all_girls(page)
             girls = await find_all_girls(page)
             await girls[pos].click()
 
@@ -89,28 +87,30 @@ async def waifu(ctx, *, start):
         await (await find_close_button(page)).click()
 
         await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
-        time.sleep(3)
+       
+        await wait_for_all_girls(page)
+
         await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid1.png'})
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid1.png'))
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid. You can also type 'keep' to continue with your current waifu.\nYour answer:")
         
         for i in range(0,3):
             await askposclick(page, browser)
-            time.sleep(3)
+            await wait_for_all_girls(page)
+            
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
             await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
             
         await askposclick(page, browser)
+        
+        while len(await page.querySelectorAll(".my-girl-image")) > 0:                                                                     
+            time.sleep(1)                                                                                                                 #this can probably be improved
+            await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
+            await browser.close()                                                                                                         #closes browser to free up resources.
+            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
+            await ctx.channel.send("Here you go! :)")
 
-        time.sleep(2)
-        await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
-
-        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
-        await ctx.channel.send("Here you go! :)")
-
-        time.sleep(5)
-        await browser.close()                                          #closes browser to free up resources.
 
     asyncio.get_event_loop().run_until_complete(await main())
     
@@ -129,8 +129,17 @@ async def wait_for_close_button(page):
         time.sleep(0.01)
 
 async def wait_for_all_girls(page):
-        while len(await find_all_girls(page)) < 16:
-            time.sleep(0.01)
-        
+    await wait_for_not_load_screen(page)
+    while len(await find_all_girls(page)) < 16:
+        time.sleep(0.01)
+
+async def wait_for_not_load_screen(page):
+    while len(await page.querySelectorAll(".bp3-spinner-head")) > 0:
+        time.sleep(0.01)
+
+async def wait_for_final_image(page):
+    while len(await page.querySelectorAll(".product-image")) < 0:
+        time.sleep(0.01)
+
 
 client.run(secret)
