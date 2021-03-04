@@ -58,7 +58,7 @@ async def waifu(ctx, *, start):
                     return False
                 
                 if not (0 < int(msg[0]) < 5 and 0 < int(msg[3]) < 5):              #makes sure the user input is valid.
-                    await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :)")
+                    await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
                     return False
 
             except ValueError:
@@ -109,7 +109,7 @@ async def waifu(ctx, *, start):
             await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
             await browser.close()                                                                                                         #closes browser to free up resources.
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
-            await ctx.channel.send("Here you go! :)")
+            await ctx.channel.send("Here you go! :slight_smile:")
 
 
     asyncio.get_event_loop().run_until_complete(await main())
