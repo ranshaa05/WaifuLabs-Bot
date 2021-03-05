@@ -72,7 +72,7 @@ async def waifu(ctx, *, start):
 
     async def main():
         browser = await launch(                                             #opens browser
-            headless=False,
+            headless=True,
             autoClose=False
         )
         page = await browser.newPage()
@@ -104,8 +104,8 @@ async def waifu(ctx, *, start):
             
         await askposclick(page, browser)
         
-        while len(await page.querySelectorAll(".my-girl-image")) > 0:                                                                     
-            time.sleep(1)                                                                                                                 #this can probably be improved
+        if len(await page.querySelectorAll(".product-image")) > 0:
+            time.sleep(2)                                                                                                    #this can probably be improved
             await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
             await browser.close()                                                                                                         #closes browser to free up resources.
             await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
