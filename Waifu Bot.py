@@ -13,7 +13,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
-secret = ""
+secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 @client.command()
