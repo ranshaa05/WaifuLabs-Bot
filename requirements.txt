@@ -1,4 +1,3 @@
 pyppeteer
 discord
-discord.exc
 appdirs
