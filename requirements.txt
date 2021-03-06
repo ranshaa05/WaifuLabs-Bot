@@ -1,0 +1,3 @@
+pyppeteer
+discord
+discord.exc
