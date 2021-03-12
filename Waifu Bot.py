@@ -39,8 +39,7 @@ async def waifu(ctx, *, start):
             await wait_for_all_girls(page)
             
             await ctx.channel.send("Refreshing the grid...")
-            await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
-            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
+            await save_screenshot_send(page, ctx)
             await ctx.channel.send("Here you go :slight_smile:")
 
             return (await askposclick(page, browser))
@@ -110,8 +109,7 @@ async def waifu(ctx, *, start):
             await wait_for_all_girls(page)
             
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
-            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
+            await save_screenshot_send(page, ctx)
             
         await askposclick(page, browser)
         
@@ -152,5 +150,8 @@ async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
         time.sleep(0.01)
 
+async def save_screenshot_send(page, ctx):
+    await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
+    await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
 
 client.run(secret)
