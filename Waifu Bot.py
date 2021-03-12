@@ -24,16 +24,26 @@ async def waifu(ctx, *, start):
         while not await check(msg, page, browser):
             msg = await client.wait_for("message")
         msg = msg.content
-        if not msg == "keep":
+        if msg != "keep" and msg != "refresh":
             x = int(msg[0]) - 1
             y = int(msg[3]) - 1
             pos = x + 4 * y
             girls = await find_all_girls(page)
             await girls[pos].click()
 
-        else:
-            await ((await page.querySelectorAll(".keep-button"))[0]).click()
+        elif msg == "keep":
+            await ((await page.querySelectorAll(".keep-button"))[0]).click()                                            #keep current waifu
 
+        else:
+            await ((await page.querySelectorAll(".refresh-button"))[0]).click()                                         #refresh grid
+            await wait_for_all_girls(page)
+            
+            await ctx.channel.send("Refreshing the grid...")
+            await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
+            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
+            await ctx.channel.send("Here you go :slight_smile:")
+
+            return (await askposclick(page, browser))
 
 
     async def check(msg, page, browser):
@@ -50,7 +60,9 @@ async def waifu(ctx, *, start):
         if msg == "keep" and len(await page.querySelectorAll(".keep-button")) < 1:
             await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
             return False
-        if msg != "keep":
+        
+
+        if msg != "keep" and msg != "refresh":
             try:
                 if not (msg.find(", ") == 1 and len(msg) == 4):
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
@@ -91,7 +103,7 @@ async def waifu(ctx, *, start):
 
         await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid1.png'})
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid1.png'))
-        await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid. You can also type 'keep' to continue with your current waifu.\nYour answer:")
+        await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid.\nYou can also type 'keep' to continue with your current waifu or 'refresh' to refresh the grid.\nYour answer:")
         
         for i in range(0,3):
             await askposclick(page, browser)
