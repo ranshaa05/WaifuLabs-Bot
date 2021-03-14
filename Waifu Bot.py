@@ -102,30 +102,40 @@ async def waifu(ctx, *, start):
 
         await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid1.png'})
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid1.png'))
-        await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\nThe starting point is at the top left corner of the grid.\nYou can also type 'keep' to continue with your current waifu or 'refresh' to refresh the grid.\nYour answer:")
+        await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu or 'refresh' to refresh the grid.\nYour answer:")
         
         for i in range(0,3):
             await askposclick(page, browser)
             await wait_for_all_girls(page)
-            
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
             await save_screenshot_send(page, ctx)
             
         await askposclick(page, browser)
         
-        if len(await page.querySelectorAll(".product-image")) > 0:
-            time.sleep(2)                                                                                                    #this can probably be improved
-            await (await page.querySelector(".my-girl-image")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
-            await browser.close()                                                                                                         #closes browser to free up resources.
-            await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
-            await ctx.channel.send("Here you go! :slight_smile:")
-
+        await wait_for_result(page)            
+        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
+        await browser.close()                                                                                                         #closes browser to free up resources.
+        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
+        await ctx.channel.send("Here you go! :slight_smile:")
 
     asyncio.get_event_loop().run_until_complete(await main())
     
 
 async def find_all_girls(page):
     return await page.querySelectorAll(".girl")
+
+async def find_result(page):
+    return await page.querySelectorAll(".my-girl-loaded")
+    
+async def wait_for_result(page):
+    await wait_for_not_load_screen(page)
+    while len(await find_result(page)) < 1:
+        time.sleep(0.01)
+
+async def wait_for_all_girls(page):
+    await wait_for_not_load_screen(page)
+    while len(await find_all_girls(page)) < 16 and len(await find_result(page)) < 1:
+        time.sleep(0.01)
 
 async def find_start_btn(page):
     return await page.querySelector('.button.block.blue')
@@ -137,10 +147,7 @@ async def wait_for_close_button(page):
     while not await find_close_button(page):
         time.sleep(0.01)
 
-async def wait_for_all_girls(page):
-    await wait_for_not_load_screen(page)
-    while len(await find_all_girls(page)) < 16:
-        time.sleep(0.01)
+
 
 async def wait_for_not_load_screen(page):
     while len(await page.querySelectorAll(".bp3-spinner-head")) > 0:
