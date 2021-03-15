@@ -90,7 +90,7 @@ async def waifu(ctx, *, start):
         
         await page.setViewport({'width': 1550, 'height': 1000})
         await page.goto('https://waifulabs.com/')
-        print("Event: \033[1;32;40mBrowser Started.")
+        print("\033[1;37;40mEvent: \033[1;32;40mBrowser Started.")
         await (await find_start_btn(page)).click()
 
         await wait_for_close_button(page)
@@ -116,7 +116,7 @@ async def waifu(ctx, *, start):
         await wait_for_result(page)            
         await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
         await browser.close()                                                                                                          #closes browser to free up resources.
-        print("Event: \033[93mBrowser Closed.")
+        print("\033[1;37;40mEvent: \033[93mBrowser Closed.")
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
         
