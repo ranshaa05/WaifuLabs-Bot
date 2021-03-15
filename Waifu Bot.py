@@ -32,10 +32,10 @@ async def waifu(ctx, *, start):
             await girls[pos].click()
 
         elif msg == "keep":
-            await ((await page.querySelectorAll(".keep-button"))[0]).click()                                            #keep current waifu
+            await ((await page.querySelectorAll(".keep-button"))[0]).click()                   #keep current waifu
 
         else:
-            await ((await page.querySelectorAll(".refresh-button"))[0]).click()                                         #refresh grid
+            await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
             await wait_for_all_girls(page)
             
             await ctx.channel.send("Refreshing the grid...")
@@ -53,7 +53,7 @@ async def waifu(ctx, *, start):
 
         if msg == "$waifu start":
             await browser.close()
-            await ctx.channel.send("Whoops! One user cannot start me twice. Starting over!")                                  #starts the bot over in case someone types $waifu start twice
+            await ctx.channel.send("Whoops! One user cannot start me twice. Starting over!")      #starts the bot over in case someone types $waifu start twice
             return False
 
         if msg == "keep" and len(await page.querySelectorAll(".keep-button")) < 1:
@@ -81,7 +81,8 @@ async def waifu(ctx, *, start):
 
 
     async def main():
-        browser = await launch(                                             #opens browser
+        
+        browser = await launch(              #opens browser
             headless=True,
             autoClose=False
         )
@@ -89,11 +90,11 @@ async def waifu(ctx, *, start):
         
         await page.setViewport({'width': 1550, 'height': 1000})
         await page.goto('https://waifulabs.com/')
+        print("Event: \033[1;32;40mBrowser Started.")
         await (await find_start_btn(page)).click()
-        
 
         await wait_for_close_button(page)
-        time.sleep(1)                                                       #executing these too quickly fails sometimes.
+        time.sleep(1)                              #executing these too quickly fails sometimes.
         await (await find_close_button(page)).click()
 
         await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
@@ -110,15 +111,18 @@ async def waifu(ctx, *, start):
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
             await save_screenshot_send(page, ctx)
             
-        await askposclick(page, browser)
         
+        await askposclick(page, browser)
         await wait_for_result(page)            
         await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
-        await browser.close()                                                                                                         #closes browser to free up resources.
+        await browser.close()                                                                                                          #closes browser to free up resources.
+        print("Event: \033[93mBrowser Closed.")
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
+        
+    await main()
 
-    asyncio.get_event_loop().run_until_complete(await main())
+
     
 
 async def find_all_girls(page):
@@ -146,8 +150,6 @@ async def find_close_button(page):
 async def wait_for_close_button(page):
     while not await find_close_button(page):
         time.sleep(0.01)
-
-
 
 async def wait_for_not_load_screen(page):
     while len(await page.querySelectorAll(".bp3-spinner-head")) > 0:
