@@ -1,1 +1,1 @@
-web: open Waifu Bot.py
+web: Waifu Bot.py
