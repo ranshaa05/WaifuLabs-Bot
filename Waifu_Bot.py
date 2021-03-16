@@ -20,29 +20,34 @@ client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 
 async def waifu(ctx, *, start):
     async def askposclick(page, browser):
-        msg = await client.wait_for("message")
-        while not await check(msg, page, browser):
-            msg = await client.wait_for("message")
-        msg = msg.content
-        if msg != "keep" and msg != "refresh":
-            x = int(msg[0]) - 1
-            y = int(msg[3]) - 1
-            pos = x + 4 * y
-            girls = await find_all_girls(page)
-            await girls[pos].click()
+        try:
+            msg = await client.wait_for("message", timeout=120)
+            while not await check(msg, page, browser):
+                msg = await client.wait_for("message", timeout=120)
+            msg = msg.content
+            if msg != "keep" and msg != "refresh":
+                x = int(msg[0]) - 1
+                y = int(msg[3]) - 1
+                pos = x + 4 * y
+                girls = await find_all_girls(page)
+                await girls[pos].click()
 
-        elif msg == "keep":
-            await ((await page.querySelectorAll(".keep-button"))[0]).click()                   #keep current waifu
+            elif msg == "keep":
+                await ((await page.querySelectorAll(".keep-button"))[0]).click()                   #keep current waifu
 
-        else:
-            await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
-            await wait_for_all_girls(page)
+            else:
+                await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
+                await wait_for_all_girls(page)
+                
+                await ctx.channel.send("Refreshing the grid...")
+                await save_screenshot_send(page, ctx)
+                await ctx.channel.send("Here you go :slight_smile:")
+
+                return (await askposclick(page, browser))
+        except asyncio.TimeoutError:
+            await browser.close()
+            print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed.")
             
-            await ctx.channel.send("Refreshing the grid...")
-            await save_screenshot_send(page, ctx)
-            await ctx.channel.send("Here you go :slight_smile:")
-
-            return (await askposclick(page, browser))
 
 
     async def check(msg, page, browser):
@@ -119,8 +124,9 @@ async def waifu(ctx, *, start):
         print("\033[1;37;40mEvent: \033[93mBrowser Closed.")
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
-        
+   
     await main()
+    
 
 
     
