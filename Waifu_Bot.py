@@ -68,7 +68,7 @@ async def waifu(ctx, *, start):
 
         if msg != "keep" and msg != "refresh":
             try:
-                if not (msg.find(", ") == 1 and len(msg) == 4):
+                if not ((msg.find(", ") == 1 or msg.find(" ,")) == 1 and len(msg) == 4):
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
                     return False
                 
