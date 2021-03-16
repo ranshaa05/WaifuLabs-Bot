@@ -58,6 +58,7 @@ async def waifu(ctx, *, start):
 
         if msg == "$waifu start":
             await browser.close()
+            print("\033[1;37;40mEvent: \033[93mBrowser Closed.")
             await ctx.channel.send("Whoops! One user cannot start me twice. Starting over!")      #starts the bot over in case someone types $waifu start twice
             return False
 
@@ -86,7 +87,7 @@ async def waifu(ctx, *, start):
 
 
     async def main():
-        
+        msg = msg.content
         browser = await launch(              #opens browser
             headless=True,
             autoClose=False
