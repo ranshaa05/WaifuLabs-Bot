@@ -87,7 +87,6 @@ async def waifu(ctx, *, start):
 
 
     async def main():
-        msg = msg.content
         browser = await launch(              #opens browser
             headless=True,
             autoClose=False
