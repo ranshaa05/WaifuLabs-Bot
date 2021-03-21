@@ -14,13 +14,21 @@ os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
 secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
 
+connected_users = []
+
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
+
 @client.command()
-
-
 async def waifu(ctx, *, start):
+    if ctx.author.id in connected_users:
+        print("\033[1;37;40mEvent: \033[93mUser tried to activate the bot twice!")
+        await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")      #starts the bot over in case someone types $waifu start twice
+        return
+    else:
+        connected_users.append(ctx.author.id)
     async def askposclick(page, browser):
         try:
+            global msg
             msg = await client.wait_for("message", timeout=120)
             while not await check(msg, page, browser):
                 msg = await client.wait_for("message", timeout=120)
@@ -38,15 +46,14 @@ async def waifu(ctx, *, start):
             else:
                 await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
                 await wait_for_all_girls(page)
-                
+                await delete_last_message(ctx, msg)
                 await ctx.channel.send("Refreshing the grid...")
                 await save_screenshot_send(page, ctx)
                 await ctx.channel.send("Here you go :slight_smile:")
-
                 return (await askposclick(page, browser))
         except asyncio.TimeoutError:
             await browser.close()
-            print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed.")
+            print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed for user '" + str(ctx.author.name) + "'")
             
 
 
@@ -57,17 +64,22 @@ async def waifu(ctx, *, start):
         msg = msg.content
 
         if msg == "$waifu start":
+            return False
+
+        if msg == "exit" or msg == "stop":
             await browser.close()
-            print("\033[1;37;40mEvent: \033[93mBrowser Closed.")
-            await ctx.channel.send("Whoops! One user cannot start me twice. Starting over!")      #starts the bot over in case someone types $waifu start twice
+            print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', exited.")
+            await ctx.channel.send("Exiting...")
+            time.sleep(2)
+            await delete_last_message(ctx, msg)
+            connected_users.remove(ctx.author.id)
             return False
 
         if msg == "keep" and len(await page.querySelectorAll(".keep-button")) < 1:
             await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
             return False
-        
 
-        if msg != "keep" and msg != "refresh":
+        if msg != "keep" and msg != "refresh" and msg != "exit" and msg != "stop":
             try:
                 if not ((msg.find(", ") == 1 or msg.find(" ,")) == 1 and len(msg) == 4):
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
@@ -95,7 +107,7 @@ async def waifu(ctx, *, start):
         
         await page.setViewport({'width': 1550, 'height': 1000})
         await page.goto('https://waifulabs.com/')
-        print("\033[1;37;40mEvent: \033[1;32;40mBrowser Started.")
+        print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'")
         await (await find_start_btn(page)).click()
 
         await wait_for_close_button(page)
@@ -111,20 +123,27 @@ async def waifu(ctx, *, start):
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu or 'refresh' to refresh the grid.\nYour answer:")
         
         for i in range(0,3):
+            
             await askposclick(page, browser)
+            
+            await delete_last_message(ctx, msg)
+            
             await wait_for_all_girls(page)
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
             await save_screenshot_send(page, ctx)
+
             
         
         await askposclick(page, browser)
+        await delete_last_message(ctx, msg)
         await wait_for_result(page)            
         await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
         await browser.close()                                                                                                          #closes browser to free up resources.
-        print("\033[1;37;40mEvent: \033[93mBrowser Closed.")
+        print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
         await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
-   
+        connected_users.remove(ctx.author.id)
+    
     await main()
     
 
@@ -169,4 +188,15 @@ async def save_screenshot_send(page, ctx):
     await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid2.png'})
     await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid2.png'))
 
+async def delete_last_message(ctx, msg):
+    msg = await ctx.channel.history().get(author=client.user)
+    if msg.attachments:
+        await msg.delete()
+        msg = await ctx.channel.history().get(author=client.user)
+        await msg.delete()
+
+    else:
+        await msg.delete()
+        return await delete_last_message(ctx, msg)
+                          
 client.run(secret)
