@@ -108,13 +108,13 @@ async def waifu(ctx, *, start):
             await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
             return False
 
-        if msg != "keep" and msg != "refresh" and msg != "exit" and msg != "stop" and msg != "undo":
+        if msg != "keep" and msg != "refresh" and msg != "exit" and msg != "stop" and msg != "undo":         #makes sure the user input is valid.
             try:
                 if not ((msg.find(", ") == 1 or msg.find(" ,")) == 1 and len(msg) == 4):
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
                     return False
                 
-                if not (0 < int(msg[0]) < 5 and 0 < int(msg[3]) < 5):              #makes sure the user input is valid.
+                if not (0 < int(msg[0]) < 5 and 0 < int(msg[3]) < 5):             
                     await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
                     return False
 
@@ -156,14 +156,14 @@ async def waifu(ctx, *, start):
             await delete_last_message(ctx, msg)
             await wait_for_all_girls(page)
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await save_screenshot_send(page, ctx)    #this fails when sending "refresh" and then "undo" for some reason
+            await save_screenshot_send(page, ctx)    #this fails when sending "refresh" and then "undo" for some reason.
 
             
         
         await askposclick(page, browser, clicked_undo)
         await delete_last_message(ctx, msg)
         await wait_for_result(page)    
-        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\\Screenshots\\end_result.png'})             #saves screenshot of result page
+        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\\Screenshots\\end_result.png'})             #saves screenshot of result page.
         await browser.close()                                                                                                          #closes browser to free up resources.
         print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
         await ctx.channel.send(file=discord.File(dir_path + '\\Screenshots\\end_result.png'))
