@@ -217,7 +217,7 @@ async def save_screenshot_send(page, ctx):
     if int(last_grid_number) < 8:
         next_grid_name = str(int(last_grid_number) + 1)      #next grid number
         await (await page.querySelector(".container")).screenshot({'path': dir_path + '\\Screenshots\\grid' + next_grid_name + '.png'})
-        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\\grid' + next_grid_name + '.png'))
+        await ctx.channel.send(file=discord.File(dir_path + '\\Screenshots\\grid' + next_grid_name + '.png'))
     else:
         for i in range(8):
             os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))           #if *too* many users use the bot at once, this will cause an overwrite
