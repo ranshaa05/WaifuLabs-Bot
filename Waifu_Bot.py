@@ -9,6 +9,8 @@ from discord.ext import commands
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+screenshot_path = dir_path + "\\Screenshots"
+
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
 
@@ -46,7 +48,7 @@ async def waifu(ctx, *, start):
             
             elif clicked_undo == False and msg == "undo":
                 await ((await page.querySelectorAll(".undo-button"))[0]).click()                      #press undo
-                clicked_undo = True
+                clicked_undo = True                                                #it won't press the undo button after pressing "refresh" for some reason
                 await wait_for_all_girls(page)
                 await delete_last_message(ctx, msg)
                 await ctx.channel.send("Undoing...")
@@ -145,8 +147,7 @@ async def waifu(ctx, *, start):
        
         await wait_for_all_girls(page)
 
-        await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid.png'})
-        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid.png'))
+        await save_screenshot_send(page, ctx)
         await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
         
         for i in range(0,3):
@@ -155,17 +156,17 @@ async def waifu(ctx, *, start):
             await delete_last_message(ctx, msg)
             await wait_for_all_girls(page)
             await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await save_screenshot_send(page, ctx)
+            await save_screenshot_send(page, ctx)    #this fails when sending "refresh" and then "undo" for some reason
 
             
         
         await askposclick(page, browser, clicked_undo)
         await delete_last_message(ctx, msg)
-        await wait_for_result(page)            
-        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\Screenshots\end_result.png'})             #saves screenshot of result page
+        await wait_for_result(page)    
+        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\\Screenshots\\end_result.png'})             #saves screenshot of result page
         await browser.close()                                                                                                          #closes browser to free up resources.
         print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
-        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\end_result.png'))
+        await ctx.channel.send(file=discord.File(dir_path + '\\Screenshots\\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
         connected_users.remove(ctx.author.id)
     
@@ -211,8 +212,20 @@ async def wait_for_final_image(page):
 
 async def save_screenshot_send(page, ctx):
     await wait_for_not_load_screen(page)
-    await (await page.querySelector(".container")).screenshot({'path': dir_path + '\Screenshots\grid.png'})
-    await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\grid.png'))
+    filename = os.listdir(screenshot_path)
+    last_grid_number = (filename[-1])[-5]      #get last grid number
+    if int(last_grid_number) < 8:
+        next_grid_name = str(int(last_grid_number) + 1)      #next grid number
+        await (await page.querySelector(".container")).screenshot({'path': dir_path + '\\Screenshots\\grid' + next_grid_name + '.png'})
+        await ctx.channel.send(file=discord.File(dir_path + '\Screenshots\\grid' + next_grid_name + '.png'))
+    else:
+        for i in range(8):
+            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))           #if *too* many users use the bot at once, this will cause an overwrite
+
+            if int(last_grid_number) == "0":
+                return
+        return (await save_screenshot_send(page, ctx))
+
 
 async def delete_last_message(ctx, msg):
     msg = await ctx.channel.history().get(author=client.user)
