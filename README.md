@@ -1,2 +1,2 @@
 # WaifuLabs Bot
-Discord bot that goes through WaifuLabs(.com)
+Fully-featured Discord bot that goes through www.WaifuLabs.com
