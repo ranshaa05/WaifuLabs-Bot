@@ -133,7 +133,7 @@ async def waifu(ctx, *, start):
         page = await browser.newPage()
         
         await page.setViewport({'width': 1550, 'height': 1000})
-        await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
+        await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
         await page.goto('https://waifulabs.com/')
         print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'")
         await (await find_start_btn(page)).click()
