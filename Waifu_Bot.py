@@ -7,9 +7,7 @@ from random import random
 import discord
 from discord.ext import commands
 
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-screenshot_path = dir_path + "\\Screenshots"
+screenshot_path = os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots"
 
 
 os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
@@ -135,6 +133,7 @@ async def waifu(ctx, *, start):
         page = await browser.newPage()
         
         await page.setViewport({'width': 1550, 'height': 1000})
+        await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
         await page.goto('https://waifulabs.com/')
         print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'")
         await (await find_start_btn(page)).click()
@@ -142,8 +141,6 @@ async def waifu(ctx, *, start):
         await wait_for_close_button(page)
         time.sleep(1)                              #executing these too quickly fails sometimes.
         await (await find_close_button(page)).click()
-
-        await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
        
         await wait_for_all_girls(page)
 
@@ -162,11 +159,11 @@ async def waifu(ctx, *, start):
         
         await askposclick(page, browser, clicked_undo)
         await delete_last_message(ctx, msg)
-        await wait_for_result(page)    
-        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': dir_path + '\\Screenshots\\end_result.png'})             #saves screenshot of result page.
+        await wait_for_result(page)
+        await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})             #saves screenshot of result page.
         await browser.close()                                                                                                          #closes browser to free up resources.
         print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
-        await ctx.channel.send(file=discord.File(dir_path + '\\Screenshots\\end_result.png'))
+        await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
         await ctx.channel.send("Here you go! :slight_smile:")
         connected_users.remove(ctx.author.id)
     
@@ -211,16 +208,19 @@ async def wait_for_final_image(page):
         time.sleep(0.01)
 
 async def save_screenshot_send(page, ctx):
+    import re
+    
     await wait_for_not_load_screen(page)
     filename = os.listdir(screenshot_path)
-    last_grid_number = (filename[-1])[-5]      #get last grid number
+    last_grid_number = (filename[-1])[-5]           #get last grid number
     if int(last_grid_number) < 8:
-        next_grid_name = str(int(last_grid_number) + 1)      #next grid number
-        await (await page.querySelector(".container")).screenshot({'path': dir_path + '\\Screenshots\\grid' + next_grid_name + '.png'})
-        await ctx.channel.send(file=discord.File(dir_path + '\\Screenshots\\grid' + next_grid_name + '.png'))
+        next_grid_number = str(int(last_grid_number) + 1)           #next grid number
+        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})
+        await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
+
     else:
         for i in range(8):
-            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))           #if *too* many users use the bot at once, this will cause an overwrite
+            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite.
 
             if int(last_grid_number) == "0":
                 return
