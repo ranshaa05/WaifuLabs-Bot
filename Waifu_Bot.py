@@ -29,7 +29,7 @@ async def waifu(ctx, *, start):
         clicked_refresh = False
         if ctx.author.id in connected_users:
             print("\033[1;37;40mEvent: \033[93mUser tried to activate the bot twice!")
-            await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")      #starts the bot over in case someone types $waifu start twice
+            await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")
             return
         else:
             connected_users.append(ctx.author.id)
@@ -48,11 +48,11 @@ async def waifu(ctx, *, start):
                     await girls[pos].click()
                 
                 elif msg == "keep":
-                    await ((await page.querySelectorAll(".keep-button"))[0]).click()                   #keep current waifu
+                    await ((await page.querySelectorAll(".keep-button"))[0]).click()
                 
                 elif clicked_refresh == False and clicked_undo == False and msg == "undo":
-                    await ((await page.querySelectorAll(".undo-button"))[0]).click()                      #press undo
-                    clicked_undo = True                                                #it won't press the undo button after pressing "refresh" for some reason
+                    await ((await page.querySelectorAll(".undo-button"))[0]).click()
+                    clicked_undo = True
                     await wait_for_all_girls(page)
                     await delete_last_message(ctx, msg)
                     await ctx.channel.send("Undoing...")
@@ -68,7 +68,6 @@ async def waifu(ctx, *, start):
                     clicked_undo = False
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     
-
                 elif clicked_undo == True and msg == "undo":
                         await ctx.channel.send("You can only undo once!")
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -77,7 +76,7 @@ async def waifu(ctx, *, start):
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                         
                 else:
-                    await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
+                    await ((await page.querySelectorAll(".refresh-button"))[0]).click()
                     clicked_refresh = True
                     await wait_for_all_girls(page)
                     await delete_last_message(ctx, msg)
@@ -86,8 +85,8 @@ async def waifu(ctx, *, start):
                     await ctx.channel.send("Here you go :slight_smile:")
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     
-                    
-            except asyncio.TimeoutError:
+
+            except asyncio.TimeoutError:                        #if a user leaves the bot hanging and another user starts it and the first one is timed out, it'll delete the second user's messages
                 await browser.close()
                 connected_users.remove(ctx.author.id)
                 await ctx.channel.send("Timed out! Stopping...")
@@ -141,7 +140,7 @@ async def waifu(ctx, *, start):
 
 
         async def main():
-            browser = await launch(              #opens browser
+            browser = await launch(
                 headless=True,
                 autoClose=False
             )
@@ -168,13 +167,13 @@ async def waifu(ctx, *, start):
                 await delete_last_message(ctx, msg)
                 await wait_for_all_girls(page)
                 await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                await save_screenshot_send(page, ctx)    #this fails when sending "refresh" and then "undo" for some reason.
+                await save_screenshot_send(page, ctx)
 
             await askposclick(page, browser, clicked_undo, clicked_refresh)
             await delete_last_message(ctx, msg)
             await wait_for_result(page)
-            await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})             #saves screenshot of result page.
-            await browser.close()                                                                                                          #closes browser to free up resources.
+            await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+            await browser.close()
             print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
             await ctx.channel.send("Here you go! :slight_smile:")
