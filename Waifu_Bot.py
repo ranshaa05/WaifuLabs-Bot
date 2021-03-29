@@ -65,7 +65,7 @@ async def waifu(ctx, *, start):
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await save_screenshot_send(page, ctx)
                     clicked_undo = False
-                    return (await askposclick(page, browser, clicked_undo))
+                    return
 
                 elif clicked_undo == True and msg == "undo":
                         await ctx.channel.send("You can only undo once!")
