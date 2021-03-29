@@ -26,13 +26,14 @@ async def waifu(ctx, *, start):
 
     else:
         clicked_undo = False
+        clicked_refresh = False
         if ctx.author.id in connected_users:
             print("\033[1;37;40mEvent: \033[93mUser tried to activate the bot twice!")
             await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")      #starts the bot over in case someone types $waifu start twice
             return
         else:
             connected_users.append(ctx.author.id)
-        async def askposclick(page, browser, clicked_undo):
+        async def askposclick(page, browser, clicked_undo, clicked_refresh):
             try:
                 global msg
                 msg = await client.wait_for("message", timeout=120)
@@ -49,7 +50,7 @@ async def waifu(ctx, *, start):
                 elif msg == "keep":
                     await ((await page.querySelectorAll(".keep-button"))[0]).click()                   #keep current waifu
                 
-                elif clicked_undo == False and msg == "undo":
+                elif clicked_refresh == False and clicked_undo == False and msg == "undo":
                     await ((await page.querySelectorAll(".undo-button"))[0]).click()                      #press undo
                     clicked_undo = True                                                #it won't press the undo button after pressing "refresh" for some reason
                     await wait_for_all_girls(page)
@@ -60,29 +61,38 @@ async def waifu(ctx, *, start):
                     await msg.delete()
                     await ctx.channel.send("Okay! Here's the previous grid:")
                     await save_screenshot_send(page, ctx)
-                    await askposclick(page, browser, clicked_undo)
+                    await askposclick(page, browser, clicked_undo, clicked_refresh)
                     await delete_last_message(ctx, msg)
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await save_screenshot_send(page, ctx)
                     clicked_undo = False
-                    return
+                    return (await askposclick(page, browser, clicked_undo, clicked_refresh))
+                    
 
                 elif clicked_undo == True and msg == "undo":
                         await ctx.channel.send("You can only undo once!")
-                        return (await askposclick(page, browser, clicked_undo))
+                        return (await askposclick(page, browser, clicked_undo, clicked_refresh))
+                elif clicked_refresh == True and msg == "undo":
+                        await ctx.channel.send("You can't undo after a frefresh!")
+                        return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                         
                 else:
                     await ((await page.querySelectorAll(".refresh-button"))[0]).click()                      #refresh grid
+                    clicked_refresh = True
                     await wait_for_all_girls(page)
                     await delete_last_message(ctx, msg)
                     await ctx.channel.send("Refreshing the grid...")
                     await save_screenshot_send(page, ctx)
                     await ctx.channel.send("Here you go :slight_smile:")
-                    return (await askposclick(page, browser, clicked_undo))
+                    return (await askposclick(page, browser, clicked_undo, clicked_refresh))
+                    
                     
             except asyncio.TimeoutError:
                 await browser.close()
                 connected_users.remove(ctx.author.id)
+                await ctx.channel.send("Timed out! Stopping...")
+                time.sleep(3)
+                await delete_last_message(ctx, msg)
                 print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed for user '" + str(ctx.author.name) + "'")
             
 
@@ -154,13 +164,13 @@ async def waifu(ctx, *, start):
             
             for i in range(0,3):
                 
-                await askposclick(page, browser, clicked_undo)
+                await askposclick(page, browser, clicked_undo, clicked_refresh)
                 await delete_last_message(ctx, msg)
                 await wait_for_all_girls(page)
                 await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                 await save_screenshot_send(page, ctx)    #this fails when sending "refresh" and then "undo" for some reason.
 
-            await askposclick(page, browser, clicked_undo)
+            await askposclick(page, browser, clicked_undo, clicked_refresh)
             await delete_last_message(ctx, msg)
             await wait_for_result(page)
             await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})             #saves screenshot of result page.
