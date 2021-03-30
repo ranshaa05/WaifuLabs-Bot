@@ -72,7 +72,7 @@ async def waifu(ctx, *, start):
                         await ctx.channel.send("You can only undo once!")
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                 elif clicked_refresh == True and msg == "undo":
-                        await ctx.channel.send("You can't undo after a frefresh!")
+                        await ctx.channel.send("You can't undo after a refresh!")
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                         
                 else:
