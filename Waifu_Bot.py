@@ -23,12 +23,12 @@ async def waifu(ctx, *, start):
     if msg.content != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         return
-
+dasf
     else:
         clicked_undo = False
         clicked_refresh = False
         if ctx.author.id in connected_users:
-            print("\033[1;37;40mEvent: \033[93mUser tried to activate the bot twice!")
+            print("\033[1;37;40mEvent: \033[93mUser tried to activate the bot twice!\033[0;37;40m")
             await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")
             return
         else:
@@ -92,7 +92,7 @@ async def waifu(ctx, *, start):
                 await ctx.channel.send("Timed out! Stopping...")
                 time.sleep(3)
                 await delete_last_message(ctx, msg)
-                print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed for user '" + str(ctx.author.name) + "'")
+                print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
             
 
         async def check(msg, page, browser):
@@ -109,7 +109,7 @@ async def waifu(ctx, *, start):
 
             if msg == "exit" or msg == "stop":
                 await browser.close()
-                print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'")
+                print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
                 await ctx.channel.send("Exiting...")
                 time.sleep(2)
                 await delete_last_message(ctx, msg)
@@ -149,7 +149,7 @@ async def waifu(ctx, *, start):
             await page.setViewport({'width': 1550, 'height': 1000})
             await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
             await page.goto('https://waifulabs.com/')
-            print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'")
+            print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
             await (await find_start_btn(page)).click()
 
             await wait_for_close_button(page)
@@ -174,7 +174,7 @@ async def waifu(ctx, *, start):
             await wait_for_result(page)
             await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
             await browser.close()
-            print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.")
+            print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', finished.\033[0;37;40m")
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
             await ctx.channel.send("Here you go! :slight_smile:")
             connected_users.remove(ctx.author.id)
