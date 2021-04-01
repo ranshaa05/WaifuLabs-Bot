@@ -17,13 +17,17 @@ connected_users = []
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
 
+@client.event
+async def on_ready():
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))   
+
 @client.command()
 async def waifu(ctx, *, start):
     msg = await ctx.channel.history().get(author=ctx.author)
     if msg.content != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         return
-dasf
+
     else:
         clicked_undo = False
         clicked_refresh = False
@@ -91,7 +95,6 @@ dasf
                 connected_users.remove(ctx.author.id)
                 await ctx.channel.send("Timed out! Stopping...")
                 time.sleep(3)
-                await delete_last_message(ctx, msg)
                 print("\033[1;37;40mEvent: \033[93mTimed out, Browser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
             
 
@@ -163,7 +166,7 @@ dasf
             
             for i in range(0,3):
                 
-                await askposclick(page, browser, clicked_undo, clicked_refresh)
+                await askposclick(page, browser, clicked_undo, clicked_refresh)         #timeout returns here
                 await delete_last_message(ctx, msg)
                 await wait_for_all_girls(page)
                 await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
@@ -218,8 +221,6 @@ async def wait_for_final_image(page):
         time.sleep(0.01)
 
 async def save_screenshot_send(page, ctx):
-    import re
-    
     await wait_for_not_load_screen(page)
     filename = os.listdir(screenshot_path)
     last_grid_number = (filename[-1])[-5]           #get last grid number
