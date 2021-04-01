@@ -44,12 +44,15 @@ async def waifu(ctx, *, start):
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
                 msg = msg.content
-                if msg != "keep" and msg != "refresh" and msg != "undo":
+                if msg != "keep" and msg != "refresh" and msg != "undo" and msg != "exit" and msg != "stop":
                     x = int(msg[0]) - 1
                     y = int(msg[3]) - 1
                     pos = x + 4 * y
-                    girls = await find_all_girls(page)
-                    await girls[pos].click()
+                    if not page.isClosed():
+                        girls = await find_all_girls(page)
+                        await girls[pos].click()
+                    else:
+                        return
                 
                 elif msg == "keep":
                     await ((await page.querySelectorAll(".keep-button"))[0]).click()
@@ -78,7 +81,16 @@ async def waifu(ctx, *, start):
                 elif clicked_refresh == True and msg == "undo":
                         await ctx.channel.send("You can't undo after a refresh!")
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
-                        
+
+                elif msg == "exit" or msg == "stop":
+                    await page.close()
+                    await browser.close()
+                    print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
+                    await ctx.channel.send("Exiting...")
+                    time.sleep(2)
+                    connected_users.remove(ctx.author.id)
+
+
                 else:
                     await ((await page.querySelectorAll(".refresh-button"))[0]).click()
                     clicked_refresh = True
@@ -91,6 +103,7 @@ async def waifu(ctx, *, start):
                     
 
             except asyncio.TimeoutError:                        #if a user leaves the bot hanging and another user starts it and the first one is timed out, it'll delete the second user's messages
+                await page.close()
                 await browser.close()
                 connected_users.remove(ctx.author.id)
                 await ctx.channel.send("Timed out! Stopping...")
@@ -110,14 +123,7 @@ async def waifu(ctx, *, start):
             if msg.startswith('$waifu'):
                 return False
 
-            if msg == "exit" or msg == "stop":
-                await browser.close()
-                print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-                await ctx.channel.send("Exiting...")
-                time.sleep(2)
-                await delete_last_message(ctx, msg)
-                connected_users.remove(ctx.author.id)
-                return False
+            
 
             if (msg == "undo" or msg == "keep") and len(await page.querySelectorAll(".keep-button")) < 1:
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
@@ -165,12 +171,15 @@ async def waifu(ctx, *, start):
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             
             for i in range(0,3):
-                
-                await askposclick(page, browser, clicked_undo, clicked_refresh)         #timeout returns here
+                await askposclick(page, browser, clicked_undo, clicked_refresh)         #timeout & 'exit' return here
                 await delete_last_message(ctx, msg)
-                await wait_for_all_girls(page)
-                await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                await save_screenshot_send(page, ctx)
+                if not page.isClosed():
+                    await wait_for_all_girls(page)
+                    await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+                    await save_screenshot_send(page, ctx)
+                else:
+                    return
+               
 
             await askposclick(page, browser, clicked_undo, clicked_refresh)
             await delete_last_message(ctx, msg)
@@ -231,7 +240,7 @@ async def save_screenshot_send(page, ctx):
 
     else:
         for i in range(8):
-            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite.
+            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 8 grids in the folder.
 
             if int(last_grid_number) == "0":
                 return
