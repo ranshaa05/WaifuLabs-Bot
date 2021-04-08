@@ -1,5 +1,6 @@
+#! python3
+
 from pyppeteer import launch
-import appdirs
 import os
 import asyncio
 import time
@@ -9,14 +10,12 @@ from discord.ext import commands
 
 screenshot_path = os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots"
 
-os.environ['PYPPETEER_HOME'] = appdirs.user_data_dir("pyppeteer")
-
 secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
 
 connected_users = []
 msg_id = []
 
-client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all())
+client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
 
 @client.event
 async def on_ready():
@@ -27,7 +26,7 @@ async def waifu(ctx, *, start):
     msg = await ctx.channel.history().get(author=ctx.author)
     msg_binder = {}
     
-    if msg.content != "$waifu start":
+    if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         await list_last_msg_id(ctx, msg_id, msg_binder)
         time.sleep(5)
@@ -51,7 +50,7 @@ async def waifu(ctx, *, start):
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
                 msg = msg.content
-                if msg != "keep" and msg != "refresh" and msg != "undo" and msg != "exit" and msg != "stop":
+                if msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "undo" and msg.lower() != "exit" and msg.lower() != "stop":
                     x = int(msg[0]) - 1
                     y = int(msg[3]) - 1
                     pos = x + 4 * y
@@ -61,15 +60,14 @@ async def waifu(ctx, *, start):
                     else:
                         return
                 
-                elif msg == "keep":
+                elif msg.lower() == "keep":
                     await ((await page.querySelectorAll(".keep-button"))[0]).click()
                 
-                elif clicked_refresh == False and clicked_undo == False and msg == "undo":
+                elif clicked_refresh == False and clicked_undo == False and msg.lower() == "undo":
                     await ((await page.querySelectorAll(".undo-button"))[0]).click()
                     clicked_undo = True
                     await delete_messages(ctx, msg, msg_id, msg_binder)
                     await ctx.channel.send("Undoing...")
-                    await list_last_msg_id(ctx, msg_id, msg_binder)
                     await wait_for_all_girls(page)
                     msg = await ctx.channel.history().get(author=client.user)
                     await msg.delete(delay=2)
@@ -84,16 +82,16 @@ async def waifu(ctx, *, start):
                     clicked_undo = False
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     
-                elif clicked_undo == True and msg == "undo":
+                elif clicked_undo == True and msg.lower() == "undo":
                         await ctx.channel.send("You can only undo once!")
                         await list_last_msg_id(ctx, msg_id, msg_binder)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
-                elif clicked_refresh == True and msg == "undo":
+                elif clicked_refresh == True and msg.lower() == "undo":
                         await ctx.channel.send("You can't undo after a refresh!")
                         await list_last_msg_id(ctx, msg_id, msg_binder)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
 
-                elif msg == "exit" or msg == "stop":
+                elif msg.lower() == "exit" or msg.lower() == "stop":
                     await ctx.channel.send("Exiting...")
                     await page.close()
                     await browser.close()
@@ -133,19 +131,19 @@ async def waifu(ctx, *, start):
             
             msg = msg.content
 
-            if msg == "$waifu start":
+            if msg.lower() == "$waifu start":
                 return False
 
             if msg.startswith('$waifu'):
                 return False
 
             
-            if (msg == "undo" or msg == "keep") and len(await page.querySelectorAll(".keep-button")) < 1:
+            if (msg.lower() == "undo" or msg.lower() == "keep") and len(await page.querySelectorAll(".keep-button")) < 1:
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
                 await list_last_msg_id(ctx, msg_id, msg_binder)
                 return False
             
-            if not msg.startswith('$waifu') and msg != "keep" and msg != "refresh" and msg != "exit" and msg != "stop" and msg != "undo":      #makes sure the user input is valid.
+            if not msg.startswith('$waifu') and msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "exit" and msg.lower() != "stop" and msg.lower() != "undo":      #makes sure the user input is valid.
                 try:
                     if not ((msg.find(", ") == 1 or msg.find(" ,")) == 1 and len(msg) == 4):
                         await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
@@ -188,7 +186,7 @@ async def waifu(ctx, *, start):
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id, msg_binder)
 
-            for i in range(0,3):
+            for i in range(3):
                 await askposclick(page, browser, clicked_undo, clicked_refresh)         #timeout & 'exit' return here
                 await delete_messages(ctx, msg, msg_id, msg_binder)
                 if not page.isClosed():
@@ -220,6 +218,11 @@ async def waifu(ctx, *, start):
 async def find_all_girls(page):
     return await page.querySelectorAll(".girl")
 
+async def wait_for_all_girls(page):
+    await wait_for_not_load_screen(page)
+    while len(await find_all_girls(page)) < 16 and len(await find_result(page)) < 1:
+        time.sleep(0.01)
+
 async def find_result(page):
     return await page.querySelectorAll(".my-girl-loaded")
     
@@ -229,10 +232,6 @@ async def wait_for_result(page):
         time.sleep(0.01)
 
 async def wait_for_all_girls(page):
-    await wait_for_not_load_screen(page)
-    while len(await find_all_girls(page)) < 16 and len(await find_result(page)) < 1:
-        time.sleep(0.01)
-
 async def find_start_btn(page):
     return await page.querySelector('.button.block.blue')
 
@@ -255,14 +254,14 @@ async def save_screenshot_send(page, ctx, msg_id, msg_binder):
     await wait_for_not_load_screen(page)
     filename = os.listdir(screenshot_path)
     last_grid_number = (filename[-1])[-5]           #get last grid number
-    if int(last_grid_number) < 10:
+    if int(last_grid_number) < 9:
         next_grid_number = str(int(last_grid_number) + 1)           #next grid number
         await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})
         await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
         await list_last_msg_id(ctx, msg_id, msg_binder)
         
     else:
-        for i in range(10):
+        for i in range(9):
             os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 8 grids in the folder.
 
             if int(last_grid_number) == "0":
@@ -288,5 +287,5 @@ async def delete_messages(ctx, msg, msg_id, msg_binder):
         return
 
 
-                          
+
 client.run(secret)
