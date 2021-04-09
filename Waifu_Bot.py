@@ -76,11 +76,15 @@ async def waifu(ctx, *, start):
                     await save_screenshot_send(page, ctx, msg_id, msg_binder)
                     await askposclick(page, browser, clicked_undo, clicked_refresh)
                     await delete_messages(ctx, msg, msg_id, msg_binder)
-                    await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                    await list_last_msg_id(ctx, msg_id, msg_binder)
-                    await save_screenshot_send(page, ctx, msg_id, msg_binder)
-                    clicked_undo = False
-                    return (await askposclick(page, browser, clicked_undo, clicked_refresh))
+                    if page.isClosed() == False:
+                        await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+                        await list_last_msg_id(ctx, msg_id, msg_binder)
+                        await save_screenshot_send(page, ctx, msg_id, msg_binder)
+                        clicked_undo = False
+                        return (await askposclick(page, browser, clicked_undo, clicked_refresh))
+                    else:
+                        return
+                    
                     
                 elif clicked_undo == True and msg.lower() == "undo":
                         await ctx.channel.send("You can only undo once!")
@@ -123,8 +127,8 @@ async def waifu(ctx, *, start):
                 time.sleep(2)
                 print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;31;40mTimed out.\033[0;37;40m")
 
-            
 
+            
         async def check(msg, page, browser):
             if not (msg.author == ctx.author and msg.channel == ctx.channel):
                 return False
@@ -186,8 +190,8 @@ async def waifu(ctx, *, start):
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id, msg_binder)
 
-            for i in range(3):
-                await askposclick(page, browser, clicked_undo, clicked_refresh)         #timeout & 'exit' return here
+            for i in range(3):                   #timeout & 'exit' return here
+                await askposclick(page, browser, clicked_undo, clicked_refresh)
                 await delete_messages(ctx, msg, msg_id, msg_binder)
                 if not page.isClosed():
                     await wait_for_all_girls(page)
@@ -231,7 +235,6 @@ async def wait_for_result(page):
     while len(await find_result(page)) < 1:
         time.sleep(0.01)
 
-async def wait_for_all_girls(page):
 async def find_start_btn(page):
     return await page.querySelector('.button.block.blue')
 
@@ -277,11 +280,14 @@ async def list_last_msg_id(ctx, msg_id, msg_binder):
 async def delete_messages(ctx, msg, msg_id, msg_binder):
     last_msg = await ctx.channel.history().get(author=client.user)
     try:
-        msg_binder[ctx.author.id] = last_msg.id
-        await client.http.delete_message(ctx.channel.id, msg_binder[ctx.author.id])
-        del msg_id[-1]
-        msg_binder[ctx.author.id] = msg_id[-1]
-        return await delete_messages(ctx, msg, msg_id, msg_binder)
+        if last_msg.id in msg_id:
+            msg_binder[ctx.author.id] = last_msg.id
+            await client.http.delete_message(ctx.channel.id, msg_binder[ctx.author.id])
+            del msg_id[-1]
+            msg_binder[ctx.author.id] = msg_id[-1]
+            return await delete_messages(ctx, msg, msg_id, msg_binder)
+        else:
+            return
 
     except IndexError:
         return
