@@ -265,7 +265,7 @@ async def save_screenshot_send(page, ctx, msg_id, msg_binder):
         
     else:
         for i in range(9):
-            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 8 grids in the folder.
+            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 9 grids in the folder.
 
             if int(last_grid_number) == "0":
                 return
