@@ -4,7 +4,6 @@ from pyppeteer import launch
 import os
 import asyncio
 import time
-from random import random
 import discord
 from discord.ext import commands
 
@@ -19,7 +18,7 @@ client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), c
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))   
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))
 
 @client.command()
 async def waifu(ctx, *, start):
@@ -52,7 +51,8 @@ async def waifu(ctx, *, start):
                 msg = msg.content
                 if msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "undo" and msg.lower() != "exit" and msg.lower() != "stop":
                     x = int(msg[0]) - 1
-                    y = int(msg[3]) - 1
+                    y = int(msg[3]) - 1      #1, 1 is top left
+                    y = 3 - y                #1, 1 is bottom left
                     pos = x + 4 * y
                     if not page.isClosed():
                         girls = await find_all_girls(page)
@@ -187,7 +187,7 @@ async def waifu(ctx, *, start):
             
             await wait_for_all_girls(page)
             await save_screenshot_send(page, ctx, msg_id, msg_binder)
-            await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the top left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
+            await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id, msg_binder)
 
             for i in range(3):                   #timeout & 'exit' return here
