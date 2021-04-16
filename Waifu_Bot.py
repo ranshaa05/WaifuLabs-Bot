@@ -11,8 +11,10 @@ screenshot_path = os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots"
 
 secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
 
+
 connected_users = []
 msg_id = []
+
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
 
@@ -23,7 +25,9 @@ async def on_ready():
 @client.command()
 async def waifu(ctx, *, start):
     msg = await ctx.channel.history().get(author=ctx.author)
+
     msg_binder = {}
+    no_grid_found = False
     
     if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
@@ -73,13 +77,13 @@ async def waifu(ctx, *, start):
                     await msg.delete(delay=2)
                     await ctx.channel.send("Okay! Here's the previous grid:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
                     await askposclick(page, browser, clicked_undo, clicked_refresh)
                     await delete_messages(ctx, msg_id, msg_binder)
                     if page.isClosed() == False:
                         await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                         await list_last_msg_id(ctx, msg_id)
-                        await save_screenshot_send(page, ctx, msg_id)
+                        await save_screenshot_send(page, ctx, msg_id, no_grid_found)
                         clicked_undo = False
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     else:
@@ -112,7 +116,7 @@ async def waifu(ctx, *, start):
                     await ctx.channel.send("Refreshing the grid...")
                     await list_last_msg_id(ctx, msg_id)
                     await wait_for_all_girls(page)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
                     await ctx.channel.send("Here you go :slight_smile:")
                     await list_last_msg_id(ctx, msg_id)
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -186,7 +190,7 @@ async def waifu(ctx, *, start):
             await (await find_close_button(page)).click()
             
             await wait_for_all_girls(page)
-            await save_screenshot_send(page, ctx, msg_id)
+            await save_screenshot_send(page, ctx, msg_id, no_grid_found)
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id)
 
@@ -197,7 +201,7 @@ async def waifu(ctx, *, start):
                     await wait_for_all_girls(page)
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
                 else:
                     return
                
@@ -253,23 +257,34 @@ async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
         time.sleep(0.01)
 
-async def save_screenshot_send(page, ctx, msg_id):
+async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     await wait_for_not_load_screen(page)
     filename = os.listdir(screenshot_path)
-    last_grid_number = (filename[-1])[-5]           #get last grid number
-    if int(last_grid_number) < 9:
-        next_grid_number = str(int(last_grid_number) + 1)           #next grid number
-        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})
-        await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
-        await list_last_msg_id(ctx, msg_id)
-        
-    else:
-        for i in range(9):
-            os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 9 grids in the folder.
+    if no_grid_found == False:
+        last_grid_number = (filename[-1])[-5]           #get last grid number
+    if no_grid_found == True:
+        last_grid_number = -1
 
-            if int(last_grid_number) == "0":
-                return
-        return (await save_screenshot_send(page, ctx, msg_id))
+    try:
+        if int(last_grid_number) < 9:
+            next_grid_number = str(int(last_grid_number) + 1)           #next grid number
+            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})
+            await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
+            await list_last_msg_id(ctx, msg_id)
+            
+        else:
+            for i in range(10):
+                try:
+                    os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 10 grids in the folder.
+                except PermissionError:
+                    pass
+            return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+        
+    except ValueError:
+        print("\033[1;37;40mEvent: No grid found, resetting grid number to 0\033[0;37;40m")
+        no_grid_found = True
+        return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+        
 
 
 async def list_last_msg_id(ctx, msg_id):
