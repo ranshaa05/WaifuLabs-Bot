@@ -260,11 +260,18 @@ async def wait_for_final_image(page):
 async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     await wait_for_not_load_screen(page)
     filename = os.listdir(screenshot_path)
-    if no_grid_found == False:
-        last_grid_number = (filename[-1])[-5]           #get last grid number
-    if no_grid_found == True:
-        last_grid_number = -1
-
+    try:
+        if no_grid_found == False:
+            last_grid_number = (filename[-1])[-5]           #get last grid number
+        if no_grid_found == True:
+            last_grid_number = -1
+    except IndexError:
+        print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
+        os.mkdir(screenshot_path + "\\end_results")
+        f = open(screenshot_path +"\\end_results\\.gitignore", "w")
+        f.write("*\n!.gitignore")
+        return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+    
     try:
         if int(last_grid_number) < 9:
             next_grid_number = str(int(last_grid_number) + 1)           #next grid number
@@ -284,6 +291,7 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         print("\033[1;37;40mEvent: No grid found, resetting grid number to 0\033[0;37;40m")
         no_grid_found = True
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+    
         
 
 
