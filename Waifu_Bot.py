@@ -270,6 +270,7 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         os.mkdir(screenshot_path + "\\end_results")
         f = open(screenshot_path +"\\end_results\\.gitignore", "w")
         f.write("*\n!.gitignore")
+        f.close()
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
     try:
