@@ -263,8 +263,10 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     try:
         if no_grid_found == False:
             last_grid_number = (filename[-1])[-5]           #get last grid number
-        if no_grid_found == True:
+        else:
             last_grid_number = -1
+        if "end_results" not in filename:
+            raise IndexError
     except IndexError:
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
@@ -274,14 +276,14 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
     try:
-        if int(last_grid_number) < 9:
-            next_grid_number = str(int(last_grid_number) + 1)           #next grid number
-            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})
+        if len(filename) - 2 < 9:
+            next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
+            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})      #save it
             await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
             await list_last_msg_id(ctx, msg_id)
             
         else:
-            for i in range(10):
+            for i in range(len(filename) - 1):
                 try:
                     os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 10 grids in the folder.
                 except PermissionError:
@@ -289,7 +291,7 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
             return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
         
     except ValueError:
-        print("\033[1;37;40mEvent: No grid found, resetting grid number to 0\033[0;37;40m")
+        print("\033[1;37;40mEvent: Grid number exceeds 9 OR no grid found, resetting next grid number to 0\033[0;37;40m")
         no_grid_found = True
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
