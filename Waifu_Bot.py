@@ -216,10 +216,14 @@ async def waifu(ctx, *, start):
             await ctx.channel.send("Here's your waifu! Thanks for playing :slight_smile:")
             connected_users.remove(ctx.author.id)
 
-        
+
         await main()
 
-
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+        return
+    raise error
 
 #all functions
 
