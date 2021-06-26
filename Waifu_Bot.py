@@ -3,7 +3,8 @@
 from pyppeteer import launch
 import os
 import asyncio
-import time
+from time import sleep
+from re import search
 import discord
 from discord.ext import commands
 
@@ -32,7 +33,7 @@ async def waifu(ctx, *, start):
     if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         await list_last_msg_id(ctx, msg_id)
-        time.sleep(5)
+        sleep(5)
         await delete_messages(ctx, msg_id, msg_binder)     #probably not the best way to delete this
 
 
@@ -55,7 +56,7 @@ async def waifu(ctx, *, start):
                 msg = msg.content
                 if msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "undo" and msg.lower() != "exit" and msg.lower() != "stop":
                     x = int(msg[0]) - 1
-                    y = int(msg[3]) - 1      #1, 1 is top left
+                    y = int(msg[-1]) - 1      #1, 1 is top left
                     y = 3 - y                #1, 1 is bottom left
                     pos = x + 4 * y
                     if not page.isClosed():
@@ -105,7 +106,7 @@ async def waifu(ctx, *, start):
                     await browser.close()
                     print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
                     await list_last_msg_id(ctx, msg_id)
-                    time.sleep(2)
+                    sleep(2)
                     connected_users.remove(ctx.author.id)
 
 
@@ -128,7 +129,7 @@ async def waifu(ctx, *, start):
                 await page.close()
                 await browser.close()
                 connected_users.remove(ctx.author.id)
-                time.sleep(2)
+                sleep(2)
                 print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;31;40mTimed out.\033[0;37;40m")
 
 
@@ -151,14 +152,15 @@ async def waifu(ctx, *, start):
                 await list_last_msg_id(ctx, msg_id)
                 return False
             
-            if not msg.startswith('$waifu') and msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "exit" and msg.lower() != "stop" and msg.lower() != "undo":      #makes sure the user input is valid.
+
+            if not msg.startswith('$waifu') and msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "exit" and msg.lower() != "stop" and msg.lower() != "undo":      #makes sure the input isn't a command.
                 try:
-                    if not ((msg.find(", ") == 1 or msg.find(" ,")) == 1 and len(msg) == 4):
+                    if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                         await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
                         await list_last_msg_id(ctx, msg_id)
                         return False
                     
-                    if not (0 < int(msg[0]) < 5 and 0 < int(msg[3]) < 5):
+                    if not (0 < int(msg[0]) < 5 and 0 < int(msg[-1]) < 5):
                         await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
                         await list_last_msg_id(ctx, msg_id)
                         return False
@@ -186,7 +188,7 @@ async def waifu(ctx, *, start):
             await (await find_start_btn(page)).click()
 
             await wait_for_close_button(page)
-            time.sleep(1)                              #executing these too quickly fails sometimes.
+            sleep(1)                              #executing these too quickly fails sometimes.
             await (await find_close_button(page)).click()
             
             await wait_for_all_girls(page)
@@ -233,7 +235,7 @@ async def find_all_girls(page):
 async def wait_for_all_girls(page):
     await wait_for_not_load_screen(page)
     while len(await find_all_girls(page)) < 16 and len(await find_result(page)) < 1:
-        time.sleep(0.01)
+        sleep(0.01)
 
 async def find_result(page):
     return await page.querySelectorAll(".my-girl-loaded")
@@ -241,7 +243,7 @@ async def find_result(page):
 async def wait_for_result(page):
     await wait_for_not_load_screen(page)
     while len(await find_result(page)) < 1:
-        time.sleep(0.01)
+        sleep(0.01)
 
 async def find_start_btn(page):
     return await page.querySelector('.button.block.blue')
@@ -251,15 +253,15 @@ async def find_close_button(page):
 
 async def wait_for_close_button(page):
     while not await find_close_button(page):
-        time.sleep(0.01)
+        sleep(0.01)
 
 async def wait_for_not_load_screen(page):
     while len(await page.querySelectorAll(".bp3-spinner-head")) > 0:
-        time.sleep(0.01)
+        sleep(0.01)
 
 async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
-        time.sleep(0.01)
+        sleep(0.01)
 
 async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     await wait_for_not_load_screen(page)
