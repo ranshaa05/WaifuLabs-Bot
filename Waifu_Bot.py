@@ -24,7 +24,7 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))
 
 @client.command()
-async def waifu(ctx, *, start):
+async def waifu(ctx):
     msg = await ctx.channel.history().get(author=ctx.author)
 
     msg_binder = {}
@@ -32,9 +32,9 @@ async def waifu(ctx, *, start):
     
     if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
-        await list_last_msg_id(ctx, msg_id)
+        wrong_command_message = await ctx.channel.history().get(author=client.user)
         sleep(5)
-        await delete_messages(ctx, msg_id, msg_binder)     #probably not the best way to delete this
+        await client.http.delete_message(ctx.channel.id, wrong_command_message.id)     #probably not the best way to delete this
 
 
     else:
@@ -54,7 +54,7 @@ async def waifu(ctx, *, start):
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
                 msg = msg.content
-                if msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "undo" and msg.lower() != "exit" and msg.lower() != "stop":
+                if not search("keep|refresh|exit|stop|undo", msg.lower()):
                     x = int(msg[0]) - 1
                     y = int(msg[-1]) - 1      #1, 1 is top left
                     y = 3 - y                #1, 1 is bottom left
@@ -143,17 +143,17 @@ async def waifu(ctx, *, start):
             if msg.lower() == "$waifu start":
                 return False
 
-            if msg.startswith('$waifu'):
+            if msg.lower().startswith('$waifu'):
                 return False
 
             
-            if (msg.lower() == "undo" or msg.lower() == "keep") and len(await page.querySelectorAll(".keep-button")) < 1:
+            if search("keep|undo", msg.lower()) and len(await page.querySelectorAll(".keep-button")) < 1:
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
                 await list_last_msg_id(ctx, msg_id)
                 return False
             
-
-            if not msg.startswith('$waifu') and msg.lower() != "keep" and msg.lower() != "refresh" and msg.lower() != "exit" and msg.lower() != "stop" and msg.lower() != "undo":      #makes sure the input isn't a command.
+            
+            if not search("\$waifu|keep|refresh|exit|stop|undo", msg.lower()):      #makes sure the input isn't a command.
                 try:
                     if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                         await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
