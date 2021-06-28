@@ -64,10 +64,10 @@ async def waifu(ctx):
                         return
                 
                 elif msg.lower() == "keep":
-                    await ((await page.querySelectorAll(".keep-button"))[0]).click()
+                    await (await page.querySelector(".keep-button")).click()
                 
                 elif clicked_refresh == False and clicked_undo == False and msg.lower() == "undo":
-                    await ((await page.querySelectorAll(".undo-button"))[0]).click()
+                    await (await page.querySelector(".undo-button")).click()
                     clicked_undo = True
                     await delete_messages(ctx, msg_id, msg_binder)
                     await ctx.channel.send("Undoing...")
@@ -104,12 +104,11 @@ async def waifu(ctx):
                     await browser.close()
                     print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
                     await list_last_msg_id(ctx, msg_id)
-                    sleep(2)
                     connected_users.remove(ctx.author.id)
-
+                    sleep(2)
 
                 else:
-                    await ((await page.querySelectorAll(".refresh-button"))[0]).click()
+                    await (await page.querySelector(".refresh-button")).click()
                     clicked_refresh = True
                     await delete_messages(ctx, msg_id, msg_binder)
                     await ctx.channel.send("Refreshing the grid...")
@@ -119,7 +118,7 @@ async def waifu(ctx):
                     await ctx.channel.send("Here you go :slight_smile:")
                     await list_last_msg_id(ctx, msg_id)
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
-                    
+
 
             except asyncio.TimeoutError:
                 await ctx.channel.send("Timed out! Stopping...")
@@ -152,7 +151,7 @@ async def waifu(ctx):
             
             
             if not search("\$waifu|keep|refresh|exit|stop|undo", msg.lower()):      #makes sure the input isn't a command.
-                if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
+                if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or (search("\d,\d", msg) and len(msg) >=4) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
                     await list_last_msg_id(ctx, msg_id)
                     return False
@@ -161,8 +160,6 @@ async def waifu(ctx):
                     await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
                     await list_last_msg_id(ctx, msg_id)
                     return False
-
-                
 
             return True
                 
@@ -182,7 +179,7 @@ async def waifu(ctx):
             await (await find_start_btn(page)).click()
 
             await wait_for_close_button(page)
-            sleep(1)                              #executing these too quickly fails sometimes.
+            sleep(0.3)                              #executing these too quickly fails sometimes.
             await (await find_close_button(page)).click()
             
             await wait_for_all_girls(page)
@@ -201,7 +198,6 @@ async def waifu(ctx):
                 else:
                     return
                
-
             await askposclick(page, browser, clicked_undo, clicked_refresh)
             await delete_messages(ctx, msg_id, msg_binder)
             await wait_for_result(page)
@@ -211,7 +207,6 @@ async def waifu(ctx):
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
             await ctx.channel.send("Here's your waifu! Thanks for playing :slight_smile:")
             connected_users.remove(ctx.author.id)
-
 
         await main()
 
@@ -285,7 +280,7 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         else:
             for i in range(len(filename) - 1):
                 try:
-                    os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once, this might cause an overwrite, as there's a maximum of 10 grids in the folder.
+                    os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once (10 or more at the exact same time), this might cause an overwrite, as there's a maximum of 10 grids in the folder.
                 except PermissionError:
                     pass
             return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
@@ -296,8 +291,6 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
         
-
-
 async def list_last_msg_id(ctx, msg_id):
     last_msg = await ctx.channel.history().get(author=client.user)
     msg_id.append(last_msg.id)
