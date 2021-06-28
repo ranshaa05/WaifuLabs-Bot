@@ -26,10 +26,8 @@ async def on_ready():
 @client.command()
 async def waifu(ctx):
     msg = await ctx.channel.history().get(author=ctx.author)
-
     msg_binder = {}
     no_grid_found = False
-    
     if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         wrong_command_message = await ctx.channel.history().get(author=client.user)
@@ -91,7 +89,7 @@ async def waifu(ctx):
                         return
                     
                     
-                elif clicked_undo == True and msg.lower() == "undo":
+                elif clicked_undo == True and clicked_refresh == False and msg.lower() == "undo":
                         await ctx.channel.send("You can only undo once!")
                         await list_last_msg_id(ctx, msg_id)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -154,21 +152,17 @@ async def waifu(ctx):
             
             
             if not search("\$waifu|keep|refresh|exit|stop|undo", msg.lower()):      #makes sure the input isn't a command.
-                try:
-                    if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
-                        await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'.")
-                        await list_last_msg_id(ctx, msg_id)
-                        return False
-                    
-                    if not (0 < int(msg[0]) < 5 and 0 < int(msg[-1]) < 5):
-                        await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
-                        await list_last_msg_id(ctx, msg_id)
-                        return False
-
-                except ValueError:
+                if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
                     await list_last_msg_id(ctx, msg_id)
                     return False
+
+                if not (0 < int(msg[0]) < 5 and 0 < int(msg[-1]) < 5):
+                    await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
+                    await list_last_msg_id(ctx, msg_id)
+                    return False
+
+                
 
             return True
                 
