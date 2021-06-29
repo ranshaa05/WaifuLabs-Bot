@@ -52,7 +52,7 @@ async def waifu(ctx):
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
                 msg = msg.content
-                if not search("keep|refresh|exit|stop|undo", msg.lower()):
+                if not search("^(keep|refresh|exit|stop|undo)$", msg.lower()):
                     x = int(msg[0]) - 1
                     y = int(msg[-1]) - 1      #1, 1 is top left
                     y = 3 - y                #1, 1 is bottom left
@@ -144,13 +144,13 @@ async def waifu(ctx):
                 return False
 
             
-            if search("keep|undo", msg.lower()) and len(await page.querySelectorAll(".keep-button")) < 1:
+            if search("^(keep|undo)$", msg.lower()) and len(await page.querySelectorAll(".keep-button")) < 1:
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
                 await list_last_msg_id(ctx, msg_id)
                 return False
             
             
-            if not search("\$waifu|keep|refresh|exit|stop|undo", msg.lower()):      #makes sure the input isn't a command.
+            if not search("^(keep|refresh|exit|stop|undo)$", msg.lower()):      #makes sure the input isn't a command.
                 if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or (search("\d,\d", msg) and len(msg) >=4) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
                     await list_last_msg_id(ctx, msg_id)
@@ -172,7 +172,7 @@ async def waifu(ctx):
             page = await browser.newPage()
             
             await page.setViewport({'width': 1550, 'height': 1000})
-            await ctx.channel.send(f"Hello! I am WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
+            await ctx.channel.send(f"Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
             await list_last_msg_id(ctx, msg_id)
             await page.goto('https://waifulabs.com/')
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
