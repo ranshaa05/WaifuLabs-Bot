@@ -8,7 +8,7 @@ from re import search
 import discord
 from discord.ext import commands
 
-screenshot_path = os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots"
+screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
 secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
 
@@ -30,9 +30,9 @@ async def waifu(ctx):
     no_grid_found = False
     if msg.content.lower() != "$waifu start":
         await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
-        wrong_command_message = await ctx.channel.history().get(author=client.user)
+        wrong_command_message = (await ctx.channel.history().get(author=client.user)).id
         sleep(5)
-        await client.http.delete_message(ctx.channel.id, wrong_command_message.id)     #probably not the best way to delete this
+        await client.http.delete_message(ctx.channel.id, wrong_command_message)     #probably not the best way to delete this
 
 
     else:
@@ -122,12 +122,13 @@ async def waifu(ctx):
 
             except asyncio.TimeoutError:
                 await ctx.channel.send("Timed out! Stopping...")
-                await list_last_msg_id(ctx, msg_id)
                 await page.close()
                 await browser.close()
+                print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;31;40mTimed out.\033[0;37;40m")
+                await list_last_msg_id(ctx, msg_id)
                 connected_users.remove(ctx.author.id)
                 sleep(2)
-                print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;31;40mTimed out.\033[0;37;40m")
+                
 
 
             
@@ -165,10 +166,7 @@ async def waifu(ctx):
                 
 
         async def main():
-            browser = await launch(
-                headless=True,
-                autoClose=False
-            )
+            browser = await launch(headless=True, autoClose=False)
             page = await browser.newPage()
             
             await page.setViewport({'width': 1550, 'height': 1000})
