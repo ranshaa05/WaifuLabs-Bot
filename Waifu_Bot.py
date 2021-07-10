@@ -29,10 +29,9 @@ async def waifu(ctx):
     msg_binder = {}
     no_grid_found = False
     if msg.content.lower() != "$waifu start":
-        await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
-        wrong_command_message = (await ctx.channel.history().get(author=client.user)).id
+        wrong_command_message = await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         sleep(5)
-        await client.http.delete_message(ctx.channel.id, wrong_command_message)     #probably not the best way to delete this
+        await wrong_command_message.delete()
 
 
     else:
@@ -256,13 +255,13 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
         os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
 
-    filename = os.listdir(screenshot_path)
+    filenames_in_screenshot_path = os.listdir(screenshot_path)
     try:
         if no_grid_found == False:
-            last_grid_number = (filename[-1])[-5]           #get last grid number
+            last_grid_number = (filenames_in_screenshot_path[-1])[-5]           #get last grid number
         else:
             last_grid_number = -1
-        if "end_results" not in filename:
+        if "end_results" not in filenames_in_screenshot_path:
             raise IndexError
     except IndexError:
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
@@ -273,16 +272,16 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
     try:
-        if len(filename) - 2 < 9:
+        if len(filenames_in_screenshot_path) - 2 < 9:
             next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
             await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})      #save it
             await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
             await list_last_msg_id(ctx, msg_id)
             
         else:
-            for i in range(len(filename) - 1):
+            for i in range(len(filenames_in_screenshot_path) - 1):
                 try:
-                    os.remove(screenshot_path + '\\' + str(os.listdir(screenshot_path)[-1]))            #if *too* many users use the bot at once (10 or more at the exact same time), this might cause an overwrite, as there's a maximum of 10 grids in the folder.
+                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-1])      #if *too* many users use the bot at once (10 or more at the exact same time), this might cause an overwrite, as there's a maximum of 10 grids in the folder.
                 except PermissionError:
                     pass
             return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
@@ -312,7 +311,6 @@ async def delete_messages(ctx, msg_id, msg_binder):
 
     except IndexError:
         return
-
 
 
 client.run(secret)
