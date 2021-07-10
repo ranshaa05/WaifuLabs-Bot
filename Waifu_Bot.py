@@ -39,7 +39,7 @@ async def waifu(ctx):
         clicked_undo = False
         clicked_refresh = False
         if ctx.author.id in connected_users:
-            await ctx.channel.send("Whoops! One user cannot start me twice. You can try again or type 'exit' to exit.")
+            await ctx.channel.send("Whoops! One user cannot start me twice. You can continue or type 'exit' to exit.")
             await list_last_msg_id(ctx, msg_id)
             return
 
@@ -252,6 +252,10 @@ async def wait_for_final_image(page):
 
 async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     await wait_for_not_load_screen(page)
+    if "screenshots" not in os.listdir(os.path.dirname(__file__)):
+        print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
+        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
+
     filename = os.listdir(screenshot_path)
     try:
         if no_grid_found == False:
