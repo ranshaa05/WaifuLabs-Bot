@@ -258,7 +258,7 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
     filenames_in_screenshot_path = os.listdir(screenshot_path)
     try:
         if no_grid_found == False:
-            last_grid_number = (filenames_in_screenshot_path[-1])[-5]           #get last grid number
+            last_grid_number = (filenames_in_screenshot_path[-1])[:-4]           #get last grid number
         else:
             last_grid_number = -1
         if "end_results" not in filenames_in_screenshot_path:
@@ -272,22 +272,22 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
     try:
-        if len(filenames_in_screenshot_path) - 2 < 9:
+        if len(filenames_in_screenshot_path) - 2 < 100:
             next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
-            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\grid' + next_grid_number + '.png'})      #save it
-            await ctx.channel.send(file=discord.File(screenshot_path + '\\grid' + next_grid_number + '.png'))
+            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
+            await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
+            os.remove(screenshot_path + '\\' + next_grid_number + '.png')
             await list_last_msg_id(ctx, msg_id)
             
         else:
             for i in range(len(filenames_in_screenshot_path) - 1):
                 try:
-                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-1])      #if *too* many users use the bot at once (10 or more at the exact same time), this might cause an overwrite, as there's a maximum of 10 grids in the folder.
+                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-1])
                 except PermissionError:
                     pass
             return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
         
     except ValueError:
-        print("\033[1;37;40mEvent: Grid number exceeds 9 OR no grid found, resetting next grid number to 0\033[0;37;40m")
         no_grid_found = True
         return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
     
