@@ -271,6 +271,7 @@ async def save_screenshot_send(page, ctx, msg_id):
         return (await save_screenshot_send(page, ctx, msg_id))
     
     try:
+        print(len(filenames_in_screenshot_path) - 2)
         if len(filenames_in_screenshot_path) - 2 < 100:
             next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
             await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
@@ -279,9 +280,9 @@ async def save_screenshot_send(page, ctx, msg_id):
             await list_last_msg_id(ctx, msg_id)
             
         else:
-            for i in range(len(filenames_in_screenshot_path) - 1):
+            for i in range(len(filenames_in_screenshot_path) - 1):                  #doesn't actually work rn
                 try:
-                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-1])
+                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-2])
                 except PermissionError:
                     pass
             return (await save_screenshot_send(page, ctx, msg_id))
