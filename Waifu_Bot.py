@@ -256,9 +256,13 @@ async def save_screenshot_send(page, ctx, msg_id):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
         os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
         
-    filenames_in_screenshot_path = os.listdir(screenshot_path)
+    filenames_in_screenshot_path = os.listdir(screenshot_path)           #lists in alphabetical order
+    max_number_of_files = 1000
     try:
-        last_grid_number = (filenames_in_screenshot_path[-2])[:-4]           #get last grid number
+        last_grid_number = (filenames_in_screenshot_path[-2])[:-4]           #get last grid number #index -2 because there's one file that needs to be kept
+        last_grid_number = int(last_grid_number)
+        last_grid_number %= max_number_of_files
+        last_grid_number = str(last_grid_number)
     except IndexError:
         last_grid_number = -1
 
@@ -271,22 +275,12 @@ async def save_screenshot_send(page, ctx, msg_id):
         return (await save_screenshot_send(page, ctx, msg_id))
     
     try:
-        print(len(filenames_in_screenshot_path) - 2)
-        if len(filenames_in_screenshot_path) - 2 < 100:
-            next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
-            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
-            await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
-            os.remove(screenshot_path + '\\' + next_grid_number + '.png')
-            await list_last_msg_id(ctx, msg_id)
-            
-        else:
-            for i in range(len(filenames_in_screenshot_path) - 1):                  #doesn't actually work rn
-                try:
-                    os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-2])
-                except PermissionError:
-                    pass
-            return (await save_screenshot_send(page, ctx, msg_id))
-        
+        next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
+        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
+        await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
+        os.remove(screenshot_path + '\\' + next_grid_number + '.png')
+        await list_last_msg_id(ctx, msg_id)
+
     except ValueError:
         return (await save_screenshot_send(page, ctx, msg_id))
     
