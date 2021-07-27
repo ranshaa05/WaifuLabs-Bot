@@ -275,7 +275,7 @@ async def save_screenshot_send(page, ctx, msg_id):
         return (await save_screenshot_send(page, ctx, msg_id))
     
     try:
-        next_grid_number = str(int(last_grid_number) + 1)           #get next grid number
+        next_grid_number = str((int(last_grid_number) + 1) % max_number_of_files)           #get next grid number
         await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
         await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
         os.remove(screenshot_path + '\\' + next_grid_number + '.png')
