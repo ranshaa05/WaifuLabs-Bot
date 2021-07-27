@@ -27,7 +27,7 @@ async def on_ready():
 async def waifu(ctx):
     msg = await ctx.channel.history().get(author=ctx.author)
     msg_binder = {}
-    no_grid_found = False
+
     if msg.content.lower() != "$waifu start":
         wrong_command_message = await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         sleep(5)
@@ -75,13 +75,13 @@ async def waifu(ctx):
                     await msg.delete(delay=2)
                     await ctx.channel.send("Okay! Here's the previous grid:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
+                    await save_screenshot_send(page, ctx, msg_id)
                     await askposclick(page, browser, clicked_undo, clicked_refresh)
                     await delete_messages(ctx, msg_id, msg_binder)
                     if page.isClosed() == False:
                         await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                         await list_last_msg_id(ctx, msg_id)
-                        await save_screenshot_send(page, ctx, msg_id, no_grid_found)
+                        await save_screenshot_send(page, ctx, msg_id)
                         clicked_undo = False
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     else:
@@ -113,7 +113,7 @@ async def waifu(ctx):
                     await ctx.channel.send("Refreshing the grid...")
                     await list_last_msg_id(ctx, msg_id)
                     await wait_for_all_girls(page)
-                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
+                    await save_screenshot_send(page, ctx, msg_id)
                     await ctx.channel.send("Here you go :slight_smile:")
                     await list_last_msg_id(ctx, msg_id)
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -180,7 +180,7 @@ async def waifu(ctx):
             await (await find_close_button(page)).click()
             
             await wait_for_all_girls(page)
-            await save_screenshot_send(page, ctx, msg_id, no_grid_found)
+            await save_screenshot_send(page, ctx, msg_id)
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id)
 
@@ -191,7 +191,7 @@ async def waifu(ctx):
                     await wait_for_all_girls(page)
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id, no_grid_found)
+                    await save_screenshot_send(page, ctx, msg_id)
                 else:
                     return
                
@@ -249,27 +249,26 @@ async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
         sleep(0.01)
 
-async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
+
+async def save_screenshot_send(page, ctx, msg_id):
     await wait_for_not_load_screen(page)
     if "screenshots" not in os.listdir(os.path.dirname(__file__)):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
         os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
-
+        
     filenames_in_screenshot_path = os.listdir(screenshot_path)
     try:
-        if no_grid_found == False:
-            last_grid_number = (filenames_in_screenshot_path[-1])[:-4]           #get last grid number
-        else:
-            last_grid_number = -1
-        if "end_results" not in filenames_in_screenshot_path:
-            raise IndexError
+        last_grid_number = (filenames_in_screenshot_path[-2])[:-4]           #get last grid number
     except IndexError:
+        last_grid_number = -1
+
+    if "end_results" not in filenames_in_screenshot_path:
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
         f = open(screenshot_path +"\\end_results\\.gitignore", "w")
         f.write("*\n!.gitignore")
         f.close()
-        return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+        return (await save_screenshot_send(page, ctx, msg_id))
     
     try:
         if len(filenames_in_screenshot_path) - 2 < 100:
@@ -285,11 +284,10 @@ async def save_screenshot_send(page, ctx, msg_id, no_grid_found):
                     os.remove(screenshot_path + '\\' + os.listdir(screenshot_path)[-1])
                 except PermissionError:
                     pass
-            return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+            return (await save_screenshot_send(page, ctx, msg_id))
         
     except ValueError:
-        no_grid_found = True
-        return (await save_screenshot_send(page, ctx, msg_id, no_grid_found))
+        return (await save_screenshot_send(page, ctx, msg_id))
     
         
 async def list_last_msg_id(ctx, msg_id):
