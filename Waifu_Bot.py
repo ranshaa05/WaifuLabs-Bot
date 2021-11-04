@@ -10,11 +10,13 @@ from discord.ext import commands
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
+secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7" + "nNQ.yxdeIV7PSXmM29Ie-7Srr0boQRE"
 
+print("Bot Online.")
 
 connected_users = []
 msg_id = []
+removed_screenshots = []
 
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
@@ -252,19 +254,19 @@ async def wait_for_final_image(page):
 
 async def save_screenshot_send(page, ctx, msg_id):
     await wait_for_not_load_screen(page)
-    if "screenshots" not in os.listdir(os.path.dirname(__file__)):
+    if "Screenshots" not in os.listdir(os.path.dirname(__file__)):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
-        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
+        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots")
         
     filenames_in_screenshot_path = os.listdir(screenshot_path)           #lists in alphabetical order
     max_number_of_files = 1000
     try:
-        last_grid_number = (filenames_in_screenshot_path[-2])[:-4]           #get last grid number #index -2 because there's one file that needs to be kept
-        last_grid_number = int(last_grid_number)
-        last_grid_number %= max_number_of_files
-        last_grid_number = str(last_grid_number)
+        last_removed_grid_number = os.path.basename(removed_screenshots[0])[:-4]           #get last grid number #index -2 because there's one file that needs to be kept
+        removed_screenshots.remove(removed_screenshots[0])
+        print("last grid nyumber = " + last_removed_grid_number)
+
     except IndexError:
-        last_grid_number = -1
+        last_removed_grid_number = -1
 
     if "end_results" not in filenames_in_screenshot_path:
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
@@ -273,18 +275,30 @@ async def save_screenshot_send(page, ctx, msg_id):
         f.write("*\n!.gitignore")
         f.close()
         return (await save_screenshot_send(page, ctx, msg_id))
-    
+
     try:
-        next_grid_number = str((int(last_grid_number) + 1) % max_number_of_files)           #get next grid number
-        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
-        await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
-        os.remove(screenshot_path + '\\' + next_grid_number + '.png')
-        await list_last_msg_id(ctx, msg_id)
+        if await number_of_files_in_screenshots() < max_number_of_files:
+            next_grid_number = str((int(last_removed_grid_number) + 1))           #get next grid number
+            print("next grid number = " + str(next_grid_number))
+            await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
+            await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
+            os.remove(screenshot_path + '\\' + next_grid_number + '.png')
+            removed_screenshots.append(screenshot_path + '\\' + next_grid_number + '.png')
+            await list_last_msg_id(ctx, msg_id)
+        else:
+            await ctx.channel.send("*Server is busy! your grid might take a while to be sent.*")
+            await list_last_msg_id(ctx, msg_id)
+            while await number_of_files_in_screenshots() >= max_number_of_files:
+                sleep(0.01)
+
+            return await save_screenshot_send(page, ctx, msg_id)                            #TODO: if the number of files in screenshots is reduced from 1000, it will replace the last file in the folder. maybe try a stack approach?
 
     except ValueError:
         return (await save_screenshot_send(page, ctx, msg_id))
     
-        
+async def number_of_files_in_screenshots():
+    return len(os.listdir(screenshot_path)) -2
+
 async def list_last_msg_id(ctx, msg_id):
     last_msg = await ctx.channel.history().get(author=client.user)
     msg_id.append(last_msg.id)
@@ -305,5 +319,6 @@ async def delete_messages(ctx, msg_id, msg_binder):
     except IndexError:
         return
 
+    
 
 client.run(secret)
