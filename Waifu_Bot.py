@@ -10,11 +10,12 @@ from discord.ext import commands
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "ODA5MDQ2NzY2MzEzOTMwNzYy" + ".YCPZhA.LYEmy2_D_w1xdWfwt3KjSddZYGc"
+secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7nNQ.41MyQOwes0jDbW9WJqW2o0EzX3I"
 
 
 connected_users = []
 msg_id = []
+
 
 
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
@@ -75,13 +76,13 @@ async def waifu(ctx):
                     await msg.delete(delay=2)
                     await ctx.channel.send("Okay! Here's the previous grid:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, msg_binder)
                     await askposclick(page, browser, clicked_undo, clicked_refresh)
                     await delete_messages(ctx, msg_id, msg_binder)
                     if page.isClosed() == False:
                         await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                         await list_last_msg_id(ctx, msg_id)
-                        await save_screenshot_send(page, ctx, msg_id)
+                        await save_screenshot_send(page, ctx, msg_id, msg_binder)
                         clicked_undo = False
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     else:
@@ -113,7 +114,7 @@ async def waifu(ctx):
                     await ctx.channel.send("Refreshing the grid...")
                     await list_last_msg_id(ctx, msg_id)
                     await wait_for_all_girls(page)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, msg_binder)
                     await ctx.channel.send("Here you go :slight_smile:")
                     await list_last_msg_id(ctx, msg_id)
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -180,7 +181,7 @@ async def waifu(ctx):
             await (await find_close_button(page)).click()
             
             await wait_for_all_girls(page)
-            await save_screenshot_send(page, ctx, msg_id)
+            await save_screenshot_send(page, ctx, msg_id, msg_binder)
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_id)
 
@@ -191,7 +192,7 @@ async def waifu(ctx):
                     await wait_for_all_girls(page)
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await list_last_msg_id(ctx, msg_id)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx, msg_id, msg_binder)
                 else:
                     return
                
@@ -249,32 +250,48 @@ async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
         sleep(0.01)
 
-
-async def save_screenshot_send(page, ctx, msg_id):
+max_number_of_files = 1003
+async def save_screenshot_send(page, ctx, msg_id, msg_binder):
     await wait_for_not_load_screen(page)
-    if "screenshots" not in os.listdir(os.path.dirname(__file__)):
+    if "Screenshots" not in os.listdir(os.path.dirname(__file__)):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
-        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\screenshots")
-        
-    filenames_in_screenshot_path = os.listdir(screenshot_path)           #lists in alphabetical order
-    max_number_of_files = 1000
-    try:
-        last_grid_number = (filenames_in_screenshot_path[-2])[:-4]           #get last grid number #index -2 because there's one file that needs to be kept
-        last_grid_number = int(last_grid_number)
-        last_grid_number %= max_number_of_files
-        last_grid_number = str(last_grid_number)
-    except IndexError:
-        last_grid_number = -1
+        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots")
 
+    filenames_in_screenshot_path = os.listdir(screenshot_path)
+        
     if "end_results" not in filenames_in_screenshot_path:
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
         f = open(screenshot_path +"\\end_results\\.gitignore", "w")
         f.write("*\n!.gitignore")
         f.close()
-        return (await save_screenshot_send(page, ctx, msg_id))
+        return (await save_screenshot_send(page, ctx, msg_id, msg_binder))
+
+    file_number = -1
+    for i in range(1001):
+        if os.path.isfile(screenshot_path + '\\' + str(i) + ".png"):    #checks and assigns the lowest file number available to next screenshot
+            file_number += 1
+        else:
+            file_number += 1
+            break
     
-    try:
+    if len(filenames_in_screenshot_path) < max_number_of_files:
+        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
+        await list_last_msg_id(ctx, msg_id)
+        os.remove(screenshot_path + '\\' + str(file_number) + '.png')
+    else:
+        await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
+        while len(filenames_in_screenshot_path) >= max_number_of_files:
+            sleep(0.01)
+            filenames_in_screenshot_path = os.listdir(screenshot_path)
+        return await save_screenshot_send(page, ctx, msg_id, msg_binder)
+        
+
+        
+        #TODO: save a screenshot, delete it, then next screenshot will check which is the first name it could use.
+    
+    """try:
         next_grid_number = str((int(last_grid_number) + 1) % max_number_of_files)           #get next grid number
         await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
         await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
@@ -282,7 +299,7 @@ async def save_screenshot_send(page, ctx, msg_id):
         await list_last_msg_id(ctx, msg_id)
 
     except ValueError:
-        return (await save_screenshot_send(page, ctx, msg_id))
+        return (await save_screenshot_send(page, ctx, msg_id, msg_binder))"""
     
         
 async def list_last_msg_id(ctx, msg_id):
