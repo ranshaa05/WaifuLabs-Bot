@@ -10,7 +10,7 @@ from discord.ext import commands
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7nNQ.41MyQOwes0jDbW9WJqW2o0EzX3I"
+secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7n" + "NQ.hKw0jtjSXoKFI4sL1CP715mZuUE"
 
 
 connected_users = []
@@ -250,25 +250,28 @@ async def wait_for_final_image(page):
     while len(await page.querySelectorAll(".product-image")) < 0:
         sleep(0.01)
 
-max_number_of_files = 1003
-async def save_screenshot_send(page, ctx, msg_id, msg_binder):
-    await wait_for_not_load_screen(page)
+def create_dirs():
     if "Screenshots" not in os.listdir(os.path.dirname(__file__)):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
         os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots")
-
-    filenames_in_screenshot_path = os.listdir(screenshot_path)
         
-    if "end_results" not in filenames_in_screenshot_path:
+    if "end_results" not in os.listdir(screenshot_path):
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
         f = open(screenshot_path +"\\end_results\\.gitignore", "w")
         f.write("*\n!.gitignore")
         f.close()
-        return (await save_screenshot_send(page, ctx, msg_id, msg_binder))
 
+        
+
+max_number_of_files = 1000 + 2
+async def save_screenshot_send(page, ctx, msg_id, msg_binder):
+    await wait_for_not_load_screen(page)
+    create_dirs()
+
+    filenames_in_screenshot_path = os.listdir(screenshot_path)
     file_number = -1
-    for i in range(1001):
+    for i in range(max_number_of_files - 1):
         if os.path.isfile(screenshot_path + '\\' + str(i) + ".png"):    #checks and assigns the lowest file number available to next screenshot
             file_number += 1
         else:
@@ -282,24 +285,12 @@ async def save_screenshot_send(page, ctx, msg_id, msg_binder):
         os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     else:
         await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
+        await list_last_msg_id(ctx, msg_id)
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
         return await save_screenshot_send(page, ctx, msg_id, msg_binder)
-        
 
-        
-        #TODO: save a screenshot, delete it, then next screenshot will check which is the first name it could use.
-    
-    """try:
-        next_grid_number = str((int(last_grid_number) + 1) % max_number_of_files)           #get next grid number
-        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + next_grid_number + '.png'})      #save the screenshot
-        await ctx.channel.send(file=discord.File(screenshot_path + '\\' + next_grid_number + '.png'))
-        os.remove(screenshot_path + '\\' + next_grid_number + '.png')
-        await list_last_msg_id(ctx, msg_id)
-
-    except ValueError:
-        return (await save_screenshot_send(page, ctx, msg_id, msg_binder))"""
     
         
 async def list_last_msg_id(ctx, msg_id):
