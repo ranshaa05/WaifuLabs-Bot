@@ -16,7 +16,7 @@ secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7n" + "NQ.hKw0jtjSXoKFI4sL1CP715mZuUE"
 
 msg_user_binder = {}
 connected_users = []
-msg_id = []
+
 
 
 
@@ -45,7 +45,7 @@ async def waifu(ctx):
         clicked_refresh = False
         if ctx.author.id in connected_users:
             await ctx.channel.send("Whoops! One user cannot start me twice. You can continue or type 'exit' to exit.")
-            await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+            await list_last_msg_id(ctx,  msg_user_binder, client)
             return
 
         else:
@@ -74,20 +74,20 @@ async def waifu(ctx):
                 elif clicked_refresh == False and clicked_undo == False and msg.lower() == "undo":
                     await (await page.querySelector(".undo-button")).click()
                     clicked_undo = True
-                    await delete_messages(ctx, msg_id, msg_user_binder, client)
+                    await delete_messages(ctx, msg_user_binder, client)
                     await ctx.channel.send("Undoing...")
                     await wait_for_all_girls(page)
                     msg = await ctx.channel.history().get(author=client.user)
                     await msg.delete(delay=2)
                     await ctx.channel.send("Okay! Here's the previous grid:")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
+                    await save_screenshot_send(page, ctx)
                     await askposclick(page, browser, clicked_undo, clicked_refresh)
-                    await delete_messages(ctx, msg_id, msg_user_binder, client)
+                    await delete_messages(ctx, msg_user_binder, client)
                     if page.isClosed() == False:
                         await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                        await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
-                        await save_screenshot_send(page, ctx, msg_id)
+                        await list_last_msg_id(ctx,  msg_user_binder, client)
+                        await save_screenshot_send(page, ctx)
                         clicked_undo = False
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                     else:
@@ -96,11 +96,11 @@ async def waifu(ctx):
                     
                 elif clicked_undo == True and clicked_refresh == False and msg.lower() == "undo":
                         await ctx.channel.send("You can only undo once!")
-                        await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                        await list_last_msg_id(ctx,  msg_user_binder, client)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
                 elif clicked_refresh == True and msg.lower() == "undo":
                         await ctx.channel.send("You can't undo after a refresh!")
-                        await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                        await list_last_msg_id(ctx,  msg_user_binder, client)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
 
                 elif msg.lower() == "exit" or msg.lower() == "stop":
@@ -108,20 +108,20 @@ async def waifu(ctx):
                     await page.close()
                     await browser.close()
                     print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
                     connected_users.remove(ctx.author.id)
                     sleep(2)
 
                 else:
                     await (await page.querySelector(".refresh-button")).click()
                     clicked_refresh = True
-                    await delete_messages(ctx, msg_id, msg_user_binder, client)
+                    await delete_messages(ctx, msg_user_binder, client)
                     await ctx.channel.send("Refreshing the grid...")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
                     await wait_for_all_girls(page)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await save_screenshot_send(page, ctx)
                     await ctx.channel.send("Here you go :slight_smile:")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
 
 
@@ -130,7 +130,7 @@ async def waifu(ctx):
                 await page.close()
                 await browser.close()
                 print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;31;40mTimed out.\033[0;37;40m")
-                await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                await list_last_msg_id(ctx,  msg_user_binder, client)
                 connected_users.remove(ctx.author.id)
                 sleep(2)
                 
@@ -147,7 +147,7 @@ async def waifu(ctx):
             if msg == "kill" and ctx.author.id == 521743580193357863:
                 await page.close()
                 await browser.close()
-                ctx.channel.send("Shutting down")
+                await ctx.channel.send("Shutting down")
                 exit(0)
             #########################################################
 
@@ -158,21 +158,21 @@ async def waifu(ctx):
                 return False
 
             
-            if search("^(keep|undo)$", msg.lower()) and len(await page.querySelectorAll(".keep-button")) < 1:
+            if search("^(keep|undo)$", msg.lower()) and not await page.querySelector(".keep-button"):
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
-                await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                await list_last_msg_id(ctx,  msg_user_binder, client)
                 return False
             
             
             if not search("^(keep|refresh|exit|stop|undo)$", msg.lower()):      #makes sure the input isn't a command.
-                if not search("\d, \d", msg) and not search("\d ,\d", msg) and not search("\d,\d", msg) or (search("\d,\d", msg) and len(msg) >=4) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
+                if not search("\d, \d|\d ,\d|\d,\d", msg) or (search("\d,\d", msg) and len(msg) >=4) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
                     await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
                     return False
 
                 if not (0 < int(msg[0]) < 5 and 0 < int(msg[-1]) < 5):
                     await ctx.channel.send("Numbers too big or small! Try something between 1 and 4 :slight_smile:")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
                     return False
 
             return True
@@ -185,7 +185,7 @@ async def waifu(ctx):
             
             await page.setViewport({'width': 1550, 'height': 1000})
             await ctx.channel.send(f"Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
-            await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+            await list_last_msg_id(ctx,  msg_user_binder, client)
             await page.goto('https://waifulabs.com/')
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
             await click_start_btn(page)
@@ -194,23 +194,23 @@ async def waifu(ctx):
             await click_close_button(page)
             
             await wait_for_all_girls(page)
-            await save_screenshot_send(page, ctx, msg_id)
+            await save_screenshot_send(page, ctx)
             await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
-            await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+            await list_last_msg_id(ctx,  msg_user_binder, client)
 
             for i in range(3):                   #timeout & 'exit' return here
                 await askposclick(page, browser, clicked_undo, clicked_refresh)
-                await delete_messages(ctx, msg_id, msg_user_binder, client)
+                await delete_messages(ctx, msg_user_binder, client)
                 if not page.isClosed():
                     await wait_for_all_girls(page)
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                    await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
-                    await save_screenshot_send(page, ctx, msg_id)
+                    await list_last_msg_id(ctx,  msg_user_binder, client)
+                    await save_screenshot_send(page, ctx)
                 else:
                     return
                
             await askposclick(page, browser, clicked_undo, clicked_refresh)
-            await delete_messages(ctx, msg_id, msg_user_binder, client)
+            await delete_messages(ctx, msg_user_binder, client)
             await wait_for_result(page)
             await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
             await browser.close()
@@ -244,7 +244,7 @@ def create_dirs():
         
 
 max_number_of_files = 1000 + 3
-async def save_screenshot_send(page, ctx, msg_id):
+async def save_screenshot_send(page, ctx):
     await wait_for_not_load_screen(page)
     create_dirs()
 
@@ -260,15 +260,15 @@ async def save_screenshot_send(page, ctx, msg_id):
     if len(filenames_in_screenshot_path) < max_number_of_files:
         await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
         await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
-        await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+        await list_last_msg_id(ctx,  msg_user_binder, client)
         os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     else:
         await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
-        await list_last_msg_id(ctx, msg_id,msg_user_binder, client)
+        await list_last_msg_id(ctx,  msg_user_binder, client)
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
-        return await save_screenshot_send(page, ctx, msg_id)
+        return await save_screenshot_send(page, ctx)
 
 
 client.run(secret)
