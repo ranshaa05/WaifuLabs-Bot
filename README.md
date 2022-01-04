@@ -1,5 +1,5 @@
 # WaifuLabs Bot
-Fully-featured Discord bot that goes through www.WaifuLabs.com
+Fully-featured Discord bot that crawls through www.WaifuLabs.com and fetches a waifu!
 
 ---
-This is my first Discord bot/Python program. Hope you like it! 😃
+Note: This is my first Discord bot/Python program. Hope you like it! 😃
