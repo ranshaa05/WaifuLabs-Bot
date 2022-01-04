@@ -2,7 +2,7 @@
 
 from pyppeteer import launch
 import os
-import asyncio
+from asyncio import TimeoutError
 from time import sleep
 from re import search
 import discord
@@ -19,7 +19,6 @@ connected_users = []
 
 
 
-
 client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
 
 @client.event
@@ -27,6 +26,11 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))
     print("\033[1;32;40mBot Started.\033[0;37;40m")
 
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+        return
+    raise error
 
 
 @client.command()
@@ -34,7 +38,7 @@ async def waifu(ctx):
     msg = await ctx.channel.history().get(author=ctx.author)
 
 
-    if msg.content.lower() != "$waifu start":
+    if ctx.message.content.lower() != "$waifu start":
         wrong_command_message = await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         sleep(5)
         await wrong_command_message.delete()
@@ -71,7 +75,7 @@ async def waifu(ctx):
                 elif msg.lower() == "keep":
                     await (await page.querySelector(".keep-button")).click()
                 
-                elif clicked_refresh == False and clicked_undo == False and msg.lower() == "undo":
+                elif msg.lower() == "undo" and not clicked_refresh and not clicked_undo:   #TODO: this can surely be improved
                     await (await page.querySelector(".undo-button")).click()
                     clicked_undo = True
                     await delete_messages(ctx, msg_user_binder, client)
@@ -94,7 +98,7 @@ async def waifu(ctx):
                         return
                     
                     
-                elif clicked_undo == True and clicked_refresh == False and msg.lower() == "undo":
+                elif msg.lower() == "undo" and clicked_undo and not clicked_refresh:
                         await ctx.channel.send("You can only undo once!")
                         await list_last_msg_id(ctx,  msg_user_binder, client)
                         return (await askposclick(page, browser, clicked_undo, clicked_refresh))
@@ -125,7 +129,7 @@ async def waifu(ctx):
                     return (await askposclick(page, browser, clicked_undo, clicked_refresh))
 
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await ctx.channel.send("Timed out! Stopping...")
                 await page.close()
                 await browser.close()
@@ -166,7 +170,7 @@ async def waifu(ctx):
             
             if not search("^(keep|refresh|exit|stop|undo)$", msg.lower()):      #makes sure the input isn't a command.
                 if not search("\d, \d|\d ,\d|\d,\d", msg) or (search("\d,\d", msg) and len(msg) >=4) or len(msg) >= 5 or search("\d\d", msg):      #makes sure the user input is in one of the required formats.
-                    await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers.")
+                    await ctx.channel.send("Whoops! Wrong syntax. The correct syntax is 'x, y'. x and y must be numbers. ||ʸᵒᵘ ᶜᵃⁿ ᵃˡˢᵒ ᵗʸᵖᵉ 'ˢᵗᵒᵖ' ᶦᶠ ʸᵒᵘ ʷᵃⁿᵗ ᵐᵉ ᵗᵒ ˢʰᵘᵗ ᵘᵖ.||")
                     await list_last_msg_id(ctx,  msg_user_binder, client)
                     return False
 
@@ -181,10 +185,9 @@ async def waifu(ctx):
         async def main():
             browser = await launch(headless=True, autoClose=True)
             page = await browser.newPage()
-
-            
             await page.setViewport({'width': 1550, 'height': 1000})
-            await ctx.channel.send(f"Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
+
+            await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
             await list_last_msg_id(ctx,  msg_user_binder, client)
             await page.goto('https://waifulabs.com/')
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
@@ -195,7 +198,7 @@ async def waifu(ctx):
             
             await wait_for_all_girls(page)
             await save_screenshot_send(page, ctx)
-            await ctx.channel.send(f"Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
+            await ctx.channel.send("Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
             await list_last_msg_id(ctx,  msg_user_binder, client)
 
             for i in range(3):                   #timeout & 'exit' return here
@@ -221,11 +224,7 @@ async def waifu(ctx):
 
         await main()
 
-@client.event
-async def on_command_error(ctx, error):
-    if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        return
-    raise error
+
 
 #all functions
 
@@ -237,7 +236,7 @@ def create_dirs():
     if "end_results" not in os.listdir(screenshot_path):
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
-        f = open(screenshot_path +"\\end_results\\.gitignore", "w")
+        f = open(screenshot_path +"\\end_results\\.gitignore", "w")     #create a .gitignore file
         f.write("*\n!.gitignore")
         f.close()
 

@@ -9,9 +9,8 @@ async def list_last_msg_id(ctx, msg_user_binder, client):
 async def delete_messages(ctx, msg_user_binder, client):
     last_msg = await ctx.channel.history().get(author=client.user)
 
-    print(msg_user_binder[ctx.author.id])
     for message in (msg_user_binder[ctx.author.id])[::-1]: #delete messages in reverse order
-        await client.http.delete_message(ctx.channel.id, message)
+        await client.http.delete_message(ctx.channel.id, message) #only works if last msg is in the same channel as the first message the bot needs to delete.
 
     msg_user_binder[ctx.author.id] = [] #reset user's msg list
 
