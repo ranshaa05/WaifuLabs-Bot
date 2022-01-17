@@ -23,8 +23,9 @@ client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), c
 
 @client.event
 async def on_ready():
+    print("\033[1;32;40mBot Ready.\033[0;37;40m")
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))
-    print("\033[1;32;40mBot Started.\033[0;37;40m")
+    
 
 @client.event
 async def on_command_error(ctx, error):
@@ -61,14 +62,14 @@ async def waifu(ctx):
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
                 msg = msg.content
-                if not search("^(keep|refresh|exit|stop|undo)$", msg.lower()):
+                if not search("^(keep|refresh|exit|stop|undo|4,1|4, 1|4 ,1)$", msg.lower()): #TODO: find a way to disable "4,1"
                     x = int(msg[0]) - 1
                     y = int(msg[-1]) - 1      #1, 1 is top left
                     y = 3 - y                #1, 1 is bottom left
                     pos = x + 4 * y
                     if not page.isClosed():
                         girls = await find_all_girls(page)
-                        await girls[pos].click()
+                        await girls[pos * 7].click()
                     else:
                         return
                 
@@ -183,19 +184,15 @@ async def waifu(ctx):
                 
 
         async def main():
-            browser = await launch(headless=True, autoClose=True)
+            browser = await launch(headless=False, autoClose=True)
             page = await browser.newPage()
             await page.setViewport({'width': 1550, 'height': 1000})
 
             await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
             await list_last_msg_id(ctx,  msg_user_binder, client)
-            await page.goto('https://waifulabs.com/')
+            await page.goto('https://waifulabs.com/generate')
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-            await click_start_btn(page)
 
-            sleep(0.3)                              #executing these too quickly fails sometimes.
-            await click_close_button(page)
-            
             await wait_for_all_girls(page)
             await save_screenshot_send(page, ctx)
             await ctx.channel.send("Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
@@ -215,7 +212,7 @@ async def waifu(ctx):
             await askposclick(page, browser, clicked_undo, clicked_refresh)
             await delete_messages(ctx, msg_user_binder, client)
             await wait_for_result(page)
-            await (await page.querySelector(".my-girl-loaded")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+            await (await page.querySelectorAll("img"))[2].screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})   #TODO: find selector for final image
             await browser.close()
             print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
@@ -255,19 +252,18 @@ async def save_screenshot_send(page, ctx):
         else:
             file_number += 1
             break
-    
-    if len(filenames_in_screenshot_path) < max_number_of_files:
-        await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
-        await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
-        await list_last_msg_id(ctx,  msg_user_binder, client)
-        os.remove(screenshot_path + '\\' + str(file_number) + '.png')
-    else:
+
+    if len(filenames_in_screenshot_path) >= max_number_of_files:
         await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
         await list_last_msg_id(ctx,  msg_user_binder, client)
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
-        return await save_screenshot_send(page, ctx)
+    
+    await (await page.querySelector(".waifu-grid")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+    await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
+    await list_last_msg_id(ctx,  msg_user_binder, client)
+    os.remove(screenshot_path + '\\' + str(file_number) + '.png')
 
 
 client.run(secret)
