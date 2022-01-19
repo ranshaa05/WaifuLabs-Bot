@@ -7,8 +7,10 @@ from time import sleep
 from re import search
 import discord
 from discord.ext import commands
+from PIL import Image #for image cropping
 from wait_for_selector import *
 from delete_messages import *
+
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
@@ -73,10 +75,10 @@ async def waifu(ctx):
                         return
                 
                 elif msg.lower() == "keep":
-                    await (await page.querySelectorAll(".sc-bdvvtL"))[1].click()
+                    await (await page.querySelectorAll(".sc-bdvvtL"))[1].click() #click "keep" button
                 
-                elif msg.lower() == "undo":             #TODO: this can surely be improved
-                    await (await page.querySelectorAll(".sc-bdvvtL"))[0].click()
+                elif msg.lower() == "undo":        #TODO: this can surely be improved
+                    await (await page.querySelectorAll(".sc-bdvvtL"))[0].click() #click "undo" button
                     await delete_messages(ctx, msg_user_binder, client)
                     await ctx.channel.send("Undoing...")
                     
@@ -150,7 +152,7 @@ async def waifu(ctx):
                 return False
 
             
-            if search("^(keep|undo)$", msg.lower()) and not await page.querySelector(".sc-bdvvtL"):
+            if search("^(keep|undo)$", msg.lower()) and not await page.querySelector(".sc-bdvvtL"): #if "keep" or "undo" is selscted but there is no "keep" button
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
                 await list_last_msg_id(ctx,  msg_user_binder, client)
                 return False
@@ -163,7 +165,7 @@ async def waifu(ctx):
                     return False
 
                 if search("^(4,1|4 ,1|4, 1)$", msg):                #"4,1" is refresh button.
-                    await ctx.channel.send("That is not a valid position. try again.")
+                    await ctx.channel.send("That is not a valid position. Try again.")
                     await list_last_msg_id(ctx,  msg_user_binder, client)
                     return False
 
@@ -176,7 +178,7 @@ async def waifu(ctx):
                 
 
         async def main():
-            browser = await launch(headless=False, autoClose=True)
+            browser = await launch(headless=True, autoClose=True)
             page = await browser.newPage()
             await page.setViewport({'width': 1550, 'height': 1000})
 
@@ -249,10 +251,24 @@ async def save_screenshot_send(page, ctx):
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
-    
-    await (await page.querySelector(".waifu-grid")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+
+
+    if await page.querySelector(".sc-bdvvtL"):          #checks if grid is on stage one or not to determine if it needs cropping or not.
+        await (await page.querySelector(".waifu-container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        crop = True
+    else:
+        await (await page.querySelector(".waifu-grid")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        crop = False
+
+    if crop:
+        image = Image.open(screenshot_path + '\\' + str(file_number) + '.png')
+        width, height = image.size
+        image.crop((0, height - 629, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
+
+
     await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
     await list_last_msg_id(ctx,  msg_user_binder, client)
+
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
 
 
