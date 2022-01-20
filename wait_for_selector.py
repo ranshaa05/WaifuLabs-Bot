@@ -4,12 +4,10 @@ async def wait_for_not_load_screen(page):
     while await page.querySelector(".loading-callout"):
         sleep(0.01)
 
-async def wait_for_result(page):
-    await wait_for_not_load_screen(page)
-    await page.waitForSelector(".waifu-preview")
 
 async def find_all_girls(page):
     return await page.querySelectorAll(".waifu-grid > div")
+
 
 
 

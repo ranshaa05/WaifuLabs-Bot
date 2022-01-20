@@ -59,6 +59,14 @@ async def waifu(ctx):
         async def askposclick(page, browser):
             try:
                 global msg
+
+                # possible_inputs = ["random", "keep", "refresh", "undo"]
+                # from random import choice
+                # msg = choice(possible_inputs)
+                # while not await check(msg, page, browser):
+                #     msg = choice(possible_inputs)
+                # print(msg)
+
                 msg = await client.wait_for("message", timeout=120)
                 while not await check(msg, page, browser):
                     msg = await client.wait_for("message", timeout=120)
@@ -117,7 +125,7 @@ async def waifu(ctx):
                     sleep(2)
 
                 else:
-                    await (await find_all_girls(page))[15].click()
+                    await (await find_all_girls(page))[15].click() #refresh button
                     await delete_messages(ctx, msg_user_binder, client)
                     await ctx.channel.send("Refreshing the grid...")
                     await list_last_msg_id(ctx, msg_user_binder, client)
@@ -161,7 +169,7 @@ async def waifu(ctx):
                 return False
 
             
-            if search("^(keep|undo)$", msg.lower()) and not await page.querySelector(".sc-bdvvtL"): #if "keep" or "undo" is selscted but there is no "keep" button
+            if search("^(keep|undo)$", msg.lower()) and not await page.querySelector(".waifu-preview-controls"): #if "keep" or "undo" is selscted but there is no "keep" button
                 await ctx.channel.send("You haven't selected an initial waifu yet! Try something like 'x, y'.")
                 await list_last_msg_id(ctx, msg_user_binder, client)
                 return False
@@ -191,13 +199,12 @@ async def waifu(ctx):
             page = await browser.newPage()
             await page.setViewport({'width': 1550, 'height': 1000})
 
-            await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using https://www.waifulabs.com. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
+            await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
             await list_last_msg_id(ctx, msg_user_binder, client)
             await page.goto('https://waifulabs.com/generate')
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-
             await save_screenshot_send(page, ctx)
-            await ctx.channel.send("Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, or 'undo' to return to the previous grid.\nYour answer:")
+            await ctx.channel.send("Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, 'undo' to return to the previous grid, or 'random' to select a random waifu from the grid.\nYour answer:")
             await list_last_msg_id(ctx, msg_user_binder, client)
 
             for i in range(3):                   #timeout & 'exit' return here
@@ -212,10 +219,9 @@ async def waifu(ctx):
                
             await askposclick(page, browser)
             await delete_messages(ctx, msg_user_binder, client)
-            await wait_for_result(page)
             await (await page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
             await browser.close()
-            print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
+            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
             await ctx.channel.send("Here's your waifu! Thanks for playing :slight_smile:")
             connected_users.remove(ctx.author.id)
