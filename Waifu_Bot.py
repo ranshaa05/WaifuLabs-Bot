@@ -1,27 +1,46 @@
 #! python3
 
-from pyppeteer import launch
+#from pyppeteer import launch
 import os
+<<<<<<< Updated upstream
 import asyncio
 from time import sleep
 from re import search
 import discord
 from discord.ext import commands
+=======
+#from asyncio import TimeoutError
+from time import sleep
+#from re import search
+import nextcord
+from nextcord.ext import commands
+from PIL import Image #for image cropping
+#from random import randint
+from delete_messages import *
+from reaction import Reaction
+from site_navigator import SiteNavigator
+
+>>>>>>> Stashed changes
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
 secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7n" + "NQ.hKw0jtjSXoKFI4sL1CP715mZuUE"
 
+<<<<<<< Updated upstream
 
+=======
+user_msg_binder = {}
+>>>>>>> Stashed changes
 connected_users = []
 msg_id = []
 
 
+client = commands.Bot(command_prefix = "$", Intents = nextcord.Intents().all(), case_insensitive=True)
 
-client = commands.Bot(command_prefix = "$", Intents = discord.Intents().all(), case_insensitive=True)
 
 @client.event
 async def on_ready():
+<<<<<<< Updated upstream
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="$waifu start"))
 
 @client.command()
@@ -30,6 +49,22 @@ async def waifu(ctx):
     msg_binder = {}
 
     if msg.content.lower() != "$waifu start":
+=======
+    print("\033[1;32;40mBot Ready.\033[0;37;40m")
+    await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="$waifu start"))
+    
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, nextcord.ext.commands.errors.CommandNotFound):
+        return
+    raise error
+
+
+@client.command()
+async def waifu(ctx):
+    if ctx.message.content.lower() != "$waifu start":
+>>>>>>> Stashed changes
         wrong_command_message = await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
         sleep(5)
         await wrong_command_message.delete()
@@ -40,11 +75,16 @@ async def waifu(ctx):
         clicked_refresh = False
         if ctx.author.id in connected_users:
             await ctx.channel.send("Whoops! One user cannot start me twice. You can continue or type 'exit' to exit.")
+<<<<<<< Updated upstream
             await list_last_msg_id(ctx, msg_id)
+=======
+            await list_last_msg_id(ctx, user_msg_binder, client)
+>>>>>>> Stashed changes
             return
 
         else:
             connected_users.append(ctx.author.id)
+<<<<<<< Updated upstream
         async def askposclick(page, browser, clicked_undo, clicked_refresh):
             try:
                 global msg
@@ -204,6 +244,34 @@ async def waifu(ctx):
             print("\033[1;37;40mEvent: \033[93mBrowser Closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
             await ctx.channel.send(file=discord.File(screenshot_path + '\\end_results\\end_result.png'))
             await ctx.channel.send("Here's your waifu! Thanks for playing :slight_smile:")
+=======
+
+
+        async def main():
+            site_navigator = await SiteNavigator.create_navi()
+            await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid:")
+            await list_last_msg_id(ctx, user_msg_binder, client)
+            print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
+            await save_screenshot_send(site_navigator, site_navigator.page, ctx)
+            await ctx.channel.send("Syntax for your answer must be 'x, y'. x represents the horizontal position of your waifu and y represents the vertical position.\n**The starting point is at the bottom left corner of the grid**.\nYou can also type 'keep' to continue with your current waifu, 'refresh' to refresh the grid, 'undo' to return to the previous grid, or 'random' to select a random waifu from the grid.\nYour answer:")
+            await list_last_msg_id(ctx, user_msg_binder, client)
+
+            
+            while Reaction.stage < 4:
+                print(Reaction.stage)
+                await delete_messages(ctx, user_msg_binder, client)
+                if Reaction.stage != 4:
+                    await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+                    await list_last_msg_id(ctx, user_msg_binder, client)
+                    await save_screenshot_send(site_navigator, site_navigator.page, ctx)
+
+
+            await (await site_navigator.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+            await site_navigator.browser.close()
+            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
+            await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
+            Reaction.stage = 0
+>>>>>>> Stashed changes
             connected_users.remove(ctx.author.id)
 
         await main()
@@ -251,11 +319,11 @@ async def wait_for_final_image(page):
         sleep(0.01)
 
 def create_dirs():
-    if "Screenshots" not in os.listdir(os.path.dirname(__file__)):
+    if not os.path.exists(screenshot_path):
         print("\033[1;37;40mEvent: \033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
         os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots")
         
-    if "end_results" not in os.listdir(screenshot_path):
+    if not os.path.exists(screenshot_path + '\\end_results'):
         print("\033[1;37;40mEvent: \033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
         os.mkdir(screenshot_path + "\\end_results")
         f = open(screenshot_path +"\\end_results\\.gitignore", "w")
@@ -264,9 +332,15 @@ def create_dirs():
 
         
 
+<<<<<<< Updated upstream
 max_number_of_files = 1000 + 2
 async def save_screenshot_send(page, ctx, msg_id, msg_binder):
     await wait_for_not_load_screen(page)
+=======
+max_number_of_files = 1000 + 2 #2 is for the additional files and folders in the folder
+async def save_screenshot_send(site_navigator, page, ctx):
+    await site_navigator.wait_for_not_load_screen()
+>>>>>>> Stashed changes
     create_dirs()
 
     filenames_in_screenshot_path = os.listdir(screenshot_path)
@@ -278,6 +352,7 @@ async def save_screenshot_send(page, ctx, msg_id, msg_binder):
             file_number += 1
             break
     
+<<<<<<< Updated upstream
     if len(filenames_in_screenshot_path) < max_number_of_files:
         await (await page.querySelector(".container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
         await ctx.channel.send(file=discord.File(screenshot_path + '\\' + str(file_number) + '.png'))
@@ -286,6 +361,11 @@ async def save_screenshot_send(page, ctx, msg_id, msg_binder):
     else:
         await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
         await list_last_msg_id(ctx, msg_id)
+=======
+    if len(filenames_in_screenshot_path) >= max_number_of_files:
+        await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
+        await list_last_msg_id(ctx, user_msg_binder, client)
+>>>>>>> Stashed changes
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
@@ -310,8 +390,32 @@ async def delete_messages(ctx, msg_id, msg_binder):
         else:
             return
 
+<<<<<<< Updated upstream
     except IndexError:
         return
+=======
+    file_number = 0
+    while os.path.isfile(screenshot_path + '\\' + str(file_number) + ".png"):    #checks and assigns the lowest file number available to next screenshot
+        file_number += 1
+
+    if await page.querySelector(".sc-bdvvtL"):          #checks if grid is on stage one or not to determine if it needs cropping or not.
+        await (await page.querySelector(".waifu-container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        crop = True
+    else:
+        await (await page.querySelector(".waifu-grid")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        crop = False
+
+    if crop:
+        image = Image.open(screenshot_path + '\\' + str(file_number) + '.png')
+        width, height = image.size
+        image.crop((0, height - 630, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
+
+    view = Reaction(site_navigator)
+    await ctx.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view)
+    await list_last_msg_id(ctx, user_msg_binder, client)
+    os.remove(screenshot_path + '\\' + str(file_number) + '.png')
+    await view.wait()
+>>>>>>> Stashed changes
 
 
 client.run(secret)

@@ -1,3 +1,8 @@
 pyppeteer
+<<<<<<< Updated upstream
 discord
 
+=======
+nextcord
+Pillow
+>>>>>>> Stashed changes
