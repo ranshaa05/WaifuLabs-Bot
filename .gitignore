@@ -1,5 +1,7 @@
+end_result.png
+.vscode/
+Screenshots/grid*.png
 !.gitignore
 *.png
 __pycache__/
 vscode/
-
