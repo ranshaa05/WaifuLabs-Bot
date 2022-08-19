@@ -19,7 +19,7 @@ connected_users = []
 msg_id = []
 
 
-client = commands.Bot(command_prefix = "$", Intents = nextcord.Intents().all(), case_insensitive=True)
+client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
 
 
 @client.event
@@ -48,7 +48,6 @@ async def waifu(ctx):
             await ctx.channel.send("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")
             await list_last_msg_id(ctx, user_msg_binder, client)
             return
-
         else:
             connected_users.append(ctx.author.id)
 
@@ -59,24 +58,36 @@ async def waifu(ctx):
             await list_last_msg_id(ctx, user_msg_binder, client)
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
             await save_screenshot_send(navi, navi.page, ctx)
-
             
-            while Reaction.stage < 4:
-                print(Reaction.stage)
+            
+            
+            while Reaction.stage < 4 and not await navi.page_is_closed():#TODO:does not get page status
+                print("stage: " + str(Reaction.stage))
                 await delete_messages(ctx, user_msg_binder, client)
                 if Reaction.stage != 4:
-                    await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                    await list_last_msg_id(ctx, user_msg_binder, client)
-                    await save_screenshot_send(navi, navi.page, ctx)
+                        await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+                        await list_last_msg_id(ctx, user_msg_binder, client)
+                        await save_screenshot_send(navi, navi.page, ctx)
+        
 
-            await delete_messages(ctx, user_msg_binder, client)
-            await navi.wait_for_final_image()
-            await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
-            await navi.browser.close()
-            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
-            await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
-            Reaction.stage = 0
-            connected_users.remove(ctx.author.id)
+            if not await navi.page_is_closed(): #TODO:does not get page status
+                await delete_messages(ctx, user_msg_binder, client)
+                await navi.wait_for_final_image()
+                await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+                await navi.browser.close()
+                print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
+                await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
+                Reaction.stage = 0
+                connected_users.remove(ctx.author.id)
+
+            else:
+                print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
+                await delete_messages(ctx, user_msg_binder, client)
+                timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
+                sleep(5)
+                await timeout_message.delete()
+                Reaction.stage = 0
+                connected_users.remove(ctx.author.id)
 
         await main()
 
@@ -140,7 +151,10 @@ async def save_screenshot_send(navi, page, ctx):
     await list_last_msg_id(ctx, user_msg_binder, client)
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     await view.wait()
-    #await navi._fast_forward_to_final_() #debugging
+
+
+    # await navi._fast_forward_to_final_() #to debug with this, comment out the above line and uncomment this line
+    # Reaction.stage += 1
 
 
 

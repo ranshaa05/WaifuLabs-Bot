@@ -6,7 +6,7 @@ class Reaction(nextcord.ui.View):
     stage = 0
 
     def __init__(self, navi):
-        super().__init__()
+        super().__init__(timeout=1)
         self.buttons = []
         self.navi = navi
         label_list = []
@@ -28,10 +28,15 @@ class Reaction(nextcord.ui.View):
             button = nextcord.ui.Button(custom_id=label, label=label, style=style)
             async def button_function(interaction):
                 label = interaction.data["custom_id"] #sets label to the label of the button that was pressed
-                await self.click_by_label(label) 
+                await self.click_by_label(label)
 
             button.callback = button_function
             self.add_item(button)
+
+    async def on_timeout(self):
+        print("Timeout")
+        await self.navi.browser_timeout()
+
 
 
     async def click_by_label(self, label):  # label is the string that is shown on the button
@@ -45,11 +50,13 @@ class Reaction(nextcord.ui.View):
             self.stop()
         elif label == "⬅":
             await self.navi.undo()
-            Reaction.stage = Reaction.stage - 1
+            if Reaction.stage > 0:
+                Reaction.stage = Reaction.stage - 1 #find a way to tell the user that they can't undo/keep anymore
             self.stop()
         elif label == "➡":
             await self.navi.keep()
-            Reaction.stage = Reaction.stage + 1
+            if Reaction.stage > 0:
+                Reaction.stage = Reaction.stage + 1
             self.stop()
         elif label == "🤷‍♂️":
             await self.navi.rand()

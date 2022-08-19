@@ -14,7 +14,7 @@ class SiteNavigator():
         navi.browser = await launch(headless=True, autoClose=True)
         navi.page = await navi.browser.newPage()
         await navi.page.setViewport({'width': 1200, 'height': 630})
-        await navi.page.goto('https://waifulabs.com/generate') #open waifulabs.com
+        await navi.page.goto('https://waifulabs.com/generate')
         return navi
 
     async def click_by_index(self, index):
@@ -26,10 +26,12 @@ class SiteNavigator():
         await self.browser.close()
 
     async def undo(self):
-        await (await self.page.querySelectorAll(".sc-bdvvtL"))[0].click()
+        if await self.page.querySelectorAll(".sc-bdvvtL"):
+            await (await self.page.querySelectorAll(".sc-bdvvtL"))[0].click()
     
     async def keep(self):
-        await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
+        if await self.page.querySelectorAll(".sc-bdvvtL"):
+            await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
     
     async def rand(self):
         label = randint(1, 15)
@@ -43,8 +45,8 @@ class SiteNavigator():
         while await self.page.querySelector(".loading-callout"):
             sleep(0.01)
 
-    async def wait_for_final_image(self):
-        while await self.page.querySelector(".cross-fade-enter-exit"):
+    async def wait_for_final_image(self): #TODO: probably doesn't work
+        while await self.page.querySelector(".ccross-fade-enter-done"):
             sleep(0.01)
 
     async def find_all_girls(self):
@@ -52,7 +54,14 @@ class SiteNavigator():
 
 
 
+    async def browser_timeout(self):
+        await self.page.close()
+        await self.browser.close()
+        await self.page_is_closed()
 
+    async def page_is_closed(self):
+        print("page is closed: " + str(self.page.isClosed())) # debug line
+        return self.page.isClosed()
 
 
     async def _fast_forward_to_final_(self):
