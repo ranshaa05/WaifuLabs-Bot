@@ -6,7 +6,7 @@ class Reaction(nextcord.ui.View):
     stage = 0
 
     def __init__(self, navi):
-        super().__init__(timeout=1)
+        super().__init__(timeout=120)
         self.buttons = []
         self.navi = navi
         label_list = []
