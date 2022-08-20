@@ -7,6 +7,7 @@ class SiteNavigator():
     def __init__(self):
         self.browser = None
         self.page = None
+        self.timed_out = False
 
     @staticmethod
     async def create_navi():
@@ -58,9 +59,10 @@ class SiteNavigator():
         await self.page.close()
         await self.browser.close()
         await self.page_is_closed()
+        self.timed_out = True
 
     async def page_is_closed(self):
-        print("page is closed: " + str(self.page.isClosed())) # debug line
+        print("page is closed: " + str(self.page.isClosed()))
         return self.page.isClosed()
 
 
