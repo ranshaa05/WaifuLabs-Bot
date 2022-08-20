@@ -153,7 +153,7 @@ async def save_screenshot_send(navi, page, ctx):
         width, height = image.size
         image.crop((0, height - 630, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
 
-    view = Reaction(navi)
+    view = Reaction(navi, ctx)
     await ctx.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view)
     await list_last_msg_id(ctx, user_msg_binder, client)
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
