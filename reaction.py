@@ -3,8 +3,7 @@ from site_navigator import SiteNavigator
 
 
 class Reaction(nextcord.ui.View):
-    stage = 0
-
+    stage = {}
     def __init__(self, navi, ctx):
         super().__init__(timeout=120)
         self.buttons = []
@@ -38,33 +37,31 @@ class Reaction(nextcord.ui.View):
 
     async def click_by_label(self, label, interactor):  # label is the string that is shown on the button
         if interactor == self.ctx.author.id: #checks if the interactor is the one who activated the bot
+            if interactor not in Reaction.stage:
+                Reaction.stage[interactor] = 0
+
             if label.isdecimal():
                 await self.navi.click_by_index(int(label))
-                Reaction.stage = Reaction.stage + 1
-                self.stop()
-
+                Reaction.stage[interactor] += 1
             elif label == "❌":
                 await self.navi.exit()
-                self.stop()
             elif label == "⬅":
                 await self.navi.undo()
-                if Reaction.stage > 0:
-                    Reaction.stage = Reaction.stage - 1 #find a way to tell the user that they can't undo/keep anymore
-                self.stop()
+                if Reaction.stage[interactor] > 0:
+                    Reaction.stage[interactor] -= 1 #TODO: find a way to tell the user that they can't undo/keep anymore
             elif label == "➡":
                 await self.navi.keep()
-                if Reaction.stage > 0:
-                    Reaction.stage = Reaction.stage + 1
-                self.stop()
+                if Reaction.stage[interactor] > 0:
+                    Reaction.stage[interactor] += 1
             elif label == "🤷‍♂️":
                 await self.navi.rand()
-                Reaction.stage = Reaction.stage + 1
-                self.stop()
+                Reaction.stage[interactor] += 1
             elif label == "🔄":   #refresh
                 await self.navi.refresh()
-                self.stop()
+                
             else:
                 raise ValueError(f"Label `{label}` was not found")
+            self.stop()
 
 
     async def on_timeout(self):

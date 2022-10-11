@@ -5,6 +5,7 @@ from time import sleep
 import nextcord
 from nextcord.ext import commands
 from PIL import Image #for image cropping
+
 from delete_messages import *
 from reaction import Reaction
 from site_navigator import SiteNavigator
@@ -16,7 +17,6 @@ secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7n" + "NQ.hKw0jtjSXoKFI4sL1CP715mZuUE"
 
 user_msg_binder = {}
 connected_users = []
-msg_id = []
 
 
 client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
@@ -57,19 +57,19 @@ async def waifu(ctx):
             await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
             await list_last_msg_id(ctx, user_msg_binder, client)
             print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-            await save_screenshot_send(navi, navi.page, ctx)
+            await save_send_screenshot(navi, navi.page, ctx)
             
             
             
-            while Reaction.stage < 4:
-                print("stage: " + str(Reaction.stage))
+            while Reaction.stage[ctx.author.id] < 4:
+                print("stage for user " + str(ctx.author.id) + ":" + str(Reaction.stage[ctx.author.id]))
                 await delete_messages(ctx, user_msg_binder, client)
                 if await navi.page_is_closed():
                     break
                 if Reaction.stage != 4:
                     await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
                     await list_last_msg_id(ctx, user_msg_binder, client)
-                    await save_screenshot_send(navi, navi.page, ctx)
+                    await save_send_screenshot(navi, navi.page, ctx)
         
 
             if not await navi.page_is_closed():
@@ -79,7 +79,7 @@ async def waifu(ctx):
                 await navi.browser.close()
                 print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
                 await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
-                Reaction.stage = 0 #TODO: when stage is user specific, delete this.
+                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is user specific, delete this.
                 connected_users.remove(ctx.author.id)
 
             elif await navi.page_is_closed() and navi.timed_out:
@@ -88,12 +88,12 @@ async def waifu(ctx):
                 timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
                 sleep(5)
                 await timeout_message.delete()
-                Reaction.stage = 0 #TODO: when stage is  user specific, delete this.
+                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is  user specific, delete this.
                 connected_users.remove(ctx.author.id)
             
             else:
                 print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "'.\033[0;37;40m")
-                Reaction.stage = 0 #TODO: when stage is  user specific, delete this.
+                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is  user specific, delete this.
                 connected_users.remove(ctx.author.id)
 
         await main()
@@ -115,7 +115,7 @@ def create_dirs():
         
 
 max_number_of_files = 1000 + 2 #2 is for the additional files and folders in the folder
-async def save_screenshot_send(navi, page, ctx):
+async def save_send_screenshot(navi, page, ctx):
     await navi.wait_for_not_load_screen()
     create_dirs()
 
@@ -134,7 +134,7 @@ async def save_screenshot_send(navi, page, ctx):
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
-        return await save_screenshot_send(navi, page, ctx)
+        return await save_send_screenshot(navi, page, ctx)
 
 
     file_number = 0
