@@ -13,7 +13,7 @@ from site_navigator import SiteNavigator
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "OTAwMDQ2MDU2Nzk5MjE5NzYy.YW7n" + "NQ.hKw0jtjSXoKFI4sL1CP715mZuUE"
+secret = "MTAxMDI1NzMyMjczNzY3NjM0OQ.GVkQ0M." + "55gaaPJRaztY2YTYtx5IqqwzBjfUWG-16lw7i4"
 
 user_msg_binder = {}
 connected_users = []
@@ -62,7 +62,7 @@ async def waifu(ctx):
             
             
             while Reaction.stage[ctx.author.id] < 4:
-                print("stage for user " + str(ctx.author.id) + ":" + str(Reaction.stage[ctx.author.id]))
+                print("stage for user " + str(ctx.author.name) + ":" + str(Reaction.stage[ctx.author.id]))
                 await delete_messages(ctx, user_msg_binder, client)
                 if await navi.page_is_closed():
                     break
@@ -79,8 +79,7 @@ async def waifu(ctx):
                 await navi.browser.close()
                 print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
                 await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
-                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is user specific, delete this.
-                connected_users.remove(ctx.author.id)
+                
 
             elif await navi.page_is_closed() and navi.timed_out:
                 print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
@@ -88,13 +87,12 @@ async def waifu(ctx):
                 timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
                 sleep(5)
                 await timeout_message.delete()
-                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is  user specific, delete this.
-                connected_users.remove(ctx.author.id)
-            
+
             else:
                 print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "'.\033[0;37;40m")
-                Reaction.stage[ctx.author.id] = 0 #TODO: when stage is  user specific, delete this.
-                connected_users.remove(ctx.author.id)
+
+            Reaction.stage.pop(ctx.author.id, None)
+            connected_users.remove(ctx.author.id)
 
         await main()
 
@@ -158,10 +156,15 @@ async def save_send_screenshot(navi, page, ctx):
     await list_last_msg_id(ctx, user_msg_binder, client)
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     await view.wait()
+  
 
+    ############ Stress test ############
+    # label_list = ["⬅", "➡", "🤷‍♂️", "🔄", "1" ,"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"] #to debug with this, comment out the above line and uncomment the following 5 lines
+    # import random
+    # choice = random.choice(label_list)
+    # print("Choice: " + choice)
+    # await view.click_by_label(choice, ctx.author.id) 
 
-    # await navi._fast_forward_to_final_() #to debug with this, comment out the above line and uncomment this line
-    # Reaction.stage += 1
 
 
 

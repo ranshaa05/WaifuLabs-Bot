@@ -47,7 +47,7 @@ class SiteNavigator():
             sleep(0.01)
 
     async def wait_for_final_image(self): #TODO: doesn't work
-        while await self.page.querySelector(".ccross-fade-enter-done"):
+        while await self.page.querySelector(".waifu-preview-loading"):
             sleep(0.01)
 
     async def find_all_girls(self):
@@ -64,7 +64,7 @@ class SiteNavigator():
     async def page_is_closed(self):
         print("page is closed: " + str(self.page.isClosed()))
         return self.page.isClosed()
+    
 
 
-    async def _fast_forward_to_final_(self):
-        await (await self.find_all_girls())[0].click()
+

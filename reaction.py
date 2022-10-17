@@ -48,7 +48,7 @@ class Reaction(nextcord.ui.View):
             elif label == "⬅":
                 await self.navi.undo()
                 if Reaction.stage[interactor] > 0:
-                    Reaction.stage[interactor] -= 1 #TODO: find a way to tell the user that they can't undo/keep anymore
+                    Reaction.stage[interactor] -= 1 #TODO: find a way to tell the user that they can't undo/keep any further
             elif label == "➡":
                 await self.navi.keep()
                 if Reaction.stage[interactor] > 0:
