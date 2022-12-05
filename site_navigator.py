@@ -62,7 +62,6 @@ class SiteNavigator():
         self.timed_out = True
 
     async def page_is_closed(self):
-        print("page is closed: " + str(self.page.isClosed()))
         return self.page.isClosed()
     
 
