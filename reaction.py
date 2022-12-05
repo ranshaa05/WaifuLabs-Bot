@@ -1,5 +1,4 @@
 import nextcord
-from site_navigator import SiteNavigator
 
 
 class Reaction(nextcord.ui.View):
@@ -17,7 +16,7 @@ class Reaction(nextcord.ui.View):
             label_list.extend([str(i) for i in range((i * 4) + 1, (i * 4) + 5)])
             color_list.append(nextcord.ButtonStyle.green)
             label_list.append(emoji)
-        color_list.extend([nextcord.ButtonStyle.blurple] * 3)   #last line of buttons
+        color_list.extend([nextcord.ButtonStyle.blurple] * 3) #last line of buttons
         label_list.extend([str(i) for i in range(13, 16)])
         color_list.append(nextcord.ButtonStyle.grey)
         color_list.append(nextcord.ButtonStyle.red)
@@ -35,17 +34,20 @@ class Reaction(nextcord.ui.View):
 
 
 
-    async def click_by_label(self, label, interactor):  # label is the string that is shown on the button
+    async def click_by_label(self, label, interactor):
         if interactor == self.ctx.author.id: #checks if the interactor is the one who activated the bot
-            if interactor not in Reaction.stage:
-                Reaction.stage[interactor] = 0
-
             if label.isdecimal():
                 await self.navi.click_by_index(int(label))
                 Reaction.stage[interactor] += 1
             elif label == "❌":
                 await self.navi.exit()
-            elif label == "⬅":
+            elif label == "🤷‍♂️":
+                await self.navi.rand()
+                Reaction.stage[interactor] += 1
+            elif label == "🔄":   #refresh
+                await self.navi.refresh()
+
+            if label == "⬅":
                 await self.navi.undo()
                 if Reaction.stage[interactor] > 0:
                     Reaction.stage[interactor] -= 1 #TODO: find a way to tell the user that they can't undo/keep any further
@@ -53,17 +55,8 @@ class Reaction(nextcord.ui.View):
                 await self.navi.keep()
                 if Reaction.stage[interactor] > 0:
                     Reaction.stage[interactor] += 1
-            elif label == "🤷‍♂️":
-                await self.navi.rand()
-                Reaction.stage[interactor] += 1
-            elif label == "🔄":   #refresh
-                await self.navi.refresh()
-                
-            else:
-                raise ValueError(f"Label `{label}` was not found")
             self.stop()
 
 
     async def on_timeout(self):
-        print("Timeout")
         await self.navi.browser_timeout()

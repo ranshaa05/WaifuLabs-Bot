@@ -23,16 +23,13 @@ async def on_ready():
     print("\033[1;32;40mBot Ready.\033[0;37;40m")
     await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="$waifu start"))
     
+connected_users = []
 
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, nextcord.ext.commands.errors.CommandNotFound):
         return
     raise error
-
-
-
-connected_users = []
 
 @client.command()
 async def waifu(ctx):
@@ -49,50 +46,46 @@ async def waifu(ctx):
             return
         else:
             connected_users.append(ctx.author.id)
+            Reaction.stage[ctx.author.id] = 0
 
 
-        async def main():
-            navi = await SiteNavigator.create_navi()
-            await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
-            await list_last_msg_id(ctx, client)
-            print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-            await save_send_screenshot(navi, navi.page, ctx)
-            
-            
-            
-            while Reaction.stage[ctx.author.id] < 4:
-                await delete_messages(ctx, client)
-                if await navi.page_is_closed():
-                    break
-                if Reaction.stage != 4:
-                    await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                    await list_last_msg_id(ctx, client)
-                    await save_send_screenshot(navi, navi.page, ctx)
+        navi = await SiteNavigator.create_navi()
+        await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
+        await list_last_msg_id(ctx, client)
+        print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
+        await save_send_screenshot(navi, navi.page, ctx)
         
+        while Reaction.stage[ctx.author.id] < 4:
+            await delete_messages(ctx, client)
+            if await navi.page_is_closed():
+                break
+            await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+            await list_last_msg_id(ctx, client)
+            await save_send_screenshot(navi, navi.page, ctx)
 
-            if not await navi.page_is_closed():
-                await delete_messages(ctx, client)
-                await navi.wait_for_final_image()
-                await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
-                await navi.browser.close()
-                print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
-                await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
-                
 
-            elif await navi.page_is_closed() and navi.timed_out:
-                print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
-                await delete_messages(ctx, client)
-                timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
-                sleep(5)
-                await timeout_message.delete()
+        if not await navi.page_is_closed():
+            await delete_messages(ctx, client)
+            await navi.wait_for_final_image()
+            await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+            await navi.browser.close()
+            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
+            await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
+            
 
-            else:
-                print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "'.\033[0;37;40m")
+        elif await navi.page_is_closed() and navi.timed_out:
+            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
+            await delete_messages(ctx, client)
+            timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
+            sleep(5)
+            await timeout_message.delete()
 
-            Reaction.stage.pop(ctx.author.id, None)
-            connected_users.remove(ctx.author.id)
+        else:
+            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "'.\033[0;37;40m")
+        
+        Reaction.stage.pop(ctx.author.id, None)
+        connected_users.remove(ctx.author.id)
 
-        await main()
 
 
 
@@ -110,19 +103,16 @@ def create_dirs():
 
         
 
-max_number_of_files = 1000 + 2 #2 is for the additional files and folders in the folder
+max_number_of_files = 1000 + 1 #1 is for the additional files and folders in the folder
 async def save_send_screenshot(navi, page, ctx):
     await navi.wait_for_not_load_screen()
     create_dirs()
 
     filenames_in_screenshot_path = os.listdir(screenshot_path)
-    file_number = -1
-    for i in range(max_number_of_files - 1):
-        if os.path.isfile(screenshot_path + '\\' + str(i) + ".png"):    #checks and assigns the lowest file number available to next screenshot
-            file_number += 1
-        else:
-            file_number += 1
-            break
+
+    file_number = 0
+    while os.path.isfile(screenshot_path + '\\' + str(file_number) + ".png"):    #checks and assigns the lowest file number available to next screenshot
+        file_number += 1
     
     if len(filenames_in_screenshot_path) >= max_number_of_files:
         await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
@@ -133,11 +123,7 @@ async def save_send_screenshot(navi, page, ctx):
         return await save_send_screenshot(navi, page, ctx)
 
 
-    file_number = 0
-    while os.path.isfile(screenshot_path + '\\' + str(file_number) + ".png"):    #checks and assigns the lowest file number available to next screenshot
-        file_number += 1
-
-    if await page.querySelector(".sc-bdvvtL"):          #checks if grid is on stage one or not to determine if it needs cropping or not.
+    if await page.querySelector(".sc-bdvvtL"):  #checks if grid is on stage one or not to determine if it needs cropping or not.
         await (await page.querySelector(".waifu-container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
         crop = True
     else:
