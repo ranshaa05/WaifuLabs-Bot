@@ -3,11 +3,11 @@ import nextcord
 
 class Reaction(nextcord.ui.View):
     stage = {}
-    def __init__(self, navi, ctx):
+    def __init__(self, navi, interavtion):
         super().__init__(timeout=120)
         self.buttons = []
         self.navi = navi
-        self.ctx = ctx
+        self.interavtion = interavtion
         label_list = []
         color_list = []
         emoji_label_list = ["⬅", "➡", "🤷‍♂️", "🔄", "❌"]
@@ -35,7 +35,7 @@ class Reaction(nextcord.ui.View):
 
 
     async def click_by_label(self, label, interactor):
-        if interactor == self.ctx.author.id: #checks if the interactor is the one who activated the bot
+        if interactor == self.interavtion.user.id: #checks if the interactor is the one who activated the bot
             if label.isdecimal():
                 await self.navi.click_by_index(int(label))
                 Reaction.stage[interactor] += 1

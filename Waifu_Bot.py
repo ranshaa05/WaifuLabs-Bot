@@ -13,7 +13,7 @@ from site_navigator import SiteNavigator
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "MTAxMDI1NzMyMjczNzY3NjM0OQ.GVkQ0M." + "55gaaPJRaztY2YTYtx5IqqwzBjfUWG-16lw7i4"
+secret = ""
 
 client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
 
@@ -25,66 +25,53 @@ async def on_ready():
     
 connected_users = []
 
-@client.event
-async def on_command_error(ctx, error):
-    if isinstance(error, nextcord.ext.commands.errors.CommandNotFound):
+@client.slash_command(description="Build-a-waifu!")
+async def waifu(interaction: nextcord.Interaction):
+    if interaction.user.id in connected_users:
+        await interaction.channel.send("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")
+        await list_last_msg_id(interaction, client)
         return
-    raise error
-
-@client.command()
-async def waifu(ctx):
-    if ctx.message.content.lower() != "$waifu start":
-        wrong_command_message = await ctx.channel.send("Whoops! The correct command is '$waifu start'.")
-        sleep(5)
-        await wrong_command_message.delete()
-
-
     else:
-        if ctx.author.id in connected_users:
-            await ctx.channel.send("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")
-            await list_last_msg_id(ctx, client)
-            return
-        else:
-            connected_users.append(ctx.author.id)
-            Reaction.stage[ctx.author.id] = 0
+        connected_users.append(interaction.user.id)
+        Reaction.stage[interaction.user.id] = 0
 
 
         navi = await SiteNavigator.create_navi()
-        await ctx.channel.send("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
-        await list_last_msg_id(ctx, client)
-        print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(ctx.author.name) + "'\033[0;37;40m")
-        await save_send_screenshot(navi, navi.page, ctx)
+        await interaction.response.send_message("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
+        await list_last_msg_id(interaction, client)
+        print("\033[1;37;40mEvent: \033[1;32;40mBrowser started for user '" + str(interaction.user.name) + "'\033[0;37;40m")
+        await save_send_screenshot(navi, navi.page, interaction)
         
-        while Reaction.stage[ctx.author.id] < 4:
-            await delete_messages(ctx, client)
+        while Reaction.stage[interaction.user.id] < 4:
+            await delete_messages(interaction, client)
             if await navi.page_is_closed():
                 break
-            await ctx.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-            await list_last_msg_id(ctx, client)
-            await save_send_screenshot(navi, navi.page, ctx)
+            await interaction.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
+            await list_last_msg_id(interaction, client)
+            await save_send_screenshot(navi, navi.page, interaction)
 
 
         if not await navi.page_is_closed():
-            await delete_messages(ctx, client)
+            await delete_messages(interaction, client)
             await navi.wait_for_final_image()
             await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
             await navi.browser.close()
-            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
-            await ctx.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
+            print("\033[1;37;40mEvent: \033[93mBrowser closed for user '" + str(interaction.user.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
+            await interaction.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
             
 
         elif await navi.page_is_closed() and navi.timed_out:
-            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
-            await delete_messages(ctx, client)
-            timeout_message = await ctx.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
+            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
+            await delete_messages(interaction, client)
+            timeout_message = await interaction.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
             sleep(5)
             await timeout_message.delete()
 
         else:
-            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(ctx.author.name) + "'.\033[0;37;40m")
+            print("\033[1;37;40mEvent: \033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "'.\033[0;37;40m")
         
-        Reaction.stage.pop(ctx.author.id, None)
-        connected_users.remove(ctx.author.id)
+        Reaction.stage.pop(interaction.user.id, None)
+        connected_users.remove(interaction.user.id)
 
 
 
@@ -104,7 +91,7 @@ def create_dirs():
         
 
 max_number_of_files = 1000 + 1 #1 is for the additional files and folders in the folder
-async def save_send_screenshot(navi, page, ctx):
+async def save_send_screenshot(navi, page, interaction):
     await navi.wait_for_not_load_screen()
     create_dirs()
 
@@ -115,12 +102,12 @@ async def save_send_screenshot(navi, page, ctx):
         file_number += 1
     
     if len(filenames_in_screenshot_path) >= max_number_of_files:
-        await ctx.channel.send("*Server is busy! Your grid might take a while to be sent.*")
-        await list_last_msg_id(ctx, client)
+        await interaction.channel.send("*Server is busy! Your grid might take a while to be sent.*")
+        await list_last_msg_id(interaction, client)
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
-        return await save_send_screenshot(navi, page, ctx)
+        return await save_send_screenshot(navi, page, interaction)
 
 
     if await page.querySelector(".sc-bdvvtL"):  #checks if grid is on stage one or not to determine if it needs cropping or not.
@@ -135,19 +122,27 @@ async def save_send_screenshot(navi, page, ctx):
         width, height = image.size
         image.crop((0, height - 630, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
 
-    view = Reaction(navi, ctx)
-    await ctx.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view)
-    await list_last_msg_id(ctx, client)
+    view = Reaction(navi, interaction)
+    await interaction.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view)
+    await list_last_msg_id(interaction, client)
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     await view.wait()
   
 
     ############ Stress test ############
-    # label_list = ["⬅", "➡", "🤷‍♂️", "🔄", "1" ,"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"] #to debug with this, comment out the above line and uncomment the following 5 lines
+    # #to debug with this, comment out the above line and uncomment the following lines
+    # label_list = ["⬅", "➡", "🤷‍♂️", "🔄", "1" ,"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"] #removing the numbers will perform a more thorough test.
     # import random
     # choice = random.choice(label_list)
-    # print("Choice: " + choice)
-    # await view.click_by_label(choice, ctx.author.id) 
+    # print("Choice: " + choice + " || Stage: " + str(Reaction.stage[interaction.user.id]))
+    # await view.click_by_label(choice, interaction.user.id)
+    # if Reaction.stage[interaction.user.id] == 4:
+    #     print("Finished")
+    #     await interaction.channel.send("⌄⌄⌄⌄⌄This is a Bot-generated message.⌄⌄⌄⌄⌄")
+        # TODO: find a way to re-run waifu()
+    ######################################
+
+
 
 
 
