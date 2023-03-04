@@ -1,6 +1,6 @@
 import os
 from time import sleep
-import logging
+import logging, coloredlogs
 import nextcord
 from nextcord.ext import commands
 from PIL import Image #for image cropping
@@ -9,12 +9,13 @@ from delete_messages import *
 from reaction import Reaction
 from site_navigator import SiteNavigator
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+coloredlogs.install()
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s %(message)s')
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = "MTAxMDI1NzMyMjczNzY3NjM0OQ.G1joLg.DAD2m9bn-9nF6iqcncyvCDZWnAGk0AipvXP-1s"
+secret = ""
 
 client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
 
@@ -35,10 +36,9 @@ async def waifu(interaction: nextcord.Interaction):
     else:
         connected_users.append(interaction.user.id)
         Reaction.stage[interaction.user.id] = 0
-
-        navi = await SiteNavigator.create_navi()
         await interaction.response.send_message("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
         await list_last_msg_id(interaction, client)
+        navi = await SiteNavigator.create_navi()
         logging.info("\033[1;37;40m\033[1;32;40mBrowser started for user '" + str(interaction.user.name) + "'\033[0;37;40m")
 
         while Reaction.stage[interaction.user.id] < 4:
