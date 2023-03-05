@@ -1,6 +1,6 @@
 import os
-from time import sleep
-import logging, coloredlogs
+import logging
+import coloredlogs
 import nextcord
 from nextcord.ext import commands
 from PIL import Image #for image cropping
@@ -13,21 +13,25 @@ coloredlogs.install()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 
-screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
+TOKEN_FILE = "token.txt"
+if not os.path.exists(TOKEN_FILE):
+    logging.error(f"Error: {TOKEN_FILE} not found in program directory.")
+    exit()
 
-secret = "MTAxMDI1NzMyMjczNzY3NjM0OQ.GVF43Y._Ed7fCJFAXtesbuCdiHme6Ym-iVn0nsI3y5ASs"
+with open(TOKEN_FILE, "r") as file:
+    TOKEN = file.read().strip()
 
-client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
+CLIENT = commands.Bot(command_prefix="$", intents=nextcord.Intents().all(), case_insensitive=True)
 
-
-@client.event
+@CLIENT.event
 async def on_ready():
-    logging.info("Bot Ready.\033[0;37;40m")
-    await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="$waifu start"))
+    logging.info("Bot Ready.")
+    await CLIENT.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu"))
     
+SCREENSHOT_PATH = os.path.join(os.path.dirname(__file__), "Screenshots")
 connected_users = []
 
-@client.slash_command(description="Build-a-waifu!")
+@CLIENT.slash_command(description="Build-a-waifu!")
 async def waifu(interaction: nextcord.Interaction):
     if interaction.user.id in connected_users:
         await list_msg_id(await (await interaction.response.send_message("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")).fetch(), interaction)
@@ -37,85 +41,86 @@ async def waifu(interaction: nextcord.Interaction):
         Reaction.stage[interaction.user.id] = 0
         await list_msg_id(await (await interaction.response.send_message("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")).fetch(), interaction)
         navi = await SiteNavigator.create_navi()
-        logging.info("\033[1;37;40m\033[1;32;40mBrowser started for user '" + str(interaction.user.name) + "'\033[0;37;40m")
+        logging.info(f"Browser started for user '{interaction.user.name}'.")
 
-        while Reaction.stage[interaction.user.id] < 4:
+        while Reaction.stage[interaction.user.id] < 4: #TODO: this is where i need to  tell the user they cant undo/keep waifu if they havent chosen one yet. figure this out.
             await save_send_screenshot(navi, navi.page, interaction)
-            await delete_messages(interaction, client)
+            await delete_messages(interaction, CLIENT)
             if await navi.page_is_closed():
                 break
             if Reaction.stage[interaction.user.id] < 4:
                 await list_msg_id(await interaction.channel.send("Okay! lets continue. Here's another grid for you to choose from:"), interaction)
 
         if not await navi.page_is_closed():
-            await delete_messages(interaction, client)
+            await delete_messages(interaction, CLIENT)
             await navi.wait_for_final_image()
-            await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': screenshot_path + '\\end_results\\end_result.png'})
+            await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': SCREENSHOT_PATH + '\\end_results\\end_result.png'})
             await navi.browser.close()
-            logging.info("\033[1;37;40m\033[93mBrowser closed for user '" + str(interaction.user.name) + "', \033[1;32;40mfinished.\033[0;37;40m")
-            await interaction.channel.send(file=nextcord.File(screenshot_path + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
+            logging.info(f"Browser closed for user '{interaction.user.name}', finished.")
+            await interaction.channel.send(file=nextcord.File(SCREENSHOT_PATH + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:")
             
 
         elif await navi.page_is_closed() and navi.timed_out:
-            logging.info("\033[1;37;40m\033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
-            await delete_messages(interaction, client)
+            logging.info(f"Browser closed for user '{interaction.user.name}', timed out.")
+            await delete_messages(interaction, CLIENT)
             await (await interaction.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")).delete(delay=5)
 
         else:
-            logging.info("\033[1;37;40m\033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "'.\033[0;37;40m")
+            logging.info(f"Browser closed for user '{interaction.user.name}'")
         
         Reaction.stage.pop(interaction.user.id, None)
         connected_users.remove(interaction.user.id)
 
 
 
-
 def create_dirs():
-    if not os.path.exists(screenshot_path):
-        logging.warning("\033[1;37;40m\033[1;31;40mscreenshots folder does not exist, creating...\033[0;37;40m")
-        os.mkdir(os.path.dirname(os.path.realpath(__file__)) + "\\Screenshots")
+    if not os.path.exists(SCREENSHOT_PATH):
+        logging.warning("screenshots folder does not exist, creating...")
+        os.mkdir(SCREENSHOT_PATH)
         
-    if not os.path.exists(screenshot_path + '\\end_results'):
-        logging.warning("\033[1;37;40m\033[1;31;40mend_results folder does not exist, creating...\033[0;37;40m")
-        os.mkdir(screenshot_path + "\\end_results")
+    end_results_path = os.path.join(SCREENSHOT_PATH, 'end_results')
+    if not os.path.exists(end_results_path):
+        logging.warning("end_results folder does not exist, creating...")
+        os.mkdir(end_results_path)
 
 
-        
 
-max_number_of_files = 1000 + 1 #1 is for the additional files and folders in the folder
+MAX_NUMBER_OF_FILES = 1000 + 1 #1 is for the additional files and folders in the folder
 async def save_send_screenshot(navi, page, interaction):
     await navi.wait_for_not_load_screen()
     create_dirs()
 
-    filenames_in_screenshot_path = os.listdir(screenshot_path)
+    filenames_in_screenshot_path = os.listdir(SCREENSHOT_PATH)
 
     file_number = 0
-    while os.path.isfile(screenshot_path + '\\' + str(file_number) + ".png"):    #checks and assigns the lowest file number available to next screenshot
+    while os.path.isfile(os.path.join(SCREENSHOT_PATH, f"{file_number}.png")):    #checks and assigns the lowest file number available to next screenshot
         file_number += 1
     
-    if len(filenames_in_screenshot_path) >= max_number_of_files:
+    if len(filenames_in_screenshot_path) >= MAX_NUMBER_OF_FILES:
         await list_msg_id(await interaction.channel.send("*Server is busy! Your grid might take a while to be sent.*"), interaction)
-        while len(filenames_in_screenshot_path) >= max_number_of_files:
-            sleep(0.01)
-            filenames_in_screenshot_path = os.listdir(screenshot_path)
+        while len(filenames_in_screenshot_path) >= MAX_NUMBER_OF_FILES:
+            filenames_in_screenshot_path = os.listdir(SCREENSHOT_PATH)
         return await save_send_screenshot(navi, page, interaction)
 
 
-    if await page.querySelector(".sc-bdvvtL"):  #checks if grid is on stage one or not to determine if it needs cropping or not.
-        await (await page.querySelector(".waifu-container")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+    if await page.querySelector(".sc-bdvvtL"): #check if grid is on stage 1 or not to determine whether or not it needs to be cropped
+        selector = ".waifu-container"
         crop = True
     else:
-        await (await page.querySelector(".waifu-grid")).screenshot({'path': screenshot_path + '\\' + str(file_number) + '.png'})
+        selector = ".waifu-grid"
         crop = False
 
+    new_screenshot_path = os.path.join(SCREENSHOT_PATH, f"{file_number}.png")
+    await (await page.querySelector(selector)).screenshot({'path': new_screenshot_path})
+
     if crop:
-        image = Image.open(screenshot_path + '\\' + str(file_number) + '.png')
+        image = Image.open(new_screenshot_path)
         width, height = image.size
-        image.crop((0, height - 630, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
+        image.crop((0, height - 630, width, height)).save(new_screenshot_path)
 
     view = Reaction(navi, interaction)
-    await list_msg_id(await interaction.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view), interaction)
-    os.remove(screenshot_path + '\\' + str(file_number) + '.png')
+    await list_msg_id(await interaction.channel.send(file=nextcord.File(SCREENSHOT_PATH + '\\' + str(file_number) + '.png'), view=view), interaction)
+    os.remove(SCREENSHOT_PATH + '\\' + str(file_number) + '.png')
     await view.wait()
   
 
@@ -134,10 +139,7 @@ async def save_send_screenshot(navi, page, interaction):
 
 
 
-
-
-
 if __name__ == "__main__":
-    client.run(secret)
+    CLIENT.run(TOKEN)
 
 

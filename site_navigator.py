@@ -3,7 +3,7 @@ from random import randint
 from time import sleep
 
 
-class SiteNavigator():
+class SiteNavigator:
     def __init__(self):
         self.browser = None
         self.page = None
@@ -20,7 +20,7 @@ class SiteNavigator():
 
     async def click_by_index(self, index):
         girls = await self.find_all_girls()
-        await girls[index -1].click()
+        await girls[index - 1].click()
 
     async def exit(self):
         await self.page.close()
@@ -28,14 +28,14 @@ class SiteNavigator():
 
     async def undo(self):
         await (await self.page.querySelector(".sc-bdvvtL")).click()
-    
+
     async def keep(self):
         await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
-    
+
     async def rand(self):
-        label = randint(1, 15)
+        random_index = randint(1, 15)
         girls = await self.find_all_girls()
-        await girls[label].click()
+        await girls[random_index].click()
 
     async def refresh(self):
         await (await self.find_all_girls())[15].click()
@@ -51,8 +51,6 @@ class SiteNavigator():
     async def find_all_girls(self):
         return await self.page.querySelectorAll(".waifu-grid > div")
 
-
-
     async def browser_timeout(self):
         await self.page.close()
         await self.browser.close()
@@ -61,7 +59,3 @@ class SiteNavigator():
 
     async def page_is_closed(self):
         return self.page.isClosed()
-    
-
-
-
