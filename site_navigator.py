@@ -46,7 +46,7 @@ class SiteNavigator():
         while await self.page.querySelector(".loading-callout"):
             sleep(0.01)
 
-    async def wait_for_final_image(self): #TODO: doesn't work
+    async def wait_for_final_image(self):
         while await self.page.querySelector(".waifu-preview-loading"):
             sleep(0.01)
 

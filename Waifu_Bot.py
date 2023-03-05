@@ -10,19 +10,19 @@ from reaction import Reaction
 from site_navigator import SiteNavigator
 
 coloredlogs.install()
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 
 screenshot_path = os.path.dirname(__file__) + "\\Screenshots"
 
-secret = ""
+secret = "MTAxMDI1NzMyMjczNzY3NjM0OQ.GVF43Y._Ed7fCJFAXtesbuCdiHme6Ym-iVn0nsI3y5ASs"
 
 client = commands.Bot(command_prefix = "$", intents = nextcord.Intents().all(), case_insensitive=True)
 
 
 @client.event
 async def on_ready():
-    logging.info("\033[1;32;40mBot Ready.\033[0;37;40m")
+    logging.info("Bot Ready.\033[0;37;40m")
     await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="$waifu start"))
     
 connected_users = []
@@ -30,14 +30,12 @@ connected_users = []
 @client.slash_command(description="Build-a-waifu!")
 async def waifu(interaction: nextcord.Interaction):
     if interaction.user.id in connected_users:
-        await interaction.response.send_message("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")
-        await list_last_msg_id(interaction, client)
+        await list_msg_id(await (await interaction.response.send_message("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.")).fetch(), interaction)
         return
     else:
         connected_users.append(interaction.user.id)
         Reaction.stage[interaction.user.id] = 0
-        await interaction.response.send_message("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")
-        await list_last_msg_id(interaction, client)
+        await list_msg_id(await (await interaction.response.send_message("Hello! My name is WaifuBot! I make waifus using <https://www.waifulabs.com>. let's start making your waifu!\nYou will be shown 4 grids of waifus, each one based on your previous choice.\nStart by telling me the position of your waifu on the following grid or use one of the following buttons:\n❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🤷‍♂️ to choose randomly or 🔄 to refresh.")).fetch(), interaction)
         navi = await SiteNavigator.create_navi()
         logging.info("\033[1;37;40m\033[1;32;40mBrowser started for user '" + str(interaction.user.name) + "'\033[0;37;40m")
 
@@ -47,8 +45,7 @@ async def waifu(interaction: nextcord.Interaction):
             if await navi.page_is_closed():
                 break
             if Reaction.stage[interaction.user.id] < 4:
-                await interaction.channel.send("Okay! lets continue. Here's another grid for you to choose from:")
-                await list_last_msg_id(interaction, client)
+                await list_msg_id(await interaction.channel.send("Okay! lets continue. Here's another grid for you to choose from:"), interaction)
 
         if not await navi.page_is_closed():
             await delete_messages(interaction, client)
@@ -62,9 +59,7 @@ async def waifu(interaction: nextcord.Interaction):
         elif await navi.page_is_closed() and navi.timed_out:
             logging.info("\033[1;37;40m\033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "', \033[1;32;40mtimed out.\033[0;37;40m")
             await delete_messages(interaction, client)
-            timeout_message = await interaction.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")
-            sleep(5)
-            await timeout_message.delete()
+            await (await interaction.channel.send("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:")).delete(delay=5)
 
         else:
             logging.info("\033[1;37;40m\033[1;31;40mBrowser closed for user '" + str(interaction.user.name) + "'.\033[0;37;40m")
@@ -99,8 +94,7 @@ async def save_send_screenshot(navi, page, interaction):
         file_number += 1
     
     if len(filenames_in_screenshot_path) >= max_number_of_files:
-        await interaction.channel.send("*Server is busy! Your grid might take a while to be sent.*")
-        await list_last_msg_id(interaction, client)
+        await list_msg_id(await interaction.channel.send("*Server is busy! Your grid might take a while to be sent.*"), interaction)
         while len(filenames_in_screenshot_path) >= max_number_of_files:
             sleep(0.01)
             filenames_in_screenshot_path = os.listdir(screenshot_path)
@@ -120,8 +114,7 @@ async def save_send_screenshot(navi, page, interaction):
         image.crop((0, height - 630, width, height)).save(screenshot_path + '\\' + str(file_number) + '.png')
 
     view = Reaction(navi, interaction)
-    await interaction.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view)
-    await list_last_msg_id(interaction, client)
+    await list_msg_id(await interaction.channel.send(file=nextcord.File(screenshot_path + '\\' + str(file_number) + '.png'), view=view), interaction)
     os.remove(screenshot_path + '\\' + str(file_number) + '.png')
     await view.wait()
   
