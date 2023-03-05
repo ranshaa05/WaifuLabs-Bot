@@ -27,12 +27,10 @@ class SiteNavigator():
         await self.browser.close()
 
     async def undo(self):
-        if await self.page.querySelectorAll(".sc-bdvvtL"):
-            await (await self.page.querySelectorAll(".sc-bdvvtL"))[0].click()
+        await (await self.page.querySelector(".sc-bdvvtL")).click()
     
     async def keep(self):
-        if await self.page.querySelectorAll(".sc-bdvvtL"):
-            await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
+        await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
     
     async def rand(self):
         label = randint(1, 15)
