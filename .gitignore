@@ -1,5 +1,4 @@
-.vscode/
-!.gitignore
+.gitignore
 *.png
 __pycache__/
-vscode/
+token.txt
