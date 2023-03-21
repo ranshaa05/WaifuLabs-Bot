@@ -1,3 +1,4 @@
 pyppeteer
 nextcord
 Pillow
+coloredlogs
