@@ -46,7 +46,7 @@ async def waifu(interaction: nextcord.Interaction):
         while Reaction.stage[interaction.user.id] < 4: #TODO: this is where i need to  tell the user they cant undo/keep waifu if they havent chosen one yet. figure this out.
             await save_send_screenshot(navi, navi.page, interaction, original_message)
             if await navi.page_is_closed():
-                await original_message.edit("Exiting...", delete_after=5, view=None) #TODO: remove the file attachment from the message, when nextcord supports it
+                await original_message.edit("Exiting...", delete_after=5, attachments=[], view=None)
                 break
             if Reaction.stage[interaction.user.id] < 4:
                 await original_message.edit("Okay! lets continue. Here's another grid for you to choose from:")
@@ -61,7 +61,7 @@ async def waifu(interaction: nextcord.Interaction):
 
         elif await navi.page_is_closed() and navi.timed_out:
             log.info(f"Browser closed for user '{interaction.user.name}', timed out.")
-            await original_message.edit("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:", delete_after=5, view=None)
+            await original_message.edit("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:", delete_after=5, attachments=[], view=None)
 
         else:
             log.info(f"Browser closed for user '{interaction.user.name}'")
