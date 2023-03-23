@@ -51,11 +51,6 @@ class SiteNavigator:
     async def find_all_girls(self):
         return await self.page.querySelectorAll(".waifu-grid > div")
 
-    async def browser_timeout(self):
-        await self.page.close()
-        await self.browser.close()
-        await self.page_is_closed()
+    async def browser_timeout(self): #this is to differentiate between a timeout and a user exiting.
         self.timed_out = True
-
-    async def page_is_closed(self):
-        return self.page.isClosed()
+        await self.exit()
