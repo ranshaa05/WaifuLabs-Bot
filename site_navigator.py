@@ -27,15 +27,14 @@ class SiteNavigator:
         await self.browser.close()
 
     async def undo(self):
-        await (await self.page.querySelector(".sc-bdvvtL")).click()
+        await self.page.click(".sc-bdvvtL:nth-child(1)")
 
     async def keep(self):
-        await (await self.page.querySelectorAll(".sc-bdvvtL"))[1].click()
+        await self.page.click(".sc-bdvvtL:nth-child(2)")
 
     async def rand(self):
         random_index = randint(1, 15)
-        girls = await self.find_all_girls()
-        await girls[random_index].click()
+        await self.page.click(f".waifu-grid > div:nth-child({random_index})")
 
     async def refresh(self):
         await (await self.find_all_girls())[15].click()
