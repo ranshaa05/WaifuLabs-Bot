@@ -33,16 +33,17 @@ connected_users = []
 
 @CLIENT.slash_command(description="Build-a-waifu!")
 async def waifu(interaction: nextcord.Interaction):
+    "Starts the bot."
     if interaction.user.id in connected_users:
         await interaction.response.send_message("Whoops! One user cannot start me twice. You can continue or press ❌ to exit.", ephemeral=True, delete_after=5)
         return
     else:
         connected_users.append(interaction.user.id)
-        Reaction.stage[interaction.user.id] = 0
         original_message = await interaction.response.send_message("Hi there! I'm WaifuBot, and I can create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Tell me which waifu you like or use the buttons below: ❌ to exit, ⬅ to go back, ➡ to keep your current waifu, 🎲 to choose randomly, or 🔄 to refresh.")
         navi = await SiteNavigator.create_navi()
         log.info(f"Browser started for user '{interaction.user.name}'.")
 
+        Reaction.stage[interaction.user.id] = 0
         while Reaction.stage[interaction.user.id] < 4: #TODO: this is where i need to  tell the user they cant undo/keep waifu if they havent chosen one yet. figure this out.
             if navi.page.isClosed():
                 await original_message.edit("Exiting...", delete_after=5, attachments=[], view=None)
@@ -52,17 +53,12 @@ async def waifu(interaction: nextcord.Interaction):
             if Reaction.stage[interaction.user.id] < 4 and not navi.page.isClosed():
                 await original_message.edit("Okay! lets continue. Here's another grid for you to choose from:", view=None)
 
-
         if not navi.page.isClosed():
-            await navi.wait_for_final_image()
-            if isinstance(original_message.channel, nextcord.abc.GuildChannel):
-                await (await original_message.fetch()).clear_reactions()
-            await (await navi.page.querySelector(".waifu-preview > img")).screenshot({'path': SCREENSHOT_PATH + '\\end_results\\end_result.png'})
+            await save_send_screenshot(navi, navi.page, interaction, original_message)
+            await original_message.edit(content="Here's your waifu! Thanks for playing :slight_smile:")
             await navi.browser.close()
             log.info(f"Browser closed for user '{interaction.user.name}', finished.")
-            await original_message.edit(file=nextcord.File(SCREENSHOT_PATH + '\\end_results\\end_result.png'), content="Here's your waifu! Thanks for playing :slight_smile:" , view=None)
             
-
         elif navi.page.isClosed() and navi.timed_out:
             log.info(f"Browser closed for user '{interaction.user.name}', timed out.")
             await original_message.edit("Hey, anybody there? No? Okay, I'll shut down then :slight_frown:", delete_after=5, attachments=[], view=None)
@@ -102,14 +98,26 @@ async def save_send_screenshot(navi, page, interaction, original_message):
     while os.path.isfile(os.path.join(SCREENSHOT_PATH, f"{file_number}.png")):    #checks and assigns the lowest file number available to next screenshot
         file_number += 1
 
-    if await page.querySelector(".sc-bdvvtL"): #check if grid is on stage 1 or not to determine whether or not it needs to be cropped
+    new_screenshot_path = os.path.join(SCREENSHOT_PATH, f"{file_number}.png")
+
+
+    if Reaction.stage[interaction.user.id] in range(1,4):
         selector = ".waifu-container"
         crop = True
-    else:
+        view = Reaction(navi, interaction)
+
+    elif Reaction.stage[interaction.user.id] == 0: #check if grid is on stage 0 or not to determine whether or not it needs to be cropped
         selector = ".waifu-grid"
         crop = False
+        view = Reaction(navi, interaction)
 
-    new_screenshot_path = os.path.join(SCREENSHOT_PATH, f"{file_number}.png")
+    else: #if on last stage
+        new_screenshot_path = os.path.join(SCREENSHOT_PATH, 'end_results', 'end_result.png')
+        await navi.wait_for_final_image()
+        selector = ".waifu-preview > img"
+        crop = False
+        view = None
+    
     await (await page.querySelector(selector)).screenshot({'path': new_screenshot_path}) #NOTE: the object positioning can take too long, resulting in a slightly cropped image from the right. This is likely an issue with pyppeteer, not the code itself.
 
     if crop:
@@ -117,25 +125,26 @@ async def save_send_screenshot(navi, page, interaction, original_message):
         width, height = image.size
         image.crop((0, height - 630, width, height)).save(new_screenshot_path)
 
-    view = Reaction(navi, interaction)
-    await original_message.edit(file=nextcord.File(SCREENSHOT_PATH + '\\' + str(file_number) + '.png'), view=view)
-    os.remove(SCREENSHOT_PATH + '\\' + str(file_number) + '.png')
+    await original_message.edit(file=nextcord.File(new_screenshot_path), view=view if view else None)
+    os.remove(new_screenshot_path)
     
     
     if isinstance(original_message.channel, nextcord.abc.GuildChannel):
         await (await original_message.fetch()).clear_reactions()
 
-    await view.wait()
+    if view:
+        await view.wait()
 
-    if isinstance(original_message.channel, nextcord.abc.GuildChannel):
-        if view.current_label == "❓":
-            return
-        #if the label is a single emoji (3 chars), it can be added directly. if it is a string of emojis, it must be split into 3 character chunks.
-        elif len(view.current_label) > 3:
-            for emoji in [view.current_label[i:i+3] for i in range(0, len(view.current_label), 3)]:
-                await (await original_message.fetch()).add_reaction(emoji)
-        else:
-            await (await original_message.fetch()).add_reaction(view.current_label)
+        if isinstance(original_message.channel, nextcord.abc.GuildChannel):
+            print(view.current_label)
+            if view.current_label == "❓":
+                return
+            #if the label is a single emoji (3 chars), it can be added directly. if it is a string of emojis, it must be split into 3 character chunks.
+            elif len(view.current_label) > 3:
+                for emoji in [view.current_label[i:i+3] for i in range(0, len(view.current_label), 3)]:
+                    await (await original_message.fetch()).add_reaction(emoji)
+            else:
+                await (await original_message.fetch()).add_reaction(view.current_label)
 
         
 
