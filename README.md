@@ -7,9 +7,9 @@ Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a w
 
 
 ## Set-up
-* Clone this git repo or download the latest package..
+* Clone this git repo or download the latest package.
 * Paste your discord secret key into "token.txt".
-* Run Waifu_bot.py
+* Run "main.py" or "run.bat".
 * Enjoy! 😃
 ---
 Note: This is my first Discord bot/Python program. Hope you like it! 😃
