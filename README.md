@@ -1,8 +1,8 @@
 # WaifuLabs Bot
-Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a waifu!
+Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a waifu based on user choice!
 
 ## Basic Features
-* Customize your waifu through discord.
+* Customize your waifu entirely through discord.
 * Buttons to refresh the grid, keep current waifu, go back one stage, and more.
 
 
