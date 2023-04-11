@@ -1,6 +1,6 @@
 import os
 import glob
-from PIL import Image #for image cropping
+from PIL import Image
 import nextcord
 
 from view import View
@@ -9,7 +9,7 @@ from logger import setup_logging
 class Screenshot():
     log = setup_logging().log
     SCREENSHOT_PATH = os.path.join(os.path.dirname(__file__), "Screenshots")
-    MAX_NUMBER_OF_FILES = 1000 + 1 #1 is for the additional files and folders in the folder
+    MAX_NUMBER_OF_FILES = 1000 + 1 # +num is for any additional files and folders in the folder
     def __init__(self, navi, interaction, original_message):
         self.navi = navi
         self.interaction = interaction
@@ -45,7 +45,6 @@ class Screenshot():
         if self.view:
             await self.view.wait()
             await self.add_reaction()
-
 
 
         ########### Stress test ############

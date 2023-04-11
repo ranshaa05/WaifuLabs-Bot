@@ -41,7 +41,7 @@ async def waifu(interaction: nextcord.Interaction):
     log.info(f"Browser started for user '{interaction.user.name}'.")
 
     View.stage[interaction.user.id] = 0
-    while View.stage[interaction.user.id] < 4: #TODO: this is where i need to  tell the user they cant undo/keep waifu if they havent chosen one yet. figure this out.
+    while View.stage[interaction.user.id] < 4:
         if navi.page.isClosed():
             await original_message.edit("Exiting...", delete_after=5, attachments=[], view=None)
             break
@@ -75,8 +75,8 @@ async def check_permissions(interaction):
             missing_permissions.append(permission)
 
     if missing_permissions:
-        message = "The following permissions are missing: {}".format(", ".join(missing_permissions))
-        await interaction.response.send_message(message)
+        message = "Hey! I'm missing these permissions:\n{}".format("\n".join(missing_permissions) + ".\nPlease give me these so I can work properly :slight_smile:")
+        await interaction.response.send_message(message, ephemeral=True)
         return False
     return True
  
