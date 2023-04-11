@@ -23,7 +23,8 @@ class Screenshot():
         await self.navi.wait_for_not_load_screen()
         
         file_number = 0
-        while os.path.isfile(os.path.join(Screenshot.SCREENSHOT_PATH, f"{file_number}.png")):    #checks and assigns the lowest file number available to next screenshot
+        while os.path.isfile(os.path.join(Screenshot.SCREENSHOT_PATH, f"{file_number}.png")):
+            #checks and assigns the lowest file number available to next screenshot
             file_number += 1
 
         new_screenshot_path = os.path.join(Screenshot.SCREENSHOT_PATH, f"{file_number}.png")
@@ -95,11 +96,11 @@ class Screenshot():
     
     async def busy_wait(self):
         """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
-        files_in_screenshot_path = len(glob.glob(f"{Screenshot.SCREENSHOT_PATH}\*"))
+        files_in_screenshot_path = len(glob.glob(fr"{Screenshot.SCREENSHOT_PATH}\*"))
         if files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
             await self.original_message.edit("*Server is busy! Your grid might take a while to be sent.*")
             while files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
-                files_in_screenshot_path = len(glob.glob(f"{Screenshot.SCREENSHOT_PATH}\*"))
+                files_in_screenshot_path = len(glob.glob(fr"{Screenshot.SCREENSHOT_PATH}\*"))
 
     async def get_screenshot_info_by_stage(self, new_screenshot_path): #TODO: perhaps have these passed to save_send_screenshot in the first place?
         """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid"""
@@ -109,12 +110,14 @@ class Screenshot():
             crop = True
             view = View(self.navi, self.interaction)
 
-        elif View.stage[self.interaction.user.id] == 0: #check if grid is on stage 0 or not to determine whether or not it needs to be cropped
+        elif View.stage[self.interaction.user.id] == 0:
+            #check if grid is on stage 0 or not to determine whether or not it needs to be cropped
             selector = ".waifu-grid"
             crop = False
             view = View(self.navi, self.interaction)
 
-        else: #if on last stage
+        else:
+            #if on last stage
             new_screenshot_path = os.path.join(Screenshot.SCREENSHOT_PATH, 'end_results', 'end_result.png')
             await self.navi.wait_for_final_image()
             selector = ".waifu-preview > img"
