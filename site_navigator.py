@@ -14,8 +14,8 @@ class SiteNavigator:
         navi = SiteNavigator()
         navi.browser = await launch(headless=True, autoClose=True)
         navi.page = await navi.browser.newPage()
-        await navi.page.setViewport({'width': 1200, 'height': 630})
-        await navi.page.goto('https://waifulabs.com/generate')
+        await navi.page.setViewport({"width": 1200, "height": 630})
+        await navi.page.goto("https://waifulabs.com/generate")
         return navi
 
     async def click_by_index(self, index):
@@ -50,6 +50,7 @@ class SiteNavigator:
     async def find_all_girls(self):
         return await self.page.querySelectorAll(".waifu-grid > div")
 
-    async def browser_timeout(self): #this is to differentiate between a timeout and a user exiting.
+    async def browser_timeout(self):
+        # this is to differentiate between a timeout and a user exiting.
         self.timed_out = True
         await self.exit()
