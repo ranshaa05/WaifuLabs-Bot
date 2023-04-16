@@ -66,7 +66,7 @@ class Screenshot:
             if isinstance(self.original_message.channel, nextcord.abc.GuildChannel):
                 await self.add_reaction()
 
-        ########### Stress test ############
+        ########### Simulated test ############
         # #to debug with this, comment out the view.await() above and uncomment the following lines.
         # #this will simulate button presses until the waifu is finished.
         # label_list = ["⬅", "➡", "🎲", "🔃"]
