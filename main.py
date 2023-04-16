@@ -19,6 +19,14 @@ with open(TOKEN_FILE, "r") as file:
 
 CLIENT = commands.Bot(command_prefix="$", intents=nextcord.Intents().all())
 
+REQUIRED_PERMISSIONS = [
+    "manage_messages",
+    "send_messages",
+    "add_reactions",
+    "attach_files",
+    "embed_links",
+]
+
 
 @CLIENT.event
 async def on_ready():
@@ -46,7 +54,7 @@ async def waifu(interaction: nextcord.Interaction):
 
     connected_users.append(interaction.user.id)
     original_message = await interaction.response.send_message(
-        "Hi there! I'm WaifuBot, and I can create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Tell me which waifu you like or use the buttons below:\n❌ to exit, ⬅ to undo, ➡ to continue your current waifu, 🎲 to choose randomly, or 🔄 to refresh the grid."
+        "Hi there! I'm WaifuBot!\nI create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Click the waifu you like best or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(1/4)_",
     )
     navi = await SiteNavigator.create_navi()
     log.info(f"Browser started for user '{interaction.user.name}'.")
@@ -62,7 +70,7 @@ async def waifu(interaction: nextcord.Interaction):
             await Screenshot(navi, interaction, original_message).save_send_screenshot()
         if View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
             await original_message.edit(
-                "Okay! lets continue. Here's another grid for you to choose from:",
+                f"Okay! lets continue. Here's another grid for you to choose from:\n(_{View.stage[interaction.user.id] + 1}/4)_",
                 view=None,
             )
 
@@ -90,22 +98,27 @@ async def waifu(interaction: nextcord.Interaction):
     connected_users.remove(interaction.user.id)
 
 
+@CLIENT.slash_command(description="Submit a bug report.")
+async def feedback(interaction: nextcord.Interaction):
+    "Link to the issues page."
+    await interaction.response.send_message(
+        """If you've encountered a bug or have a suggestion for Waifu Bot, please head over to the issues page on Github: <https://github.com/ranshaa05/WaifuLabs-Bot/issues>.
+There, you can report bugs, suggest features, or ask for help with any issues you're having.
+Thanks for helping us make Waifu Bot better! :slight_smile:""",
+        ephemeral=True,
+    )
+
+
 async def check_permissions(interaction):
     "Checks if the bot has the required permissions."
 
     if isinstance(interaction.channel, nextcord.abc.GuildChannel):
-        REQUIRED_PERMISSIONS = [
-            "manage_messages",
-            "send_messages",
-            "add_reactions",
-            "attach_files",
-            "embed_links",
-        ]
         missing_permissions = []
         for permission in REQUIRED_PERMISSIONS:
             if not getattr(
                 interaction.channel.permissions_for(interaction.guild.me), permission
             ):
+                permission = permission.replace("_", " ").title()
                 missing_permissions.append(permission)
 
         if missing_permissions:

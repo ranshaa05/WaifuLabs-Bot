@@ -47,7 +47,7 @@ class Screenshot:
 
         await (await self.navi.page.querySelector(selector)).screenshot(
             {"path": new_screenshot_path}
-        )  # NOTE: the object positioning can take too long, resulting in a slightly cropped image from the right. This is likely an issue with pyppeteer, not the code itself.
+        )  # NOTE: the object positioning can take too long, resulting in a slightly zoomed-in image. This is likely an issue with pyppeteer, not the code itself.
 
         if crop:
             image = Image.open(new_screenshot_path)
@@ -67,8 +67,8 @@ class Screenshot:
                 await self.add_reaction()
 
         ########### Simulated test ############
-        # #to debug with this, comment out the view.await() above and uncomment the following lines.
-        # #this will simulate button presses until the waifu is finished.
+        # to debug with this, comment out the view.await() above and uncomment the following lines.
+        # this will simulate button presses until the waifu is finished.
         # label_list = ["⬅", "➡", "🎲", "🔃"]
         # for i in range(1, 16):
         #     label_list.append(str(i)) # adds numbers 1-15 to the list. if this is removed, the test will be more thorough.
