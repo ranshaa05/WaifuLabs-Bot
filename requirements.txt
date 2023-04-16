@@ -1,4 +1,4 @@
-pyppeteer
-nextcord
-Pillow
-coloredlogs
+pyppeteer == 1.0.2
+nextcord == 2.4.2
+Pillow == 9.5.0
+coloredlogs == 15.0.1
