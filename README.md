@@ -7,7 +7,7 @@ Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a w
 
 
 ## Set-up
-* install python 3.8 or greater.
+* Install python 3.8 or greater.
 * Clone this git repo or download the latest package.
 * install requirements.
 * Paste your discord secret key into "token.txt".
