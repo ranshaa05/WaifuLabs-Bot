@@ -23,8 +23,8 @@ If applicable, add screenshots to help explain your problem.
 
 **System info:**
  - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
  - Discord Version
+ - If you are hosting the bot yourself, please include your version of python.
 
 **Additional context**
 Add any other context about the problem here.
