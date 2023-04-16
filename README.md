@@ -6,6 +6,12 @@ Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a w
 * Buttons to refresh the grid, keep current waifu, go back one stage, and more.
 
 
+## Add this bot to your server! 😄
+Use this link: www.shorturl.at/eHS09
+
+*This bot may be inactive at times.
+
+
 ## Set-up
 * Install python 3.8 or greater.
 * Clone this git repo or download the latest package.
