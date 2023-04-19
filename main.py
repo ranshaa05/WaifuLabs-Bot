@@ -1,6 +1,7 @@
 import os
 import nextcord
 from nextcord.ext import commands
+from typing import Optional
 
 from view import View
 from site_navigator import SiteNavigator
@@ -40,7 +41,14 @@ connected_users = []
 
 
 @CLIENT.slash_command(description="Build-a-waifu!")
-async def waifu(interaction: nextcord.Interaction):
+async def waifu(
+    interaction: nextcord.Interaction,
+    private: Optional[bool] = nextcord.SlashOption(
+        description="Makes it so only you can see your waifus.",
+        default=False,
+        required=False,
+    ),
+):
     "Starts the bot."
     if not await check_permissions(interaction):
         return
@@ -55,6 +63,7 @@ async def waifu(interaction: nextcord.Interaction):
     connected_users.append(interaction.user.id)
     original_message = await interaction.response.send_message(
         "Hi there! I'm WaifuBot!\nI create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Click the waifu you like best or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(1/4)_",
+        ephemeral=private,
     )
     navi = await SiteNavigator.create_navi()
     log.info(f"Browser started for user '{interaction.user.name}'.")
