@@ -14,8 +14,21 @@ class View(nextcord.ui.View):
         color_list = []
         emoji_label_list = ["⬅", "➡", "🎲", "🔄", "❌"]
         number_emoji_list = [
-            f"{i}\uFE0F\u20E3" if i < 10 else f"{i//10}\uFE0F\u20E3{i%10}\uFE0F\u20E3"
-            for i in range(1, 16)
+            "1️⃣",
+            "2️⃣",
+            "3️⃣",
+            "4️⃣",
+            "5️⃣",
+            "6️⃣",
+            "7️⃣",
+            "8️⃣",
+            "9️⃣",
+            "🔟",
+            "1️⃣🇮",
+            "1️⃣2️⃣",
+            "1️⃣3️⃣",
+            "1️⃣4️⃣",
+            "1️⃣5️⃣",
         ]
 
         for i, emoji in enumerate(emoji_label_list[:3]):
