@@ -1,7 +1,10 @@
 import os
 import glob
 from PIL import Image
+import base64 as b64
+from io import BytesIO
 import nextcord
+
 
 from view import View
 from logger import setup_logging
@@ -43,16 +46,25 @@ class Screenshot:
             crop,
             self.view,
             new_screenshot_path,
+            b64_image,
         ) = await self.get_screenshot_info_by_stage(new_screenshot_path)
 
-        await (await self.navi.page.querySelector(selector)).screenshot(
-            {"path": new_screenshot_path}
-        )  # NOTE: the object positioning can take too long, resulting in a slightly zoomed-in image. This is likely an issue with pyppeteer, not the code itself.
+        if (
+            b64_image
+        ):  # this is for the final stage, where the image is a base64 string and not a screenshot of a selector.
+            image_bytes = b64.b64decode(b64_image)
+            pil_image = Image.open(BytesIO(image_bytes))
+            pil_image.save(new_screenshot_path)
 
-        if crop:
-            image = Image.open(new_screenshot_path)
-            width, height = image.size
-            image.crop((0, height - 630, width, height)).save(new_screenshot_path)
+        else:
+            await (await self.navi.page.querySelector(selector)).screenshot(
+                {"path": new_screenshot_path}
+            )
+
+            if crop:
+                image = Image.open(new_screenshot_path)
+                width, height = image.size
+                image.crop((0, height - 630, width, height)).save(new_screenshot_path)
 
         await self.original_message.edit(
             file=nextcord.File(new_screenshot_path),
@@ -132,6 +144,13 @@ class Screenshot:
 
     async def get_screenshot_info_by_stage(self, new_screenshot_path):
         """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid"""
+        selector, crop, view, b64_image = (
+            None,
+            False,
+            None,
+            None,
+        )  # these are the default values.
+
         if View.stage[self.interaction.user.id] in range(1, 4):
             selector = ".waifu-container"
             crop = True
@@ -139,17 +158,24 @@ class Screenshot:
 
         elif View.stage[self.interaction.user.id] == 0:
             selector = ".waifu-grid"
-            crop = False
             view = View(self.navi, self.interaction)
 
         else:
-            # if on last stage
+            # if on last stage.
+            # this is a bit of a hack, but it works. the final image is not a screenshot, but is rather a base64 encoded image taken from the element's src attribute.
+            # this is done because of an issue with pyppeteer's screenshot function.
             new_screenshot_path = os.path.join(
-                Screenshot.SCREENSHOT_PATH, "end_results", "end_result.png"
+                self.SCREENSHOT_PATH, "end_results", "end_result.png"
             )
             await self.navi.wait_for_final_image()
-            selector = ".waifu-preview > img"
-            crop = False
-            view = None
 
-        return selector, crop, view, new_screenshot_path
+            final_image_element = await self.navi.page.querySelector(
+                ".waifu-preview > img"
+            )
+            final_image_url = await self.navi.page.evaluate(
+                "(element) => element.src", final_image_element
+            )
+            final_image_base64 = final_image_url.split(",")[1]
+            b64_image = final_image_base64
+
+        return selector, crop, view, new_screenshot_path, b64_image
