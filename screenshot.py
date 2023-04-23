@@ -71,11 +71,19 @@ class Screenshot:
             view=self.view if self.view else None,
         )
         os.unlink(new_screenshot_path)
-        if isinstance(self.original_message.channel, nextcord.abc.GuildChannel):
+
+        self.original_message = await self.original_message.fetch()
+        if (
+            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
+            and not self.original_message.flags.ephemeral
+        ):
             await self.remove_reaction()
         if self.view:
             await self.view.wait()
-            if isinstance(self.original_message.channel, nextcord.abc.GuildChannel):
+            if (
+                isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
+                and not self.original_message.flags.ephemeral
+            ):
                 await self.add_reaction()
 
         ########### Simulated test ############
@@ -95,7 +103,7 @@ class Screenshot:
         #     await self.view.click_by_label(choice, self.interaction.user.id)
         # else:
         #     log.info("Finished")
-        #     await self.interaction.channel.send("^^^^^^^^This is a Bot-generated message.^^^^^^^^")
+        #     await self.interaction.channel.send(content="^^^^^^^^This is a Bot-generated message.^^^^^^^^", ephemeral=True)
         # TODO: find a way to re-run waifu()
         #####################################
 
@@ -112,7 +120,7 @@ class Screenshot:
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""
-        await (await self.original_message.fetch()).clear_reactions()
+        await self.original_message.clear_reactions()
 
     async def add_reaction(self):
         """Adds a reaction to the original message based on the button pressed in the view."""
@@ -124,11 +132,9 @@ class Screenshot:
                 self.view.current_label[i : i + 3]
                 for i in range(0, len(self.view.current_label), 3)
             ]:
-                await (await self.original_message.fetch()).add_reaction(emoji)
+                await self.original_message.add_reaction(emoji)
         else:
-            await (await self.original_message.fetch()).add_reaction(
-                self.view.current_label
-            )
+            await self.original_message.add_reaction(self.view.current_label)
 
     async def busy_wait(self):
         """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
