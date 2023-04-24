@@ -13,3 +13,4 @@ class setup_logging:
         )
         self.log = logging.getLogger(__name__)
         logging.getLogger("nextcord").setLevel(logging.WARNING)
+        logging.getLogger("pyppeteer").setLevel(logging.WARNING)
