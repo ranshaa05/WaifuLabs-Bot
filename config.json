@@ -1,0 +1,6 @@
+{
+    "bot_token": "your token here", 
+    "admin_ids": ["owner1, owner2, owner3"],
+    "admin_server_ids": ["server1, server2, server3"]
+  }
+  

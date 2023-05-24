@@ -51,7 +51,7 @@ class Screenshot:
 
         if (
             b64_image
-        ):  # this is for the final stage, where the image is a base64 string and not a screenshot of a selector.
+        ):  # this is for the final stage, where the image is a base64 string and not a screenshot of an element.
             image_bytes = b64.b64decode(b64_image)
             pil_image = Image.open(BytesIO(image_bytes))
             pil_image.save(new_screenshot_path)
@@ -149,7 +149,7 @@ class Screenshot:
                 )
 
     async def get_screenshot_info_by_stage(self, new_screenshot_path):
-        """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid"""
+        """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid, as well as the base64 image if on the last stage."""
         selector, crop, view, b64_image = (
             None,
             False,
@@ -171,7 +171,7 @@ class Screenshot:
             # this is a bit of a hack, but it works. the final image is not a screenshot, but is rather a base64 encoded image taken from the element's src attribute.
             # this is done because of an issue with pyppeteer's screenshot function.
             new_screenshot_path = os.path.join(
-                self.SCREENSHOT_PATH, "end_results", "end_result.png"
+                self.SCREENSHOT_PATH, "final_results", "final_result.png"
             )
             await self.navi.wait_for_final_image()
 

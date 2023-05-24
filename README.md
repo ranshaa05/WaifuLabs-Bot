@@ -15,8 +15,9 @@ Use this link: www.shorturl.at/eHS09
 ## Set-up
 * Install python 3.8 or greater.
 * Clone this git repo or download the latest package.
-* install requirements.
-* Paste your discord secret key into "token.txt".
+* Install requirements.
+* Open "config.json".
+* Paste your bot token, your (or another admin's) discord id(s) and the id(s) of the server(s) where you will be able to use special admin commands.
 * Run "main.py" or "run.bat".
 * Enjoy! 😃
 ---

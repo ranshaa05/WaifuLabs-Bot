@@ -1,5 +1,6 @@
 import os
 import nextcord
+import json
 from nextcord.ext import commands
 from typing import Optional
 
@@ -8,17 +9,28 @@ from site_navigator import SiteNavigator
 from logger import setup_logging
 from screenshot import Screenshot
 
+
+### Logging setup ###
 log = setup_logging().log
 
-TOKEN_FILE = "token.txt"
-if not os.path.exists(TOKEN_FILE):
-    log.error(f"Error: {TOKEN_FILE} not found in program directory.")
-    exit()
+### Bot setup ###
+with open('config.json') as config_file:
+    config_data = json.load(config_file)
 
-with open(TOKEN_FILE, "r") as file:
-    TOKEN = file.read().strip()
+TOKEN = config_data['bot_token']
+ADMIN_IDS = config_data['admin_ids']
+ADMIN_SERVER_IDS = config_data['admin_server_ids']
 
-CLIENT = commands.Bot(command_prefix="$", intents=nextcord.Intents().all())
+all_owner_ids_integers = all(isinstance(element, int) for element in ADMIN_IDS)
+all_server_ids_integers = all(isinstance(element, int) for element in ADMIN_SERVER_IDS)
+
+if not all_server_ids_integers:
+    log.warning("One or more server IDs in config.json are invalid. 'show_servers' command will not work.")
+    ADMIN_SERVER_IDS = [-1] #default value for server IDs
+if not all_owner_ids_integers:
+    log.warning("One or more owner IDs in config.json are invalid. 'show_servers' command will not work.")
+
+CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
 REQUIRED_PERMISSIONS = [
     "manage_messages",
@@ -140,6 +152,23 @@ async def check_permissions(interaction):
         return True
     else:
         return True
+    
+
+
+@CLIENT.slash_command(
+    name="show_servers",
+    description="Shows the list of servers the bot is in.",
+    guild_ids=ADMIN_SERVER_IDS,
+)
+async def show_servers(interaction: nextcord.Interaction):
+    "Shows the list of servers the bot is in."
+    if interaction.user.id in ADMIN_IDS:
+        servers = CLIENT.guilds
+        server_list = "\n".join([f"- {server.name} ({server.id})" for server in servers])
+        embed = nextcord.Embed(title="Server List", description=server_list)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
 if __name__ == "__main__":
