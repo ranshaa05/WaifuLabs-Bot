@@ -164,11 +164,13 @@ async def show_servers(interaction: nextcord.Interaction):
     "Shows the list of servers the bot is in."
     if interaction.user.id in ADMIN_IDS:
         servers = CLIENT.guilds
-        server_list = "\n".join([f"- {server.name} ({server.id})" for server in servers])
-        embed = nextcord.Embed(title="Server List", description=server_list)
+        server_list = "\n".join([f"{i+1}. {server.name} ({server.id})" for i, server in enumerate(servers)])
+        total_servers = len(servers)
+        embed = nextcord.Embed(title="Server List", description=f"Total Servers: {total_servers}\n{server_list}")
         await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
 
 
 if __name__ == "__main__":
