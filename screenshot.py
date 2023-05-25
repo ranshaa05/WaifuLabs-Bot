@@ -113,10 +113,10 @@ class Screenshot:
             log.warning("screenshots folder does not exist, creating...")
             os.mkdir(Screenshot.SCREENSHOT_PATH)
 
-        end_results_path = os.path.join(Screenshot.SCREENSHOT_PATH, "end_results")
-        if not os.path.exists(end_results_path):
-            log.warning("end_results folder does not exist, creating...")
-            os.mkdir(end_results_path)
+        final_results_path = os.path.join(Screenshot.SCREENSHOT_PATH, "final_results")
+        if not os.path.exists(final_results_path):
+            log.warning("final_results folder does not exist, creating...")
+            os.mkdir(final_results_path)
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""

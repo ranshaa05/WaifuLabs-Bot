@@ -1,4 +1,4 @@
 .gitignore
 *.png
 __pycache__/
-token.txt
+config.json
