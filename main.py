@@ -1,4 +1,3 @@
-import os
 import nextcord
 import json
 from nextcord.ext import commands
@@ -14,21 +13,25 @@ from screenshot import Screenshot
 log = setup_logging().log
 
 ### Bot setup ###
-with open('config.json') as config_file:
+with open("config.json") as config_file:
     config_data = json.load(config_file)
 
-TOKEN = config_data['bot_token']
-ADMIN_IDS = config_data['admin_ids']
-ADMIN_SERVER_IDS = config_data['admin_server_ids']
+TOKEN = config_data["bot_token"]
+ADMIN_IDS = config_data["admin_ids"]
+ADMIN_SERVER_IDS = config_data["admin_server_ids"]
 
 all_owner_ids_integers = all(isinstance(element, int) for element in ADMIN_IDS)
 all_server_ids_integers = all(isinstance(element, int) for element in ADMIN_SERVER_IDS)
 
 if not all_server_ids_integers:
-    log.warning("One or more server IDs in config.json are invalid. 'show_servers' command will not work.")
-    ADMIN_SERVER_IDS = [-1] #default value for server IDs
+    log.warning(
+        "One or more server IDs in config.json are invalid. 'show_servers' command will not work for them."
+    )
+    ADMIN_SERVER_IDS = [-1]  # default value for server IDs
 if not all_owner_ids_integers:
-    log.warning("One or more owner IDs in config.json are invalid. 'show_servers' command will not work.")
+    log.warning(
+        "One or more owner IDs in config.json are invalid. 'show_servers' command will not work for them."
+    )
 
 CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
@@ -152,7 +155,6 @@ async def check_permissions(interaction):
         return True
     else:
         return True
-    
 
 
 @CLIENT.slash_command(
@@ -160,17 +162,30 @@ async def check_permissions(interaction):
     description="Shows the list of servers the bot is in.",
     guild_ids=ADMIN_SERVER_IDS,
 )
-async def show_servers(interaction: nextcord.Interaction):
+async def show_servers(
+    interaction: nextcord.Interaction,
+    private: Optional[bool] = nextcord.SlashOption(
+        description="Makes it so only you can see the list.",
+        default=True,
+        required=False,
+    ),
+):
     "Shows the list of servers the bot is in."
     if interaction.user.id in ADMIN_IDS:
         servers = CLIENT.guilds
-        server_list = "\n".join([f"{i+1}. {server.name} ({server.id})" for i, server in enumerate(servers)])
+        server_list = "\n".join(
+            [f"{i+1}. {server.name} ({server.id})" for i, server in enumerate(servers)]
+        )
         total_servers = len(servers)
-        embed = nextcord.Embed(title="Server List", description=f"Total Servers: {total_servers}\n{server_list}")
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        embed = nextcord.Embed(
+            title="Server List",
+            description=f"Total Servers: {total_servers}\n{server_list}",
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=private)
     else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-
+        await interaction.response.send_message(
+            "You don't have permission to use this command.", ephemeral=True
+        )
 
 
 if __name__ == "__main__":
