@@ -1,6 +1,7 @@
 import nextcord
-import json
 from nextcord.ext import commands
+
+import json
 from typing import Optional
 
 from view import View
@@ -17,21 +18,9 @@ with open("config.json") as config_file:
     config_data = json.load(config_file)
 
 TOKEN = config_data["bot_token"]
+
 ADMIN_IDS = config_data["admin_ids"]
 ADMIN_SERVER_IDS = config_data["admin_server_ids"]
-
-all_owner_ids_integers = all(isinstance(element, int) for element in ADMIN_IDS)
-all_server_ids_integers = all(isinstance(element, int) for element in ADMIN_SERVER_IDS)
-
-if not all_server_ids_integers:
-    log.warning(
-        "One or more server IDs in config.json are invalid. 'show_servers' command will not work for them."
-    )
-    ADMIN_SERVER_IDS = [-1]  # default value for server IDs
-if not all_owner_ids_integers:
-    log.warning(
-        "One or more owner IDs in config.json are invalid. 'show_servers' command will not work for them."
-    )
 
 CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
@@ -50,6 +39,24 @@ async def on_ready():
     await CLIENT.change_presence(
         activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu")
     )
+    await check_admin_ids()
+
+
+async def check_admin_ids():
+    """Checks if the admin IDs and admin server IDs are valid."""
+    for user_id in ADMIN_IDS:
+        user = nextcord.utils.get(CLIENT.users, id=user_id)
+        if user is None:
+            log.error(
+                f"Admin ID '{user_id}' is not a valid user ID. Please check your config.json file. 'show_servers' command will not work for that user."
+            )
+
+    for server_id in ADMIN_SERVER_IDS:
+        guild = nextcord.utils.get(CLIENT.guilds, id=server_id)
+        if guild is None:
+            log.error(
+                f"Admin Server ID '{server_id}' is not a valid server ID. Please check your config.json file. 'show_servers' command will not work in that server."
+            )
 
 
 connected_users = []
@@ -184,7 +191,8 @@ async def show_servers(
         await interaction.response.send_message(embed=embed, ephemeral=private)
     else:
         await interaction.response.send_message(
-            "You don't have permission to use this command.", ephemeral=True
+            "You don't have permission to use this command. You must be an admin of this bot to use it.",
+            ephemeral=True,
         )
 
 
