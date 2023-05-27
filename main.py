@@ -44,19 +44,24 @@ async def on_ready():
 
 async def check_admin_ids():
     """Checks if the admin IDs and admin server IDs are valid."""
-    for user_id in ADMIN_IDS:
-        user = nextcord.utils.get(CLIENT.users, id=user_id)
-        if user is None:
-            log.error(
-                f"Admin ID '{user_id}' is not a valid user ID. Please check your config.json file. 'show_servers' command will not work for that user."
-            )
+    if not ADMIN_IDS:
+        log.error("No admin IDs were provided in config.json. 'show_servers' command will not work.")
+    elif not ADMIN_SERVER_IDS:
+        log.error("No admin server IDs were provided in config.json. 'show_servers' command will not work.")
+    else:
+        for user_id in ADMIN_IDS:
+            user = nextcord.utils.get(CLIENT.users, id=user_id)
+            if user is None:
+                log.error(
+                    f"Admin ID '{user_id}' is not a valid user ID. Please check your config.json file. 'show_servers' command will not work for that user."
+                )
 
-    for server_id in ADMIN_SERVER_IDS:
-        guild = nextcord.utils.get(CLIENT.guilds, id=server_id)
-        if guild is None:
-            log.error(
-                f"Admin Server ID '{server_id}' is not a valid server ID. Please check your config.json file. 'show_servers' command will not work in that server."
-            )
+        for server_id in ADMIN_SERVER_IDS:
+            guild = nextcord.utils.get(CLIENT.guilds, id=server_id)
+            if guild is None:
+                log.error(
+                    f"Admin Server ID '{server_id}' is not a valid server ID. Please check your config.json file. 'show_servers' command will not work in that server."
+                )
 
 
 connected_users = []
