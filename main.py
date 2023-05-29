@@ -1,28 +1,29 @@
-import nextcord
-from nextcord.ext import commands
-
 import json
 from typing import Optional
 
-from view import View
-from site_navigator import SiteNavigator
+import nextcord
+from nextcord.ext import commands
+
+from admin_commands import AdminCommands
 from logger import setup_logging
 from screenshot import Screenshot
-
+from site_navigator import SiteNavigator
+from view import View
 
 ### Logging setup ###
 log = setup_logging().log
 
 ### Bot setup ###
-with open("config.json") as config_file:
+with open("config.json", "r") as config_file:
     config_data = json.load(config_file)
 
 TOKEN = config_data["bot_token"]
 
-ADMIN_IDS = config_data["admin_ids"]
-ADMIN_SERVER_IDS = config_data["admin_server_ids"]
 
 CLIENT = commands.Bot(intents=nextcord.Intents().all())
+
+admin_commands = AdminCommands(CLIENT)
+CLIENT.add_cog(admin_commands)
 
 REQUIRED_PERMISSIONS = [
     "manage_messages",
@@ -39,29 +40,7 @@ async def on_ready():
     await CLIENT.change_presence(
         activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu")
     )
-    await check_admin_ids()
-
-
-async def check_admin_ids():
-    """Checks if the admin IDs and admin server IDs are valid."""
-    if not ADMIN_IDS:
-        log.error("No admin IDs were provided in config.json. 'show_servers' command will not work.")
-    elif not ADMIN_SERVER_IDS:
-        log.error("No admin server IDs were provided in config.json. 'show_servers' command will not work.")
-    else:
-        for user_id in ADMIN_IDS:
-            user = nextcord.utils.get(CLIENT.users, id=user_id)
-            if user is None:
-                log.error(
-                    f"Admin ID '{user_id}' is not a valid user ID. Please check your config.json file. 'show_servers' command will not work for that user."
-                )
-
-        for server_id in ADMIN_SERVER_IDS:
-            guild = nextcord.utils.get(CLIENT.guilds, id=server_id)
-            if guild is None:
-                log.error(
-                    f"Admin Server ID '{server_id}' is not a valid server ID. Please check your config.json file. 'show_servers' command will not work in that server."
-                )
+    admin_commands.validate_admins()
 
 
 connected_users = []
@@ -83,7 +62,7 @@ async def waifu(
         await interaction.response.send_message(
             "Whoops! One user cannot start me twice. You can continue or press ❌ to exit.",
             ephemeral=True,
-            delete_after=5,
+            delete_after=10,
         )
         return
 
@@ -122,7 +101,7 @@ async def waifu(
         log.info(f"Browser closed for user '{interaction.user.name}', timed out.")
         await original_message.edit(
             "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
-            delete_after=5,
+            delete_after=10,
             attachments=[],
             view=None,
         )
@@ -167,38 +146,6 @@ async def check_permissions(interaction):
         return True
     else:
         return True
-
-
-@CLIENT.slash_command(
-    name="show_servers",
-    description="Shows the list of servers the bot is in.",
-    guild_ids=ADMIN_SERVER_IDS,
-)
-async def show_servers(
-    interaction: nextcord.Interaction,
-    private: Optional[bool] = nextcord.SlashOption(
-        description="Makes it so only you can see the list.",
-        default=True,
-        required=False,
-    ),
-):
-    "Shows the list of servers the bot is in."
-    if interaction.user.id in ADMIN_IDS:
-        servers = CLIENT.guilds
-        server_list = "\n".join(
-            [f"{i+1}. {server.name} ({server.id})" for i, server in enumerate(servers)]
-        )
-        total_servers = len(servers)
-        embed = nextcord.Embed(
-            title="Server List",
-            description=f"Total Servers: {total_servers}\n{server_list}",
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=private)
-    else:
-        await interaction.response.send_message(
-            "You don't have permission to use this command. You must be an admin of this bot to use it.",
-            ephemeral=True,
-        )
 
 
 if __name__ == "__main__":
