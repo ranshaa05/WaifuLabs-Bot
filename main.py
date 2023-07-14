@@ -3,8 +3,9 @@ from typing import Optional
 
 import nextcord
 from nextcord.ext import commands
+import traceback
 
-from admin_commands import AdminCommands
+from cogs.admin_commands import AdminCommands
 from logger import setup_logging
 from screenshot import Screenshot
 from site_navigator import SiteNavigator
@@ -37,6 +38,7 @@ REQUIRED_PERMISSIONS = [
 @CLIENT.event
 async def on_ready():
     log.info("Bot Ready.")
+    CLIENT.start_time = nextcord.utils.utcnow()
     await CLIENT.change_presence(
         activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu")
     )
@@ -146,6 +148,23 @@ async def check_permissions(interaction):
         return True
     else:
         return True
+
+
+@CLIENT.event
+async def on_application_command_error(
+    interaction: nextcord.Interaction, error: nextcord.DiscordException
+):
+    log.error(f"####### an error occured #######\n{error}")
+    traceback.print_exception(type(error), error, error.__traceback__)
+
+    err_name = type(error).__name__
+    if not err_name in admin_commands.application_errors:
+        admin_commands.application_errors[err_name] = 1
+    else:
+        admin_commands.application_errors[err_name] += 1
+
+
+# TODO: run the bot for an extended period of time and see if any errors raise without being caught by on_application_command_error. if they do, add an identical on_error event to catch them.
 
 
 if __name__ == "__main__":
