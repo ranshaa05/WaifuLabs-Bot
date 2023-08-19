@@ -73,18 +73,11 @@ class Screenshot:
         os.unlink(new_screenshot_path)
 
         self.original_message = await self.original_message.fetch()
-        if (
-            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
-            and not self.original_message.flags.ephemeral
-        ):
-            await self.remove_reaction()
+
+        await self.remove_reaction()
         if self.view:
             await self.view.wait()
-            if (
-                isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
-                and not self.original_message.flags.ephemeral
-            ):
-                await self.add_reaction()
+            await self.add_reaction()
 
         ########### Simulated test ############
         # to debug with this, comment out the view.await() above and uncomment the following lines.
@@ -120,21 +113,30 @@ class Screenshot:
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""
-        await self.original_message.clear_reactions()
+        if (
+            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
+            and not self.original_message.flags.ephemeral
+        ):  # check if message is reactable in the first place
+            await self.original_message.clear_reactions()
 
     async def add_reaction(self):
         """Adds a reaction to the original message based on the button pressed in the view."""
-        if self.view.current_label == "❓":
-            return
-        # if the label is a single emoji (3 chars), it can be added directly. if it is a string of emojis, it must be split into 3 character chunks.
-        elif len(self.view.current_label) > 3:
-            for emoji in [
-                self.view.current_label[i : i + 3]
-                for i in range(0, len(self.view.current_label), 3)
-            ]:
-                await self.original_message.add_reaction(emoji)
-        else:
-            await self.original_message.add_reaction(self.view.current_label)
+        if (
+            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
+            and not self.original_message.flags.ephemeral
+        ):  # check if message is reactable
+            if self.view.current_label == "❓":
+                return
+            # if the label is a single emoji (3 chars), it can be added directly. if it is a string of emojis, it must be split into 3 character chunks.
+            elif len(self.view.current_label) > 3:
+                for emoji in [
+                    self.view.current_label[i : i + 3]
+                    for i in range(0, len(self.view.current_label), 3)
+                ]:
+                    await self.original_message.add_reaction(emoji)
+            else:
+                await self.original_message.add_reaction(self.view.current_label)
+            await self.original_message.add_reaction("⏳")
 
     async def busy_wait(self):
         """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
