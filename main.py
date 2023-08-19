@@ -26,13 +26,7 @@ CLIENT = commands.Bot(intents=nextcord.Intents().all())
 admin_commands = AdminCommands(CLIENT)
 CLIENT.add_cog(admin_commands)
 
-REQUIRED_PERMISSIONS = [
-    "manage_messages",
-    "send_messages",
-    "add_reactions",
-    "attach_files",
-    "embed_links",
-]
+REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
 
 
 @CLIENT.event
@@ -127,23 +121,47 @@ Thanks for helping us make Waifu Bot better! :slight_smile:""",
 
 
 async def check_permissions(interaction):
-    "Checks if the bot has the required permissions."
+    "Checks if the bot has the required permissions and notifies the user if not."
 
     if isinstance(interaction.channel, nextcord.abc.GuildChannel):
-        missing_permissions = []
+        role_missing_permissions = []
+        bot_role = interaction.guild.me.top_role
+        for permission in REQUIRED_PERMISSIONS:
+            if not getattr(bot_role.permissions, permission):
+                permission = permission.replace("_", " ").title()
+                role_missing_permissions.append(permission)
+
+        channel_missing_permissions = []
         for permission in REQUIRED_PERMISSIONS:
             if not getattr(
                 interaction.channel.permissions_for(interaction.guild.me), permission
             ):
                 permission = permission.replace("_", " ").title()
-                missing_permissions.append(permission)
+                channel_missing_permissions.append(permission)
 
-        if missing_permissions:
-            message = "Hey! I'm missing these permissions:\n{}".format(
-                "\n".join(missing_permissions)
-                + ".\nPlease give me these so I can work properly :slight_smile:"
+        if role_missing_permissions or channel_missing_permissions:
+            embed = nextcord.Embed(
+                title="⚠️ __Missing Permissions__",
+                description="Hey! I'm missing these permissions:",
+                color=0xFF0000,
             )
-            await interaction.response.send_message(message, ephemeral=True)
+            if role_missing_permissions:
+                embed.add_field(
+                    name="❌ Missing in role:",
+                    value="\n".join(role_missing_permissions),
+                    inline=True,
+                )
+            if channel_missing_permissions:
+                embed.add_field(
+                    name="❌ Missing in channel:",
+                    value="\n".join(channel_missing_permissions),
+                    inline=True,
+                )
+            embed.set_footer(
+                text="Please grant me these permissions so i can work properly!🙏"
+            )
+
+            await interaction.response.send_message(embed=embed)
             return False
         return True
     else:
