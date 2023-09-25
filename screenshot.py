@@ -79,27 +79,6 @@ class Screenshot:
             await self.view.wait()
             await self.add_reaction()
 
-        ########### Simulated test ############
-        # to debug with this, comment out the view.await() above and uncomment the following lines.
-        # this will simulate button presses until the waifu is finished.
-        # label_list = ["⬅", "➡", "🎲", "🔃"]
-        # for i in range(1, 16):
-        #     label_list.append(str(i)) # adds numbers 1-15 to the list. if this is removed, the test will be more thorough.
-
-        # import random
-        # choice = random.choice(label_list)
-        # while choice == "⬅" or choice == "➡" and View.stage[self.interaction.user.id] == 0:
-        #     #to prevent disabled options on the first stage
-        #     choice = random.choice(label_list)
-        # log.info("Choice: " + choice + " || Stage: " + str(View.stage[self.interaction.user.id]))
-        # if not View.stage[self.interaction.user.id] == 4:
-        #     await self.view.click_by_label(choice, self.interaction.user.id)
-        # else:
-        #     log.info("Finished")
-        #     await self.interaction.channel.send(content="^^^^^^^^This is a Bot-generated message.^^^^^^^^", ephemeral=True)
-        # TODO: find a way to re-run waifu()
-        #####################################
-
     def create_dirs(self):
         """Creates the screenshot folders if they do not exist."""
         if not os.path.exists(Screenshot.SCREENSHOT_PATH):
