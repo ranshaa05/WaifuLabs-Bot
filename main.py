@@ -8,7 +8,7 @@ import traceback
 from cogs.admin_commands import AdminCommands
 from logger import setup_logging
 from screenshot import Screenshot
-from site_navigator import SiteNavigator
+from site_navigator import PageNavigator
 from view import View
 
 ### Logging setup ###
@@ -67,8 +67,8 @@ async def waifu(
         "Hi there! I'm WaifuBot!\nI create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Click the waifu you like best or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(1/4)_",
         ephemeral=private,
     )
-    navi = await SiteNavigator.create_navi()
-    log.info(f"Browser started for user '{interaction.user.name}'.")
+    navi = await PageNavigator.create_navi()
+    log.info(f"Page started for user '{interaction.user.name}'.")
 
     View.stage[interaction.user.id] = 0
     while View.stage[interaction.user.id] < 4:
@@ -90,11 +90,11 @@ async def waifu(
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
-        await navi.browser.close()
-        log.info(f"Browser closed for user '{interaction.user.name}', finished.")
+        await navi.page.close()
+        log.info(f"Page closed for user '{interaction.user.name}', finished.")
 
     elif navi.page.isClosed() and navi.timed_out:
-        log.info(f"Browser closed for user '{interaction.user.name}', timed out.")
+        log.info(f"Page closed for user '{interaction.user.name}', timed out.")
         await original_message.edit(
             "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
             delete_after=10,

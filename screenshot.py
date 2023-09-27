@@ -57,9 +57,7 @@ class Screenshot:
             pil_image.save(new_screenshot_path)
 
         else:
-            await (await self.navi.page.querySelector(selector)).screenshot(
-                {"path": new_screenshot_path}
-            )
+            await self.navi.screenshot(selector, new_screenshot_path)
 
             if crop:
                 image = Image.open(new_screenshot_path)

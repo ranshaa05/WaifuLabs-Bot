@@ -92,4 +92,4 @@ class View(nextcord.ui.View):
             self.stop()
 
     async def on_timeout(self):
-        await self.navi.browser_timeout()
+        await self.navi.page_timeout()
