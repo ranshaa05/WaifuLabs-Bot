@@ -12,7 +12,7 @@ from logger import setup_logging
 log = setup_logging().log
 
 
-class Screenshot:
+class ScreenshotHandler:
     SCREENSHOT_PATH = os.path.join(os.path.dirname(__file__), "Screenshots")
     MAX_NUMBER_OF_FILES = (
         1000 + 1
@@ -32,13 +32,13 @@ class Screenshot:
 
         file_number = 0
         while os.path.isfile(
-            os.path.join(Screenshot.SCREENSHOT_PATH, f"{file_number}.png")
+            os.path.join(ScreenshotHandler.SCREENSHOT_PATH, f"{file_number}.png")
         ):
             # checks and assigns the lowest file number available to next screenshot
             file_number += 1
 
         new_screenshot_path = os.path.join(
-            Screenshot.SCREENSHOT_PATH, f"{file_number}.png"
+            ScreenshotHandler.SCREENSHOT_PATH, f"{file_number}.png"
         )
 
         (
@@ -79,11 +79,13 @@ class Screenshot:
 
     def create_dirs(self):
         """Creates the screenshot folders if they do not exist."""
-        if not os.path.exists(Screenshot.SCREENSHOT_PATH):
+        if not os.path.exists(ScreenshotHandler.SCREENSHOT_PATH):
             log.warning("screenshots folder does not exist, creating...")
-            os.mkdir(Screenshot.SCREENSHOT_PATH)
+            os.mkdir(ScreenshotHandler.SCREENSHOT_PATH)
 
-        final_results_path = os.path.join(Screenshot.SCREENSHOT_PATH, "final_results")
+        final_results_path = os.path.join(
+            ScreenshotHandler.SCREENSHOT_PATH, "final_results"
+        )
         if not os.path.exists(final_results_path):
             log.warning("final_results folder does not exist, creating...")
             os.mkdir(final_results_path)
@@ -117,14 +119,16 @@ class Screenshot:
 
     async def busy_wait(self):
         """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
-        files_in_screenshot_path = len(glob.glob(rf"{Screenshot.SCREENSHOT_PATH}\*"))
+        files_in_screenshot_path = len(
+            glob.glob(rf"{ScreenshotHandler.SCREENSHOT_PATH}\*")
+        )
         if files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
             await self.original_message.edit(
                 "*Server is busy! Your grid might take a while to be sent.*"
             )
             while files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
                 files_in_screenshot_path = len(
-                    glob.glob(rf"{Screenshot.SCREENSHOT_PATH}\*")
+                    glob.glob(rf"{ScreenshotHandler.SCREENSHOT_PATH}\*")
                 )
 
     async def get_screenshot_info_by_stage(self, new_screenshot_path):

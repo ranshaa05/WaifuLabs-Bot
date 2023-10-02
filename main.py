@@ -7,7 +7,7 @@ import traceback
 
 from cogs.admin_commands import AdminCommands
 from logger import setup_logging
-from screenshot import Screenshot
+from screenshot import ScreenshotHandler
 from site_navigator import PageNavigator
 from view import View
 
@@ -78,7 +78,9 @@ async def waifu(
             )
             break
         else:
-            await Screenshot(navi, interaction, original_message).save_send_screenshot()
+            await ScreenshotHandler(
+                navi, interaction, original_message
+            ).save_send_screenshot()
         if View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
             await original_message.edit(
                 f"Okay! lets continue. Here's another grid for you to choose from:\n(_{View.stage[interaction.user.id] + 1}/4)_",
@@ -86,7 +88,9 @@ async def waifu(
             )
 
     if not navi.page.isClosed():
-        await Screenshot(navi, interaction, original_message).save_send_screenshot()
+        await ScreenshotHandler(
+            navi, interaction, original_message
+        ).save_send_screenshot()
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
@@ -180,9 +184,6 @@ async def on_application_command_error(
         admin_commands.application_errors[error_message] = 1
     else:
         admin_commands.application_errors[error_message] += 1
-
-
-# TODO: run the bot for an extended period of time and see if any errors raise without being caught by on_application_command_error. if they do, add an identical on_error event to catch them.
 
 
 if __name__ == "__main__":

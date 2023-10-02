@@ -6,7 +6,7 @@ from time import sleep
 
 
 def _page_stack(coroutine):
-    """a decorator that takes returns to the page of the previous user"""
+    """a decorator that takes control of the browser and returns it to the page of the previous user"""
 
     @functools.wraps(coroutine)
     async def wrapper(self, *args, **kwargs):
