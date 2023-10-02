@@ -69,6 +69,7 @@ class View(nextcord.ui.View):
             self.add_item(button)
 
     async def click_by_label(self, label, interactor):
+        # run the appropriate functions based on the label of the button that was pressed.
         if interactor == self.interaction.user.id:
             if label.isnumeric():
                 await self.navi.click_by_index(int(label))
@@ -92,4 +93,4 @@ class View(nextcord.ui.View):
             self.stop()
 
     async def on_timeout(self):
-        await self.navi.browser_timeout()
+        await self.navi.page_timeout()
