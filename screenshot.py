@@ -31,24 +31,10 @@ class ScreenshotHandler:
         await self.busy_wait()
         await self.navi.wait_for_not_load_screen()
 
-        file_number = 0
-        while os.path.isfile(
-            os.path.join(ScreenshotHandler.SCREENSHOT_PATH, f"{file_number}.png")
-        ):
-            # checks and assigns the lowest file number available to next screenshot
-            file_number += 1
+        file_number = self.get_next_file_number()
+        new_screenshot_path = os.path.join(self.SCREENSHOT_PATH, f"{file_number}.png")
 
-        new_screenshot_path = os.path.join(
-            ScreenshotHandler.SCREENSHOT_PATH, f"{file_number}.png"
-        )
-
-        (
-            selector,
-            crop,
-            self.view,
-            new_screenshot_path,
-            b64_image,
-        ) = await self.get_screenshot_info_by_stage(new_screenshot_path)
+        selector,crop, self.view, new_screenshot_path, b64_image = await self.get_screenshot_info_by_stage(new_screenshot_path)
 
         if (
             b64_image
@@ -77,6 +63,13 @@ class ScreenshotHandler:
         if self.view:
             await self.view.wait()
             await self.add_reaction()
+
+    def get_next_file_number(self):
+        """Get the next available file number in the given directory."""
+        existing_files = glob.glob(os.path.join(self.SCREENSHOT_PATH, "*.png"))
+        existing_numbers = {int(os.path.splitext(os.path.basename(f))[0]) for f in existing_files}
+        file_number = next(i for i in range(self.MAX_NUMBER_OF_FILES) if i not in existing_numbers)
+        return file_number
 
     def create_dirs(self):
         """Creates the screenshot folders if they do not exist."""
