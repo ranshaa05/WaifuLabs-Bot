@@ -1,9 +1,10 @@
-import functools
 import asyncio
+from io import BytesIO
+import functools
+from PIL import Image
 from pyppeteer import launch
 from random import randint
 from time import sleep
-
 
 def _page_stack(coroutine):
     """a decorator that takes control of the browser and returns it to the page of the previous user"""
@@ -76,10 +77,9 @@ class PageNavigator:
             sleep(0.01)
 
     @_page_stack
-    async def screenshot(self, selector, new_screenshot_path):
-        await (await self.page.querySelector(selector)).screenshot(
-            {"path": new_screenshot_path}
-        )
+    async def screenshot(self, selector):
+        screenshot_bytes = await (await self.page.querySelector(selector)).screenshot()
+        return Image.open(BytesIO(screenshot_bytes))
 
     async def find_all_girls(self):
         return await self.page.querySelectorAll(".waifu-grid > div")

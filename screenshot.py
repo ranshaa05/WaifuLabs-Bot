@@ -27,11 +27,9 @@ class ScreenshotHandler:
 
     async def save_send_screenshot(self):
         """saves a screenshot of the current page and sends it to the user."""
-        self.create_dirs()
-        await self.busy_wait()
         await self.navi.wait_for_not_load_screen()
 
-        file_number = self.get_next_file_number()
+        file_number = self.get_next_file_number(self.SCREENSHOT_PATH)
         new_screenshot_path = os.path.join(self.SCREENSHOT_PATH, f"{file_number}.png")
 
         (
@@ -42,26 +40,30 @@ class ScreenshotHandler:
             b64_image
         ) = await self.get_screenshot_info_by_stage(new_screenshot_path)
 
-        if (
-            b64_image
-        ):  # for final stage, where the image is a base64 string, not a screenshot of an element.
+        if b64_image:  # for final stage, where the image is a base64 string, not a screenshot of an element.
             image_bytes = b64.b64decode(b64_image)
             pil_image = Image.open(BytesIO(image_bytes))
-            pil_image.save(new_screenshot_path)
-
         else:
-            await self.navi.screenshot(selector, new_screenshot_path)
+            pil_image = await self.navi.screenshot(selector)
 
-            if crop:
-                image = Image.open(new_screenshot_path)
-                width, height = image.size
-                image.crop((0, height - 630, width, height)).save(new_screenshot_path)
+        if crop:
+            width, height = pil_image.size
+            pil_image = pil_image.crop((0, height - 630, width, height))
 
+        # Convert the PIL image to bytes
+        byte_arr = BytesIO()
+        pil_image.save(byte_arr, format="PNG")
+        byte_arr.seek(0)
+
+        file = nextcord.File(byte_arr, filename="image.png")
         await self.original_message.edit(
-            file=nextcord.File(new_screenshot_path),
+            file=file,
             view=self.view if self.view else None,
         )
-        os.unlink(new_screenshot_path)
+
+        # Close the PIL image
+        del pil_image
+        byte_arr.close()
 
         self.original_message = await self.original_message.fetch()
 
@@ -70,25 +72,12 @@ class ScreenshotHandler:
             await self.view.wait()
             await self.add_reaction()
 
-    def get_next_file_number(self):
+    def get_next_file_number(self, path):
         """Get the next available file number in the given directory."""
-        existing_files = glob.glob(os.path.join(self.SCREENSHOT_PATH, "*.png"))
+        existing_files = glob.glob(os.path.join(path, "*.png"))
         existing_numbers = {int(os.path.splitext(os.path.basename(f))[0]) for f in existing_files}
         file_number = next(i for i in range(self.MAX_NUMBER_OF_FILES) if i not in existing_numbers)
         return file_number
-
-    def create_dirs(self):
-        """Creates the screenshot folders if they do not exist."""
-        if not os.path.exists(ScreenshotHandler.SCREENSHOT_PATH):
-            log.warning("screenshots folder does not exist, creating...")
-            os.mkdir(ScreenshotHandler.SCREENSHOT_PATH)
-
-        final_results_path = os.path.join(
-            ScreenshotHandler.SCREENSHOT_PATH, "final_results"
-        )
-        if not os.path.exists(final_results_path):
-            log.warning("final_results folder does not exist, creating...")
-            os.mkdir(final_results_path)
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""
@@ -118,20 +107,6 @@ class ScreenshotHandler:
                 asyncio.create_task(self.original_message.add_reaction(self.view.current_label))
             asyncio.create_task(self.original_message.add_reaction("⏳"))
 
-    async def busy_wait(self):
-        """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
-        files_in_screenshot_path = len(
-            glob.glob(rf"{ScreenshotHandler.SCREENSHOT_PATH}\*")
-        )
-        if files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
-            await self.original_message.edit(
-                "*Server is busy! Your grid might take a while to be sent.*"
-            )
-            while files_in_screenshot_path >= self.MAX_NUMBER_OF_FILES:
-                files_in_screenshot_path = len(
-                    glob.glob(rf"{ScreenshotHandler.SCREENSHOT_PATH}\*")
-                )
-
     async def get_screenshot_info_by_stage(self, new_screenshot_path):
         """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid, as well as the base64 image if on the last stage."""
         selector, crop, view, b64_image = (
@@ -155,8 +130,9 @@ class ScreenshotHandler:
             # this is a bit of a hack, but it works
             # the final image is not a screenshot, but a base64 image taken from the element's src attribute
             # this is done because of an issue with pyppeteer's screenshot func
+            file_number = self.get_next_file_number(os.path.join(self.SCREENSHOT_PATH, "final_results"))
             new_screenshot_path = os.path.join(
-                self.SCREENSHOT_PATH, "final_results", "final_result.png"
+                self.SCREENSHOT_PATH, "final_results", f"{file_number}.png"
             )
             await self.navi.wait_for_final_image()
 
