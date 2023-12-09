@@ -1,13 +1,14 @@
-import os
-import glob
-from PIL import Image
+import asyncio
 import base64 as b64
+import glob
+import os
 from io import BytesIO
+
+from PIL import Image
 import nextcord
 
-
-from view import View
 from logger import setup_logging
+from view import View
 
 log = setup_logging().log
 
@@ -96,7 +97,7 @@ class ScreenshotHandler:
             isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
             and not self.original_message.flags.ephemeral
         ):  # check if message is reactable in the first place
-            await self.original_message.clear_reactions()
+            asyncio.create_task(self.original_message.clear_reactions())
 
     async def add_reaction(self):
         """Adds a reaction to the original message based on the button pressed in the view."""
@@ -112,10 +113,10 @@ class ScreenshotHandler:
                     self.view.current_label[i : i + 3]
                     for i in range(0, len(self.view.current_label), 3)
                 ]:
-                    await self.original_message.add_reaction(emoji)
+                    asyncio.create_task(self.original_message.add_reaction(emoji))
             else:
-                await self.original_message.add_reaction(self.view.current_label)
-            await self.original_message.add_reaction("⏳")
+                asyncio.create_task(self.original_message.add_reaction(self.view.current_label))
+            asyncio.create_task(self.original_message.add_reaction("⏳"))
 
     async def busy_wait(self):
         """Waits for the screenshot folder to have less than MAX_NUMBER_OF_FILES files in it."""
