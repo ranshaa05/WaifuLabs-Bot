@@ -1,9 +1,9 @@
 import json
+import traceback
 from typing import Optional
 
 import nextcord
 from nextcord.ext import commands
-import traceback
 
 from cogs.admin_commands import AdminCommands
 from logger import setup_logging
@@ -107,7 +107,7 @@ async def waifu(
         )
 
     else:
-        log.info(f"Browser closed for user '{interaction.user.name}'")
+        log.info(f"Page closed for user '{interaction.user.name}'")
 
     View.stage.pop(interaction.user.id, None)
     connected_users.remove(interaction.user.id)
