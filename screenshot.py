@@ -34,11 +34,17 @@ class ScreenshotHandler:
         file_number = self.get_next_file_number()
         new_screenshot_path = os.path.join(self.SCREENSHOT_PATH, f"{file_number}.png")
 
-        selector,crop, self.view, new_screenshot_path, b64_image = await self.get_screenshot_info_by_stage(new_screenshot_path)
+        (
+            selector,
+            crop,
+            self.view,
+            new_screenshot_path,
+            b64_image
+        ) = await self.get_screenshot_info_by_stage(new_screenshot_path)
 
         if (
             b64_image
-        ):  # this is for the final stage, where the image is a base64 string and not a screenshot of an element.
+        ):  # for final stage, where the image is a base64 string, not a screenshot of an element.
             image_bytes = b64.b64decode(b64_image)
             pil_image = Image.open(BytesIO(image_bytes))
             pil_image.save(new_screenshot_path)
@@ -100,7 +106,8 @@ class ScreenshotHandler:
         ):  # check if message is reactable
             if self.view.current_label == "❓":
                 return
-            # if the label is a single emoji (3 chars), it can be added directly. if it is a string of emojis, it must be split into 3 character chunks.
+            # if the label is a single emoji (3 chars), it can be added directly.
+            # if it is a string of emojis, it must be split into chunks of 3 chars.
             elif len(self.view.current_label) > 3:
                 for emoji in [
                     self.view.current_label[i : i + 3]
@@ -132,7 +139,7 @@ class ScreenshotHandler:
             False,
             None,
             None,
-        )  # these are the default values.
+        )  # placeholder values.
 
         if View.stage[self.interaction.user.id] in range(1, 4):
             selector = ".waifu-container"
@@ -145,8 +152,9 @@ class ScreenshotHandler:
 
         else:
             # if on last stage.
-            # this is a bit of a hack, but it works. the final image is not a screenshot, but is rather a base64 encoded image taken from the element's src attribute.
-            # this is done because of an issue with pyppeteer's screenshot function.
+            # this is a bit of a hack, but it works
+            # the final image is not a screenshot, but a base64 image taken from the element's src attribute
+            # this is done because of an issue with pyppeteer's screenshot func
             new_screenshot_path = os.path.join(
                 self.SCREENSHOT_PATH, "final_results", "final_result.png"
             )
