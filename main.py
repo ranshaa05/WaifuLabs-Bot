@@ -51,12 +51,13 @@ async def waifu(
         required=False,
     ),
 ):
-    "Starts the bot."
+    """Starts the bot."""
     if not await check_permissions(interaction):
         return
     if interaction.user.id in connected_users:
         await interaction.response.send_message(
-            "Whoops! One user cannot start me twice. You can continue or press ❌ to exit.",
+            "Whoops! One user cannot start me twice."
+            "You can continue or press ❌ to exit.",
             ephemeral=True,
             delete_after=10,
         )
@@ -64,7 +65,14 @@ async def waifu(
 
     connected_users.append(interaction.user.id)
     original_message = await interaction.response.send_message(
-        "Hi there! I'm WaifuBot!\nI create waifus using <https://www.waifulabs.com>. Let's get started!\nYou'll be presented with 4 grids of waifus, each based on your previous choice. Click the waifu you like best or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(1/4)_",
+        (
+            "Hi there! I'm WaifuBot!\n"
+            "I create waifus using <https://www.waifulabs.com>. Let's get started!\n"
+            "You'll be presented with 4 grids of waifus, each based on your previous choice. "
+            "Click the waifu you like best or use these buttons:\n"
+            "❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n"
+            "_(1/4)_"
+        ),
         ephemeral=private,
     )
     navi = await PageNavigator.create_navi()
@@ -83,7 +91,10 @@ async def waifu(
             ).save_send_screenshot()
         if View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
             await original_message.edit(
-                f"Okay! lets continue. Here's another grid for you to choose from:\n(_{View.stage[interaction.user.id] + 1}/4)_",
+                (
+                    "Okay! lets continue. Here's another grid for you to choose from:\n"
+                    f"(_{View.stage[interaction.user.id] + 1}/4)_"
+                ),
                 view=None,
             )
 
@@ -115,17 +126,20 @@ async def waifu(
 
 @CLIENT.slash_command(description="Submit a bug report.")
 async def feedback(interaction: nextcord.Interaction):
-    "Link to the issues page."
+    """Link to the issues page."""
     await interaction.response.send_message(
-        """If you've encountered a bug or have a suggestion for Waifu Bot, please head over to the issues page on Github: <https://github.com/ranshaa05/WaifuLabs-Bot/issues>.
-There, you can report bugs, suggest features, or ask for help with any issues you're having.
-Thanks for helping us make Waifu Bot better! :slight_smile:""",
-        ephemeral=True,
-    )
+        ("If you've encountered a bug or have a suggestion for Waifu Bot, "
+         "please head over to the issues page on Github: "
+         "<https://github.com/ranshaa05/WaifuLabs-Bot/issues>.\n"
+         "There, you can report bugs, suggest features, or ask for help with "
+         "any issues you're having.\n"
+         "Thanks for helping us make Waifu Bot better! :slight_smile:"),
+        ephemeral=True
+        )
 
 
 async def check_permissions(interaction):
-    "Checks if the bot has the required permissions and notifies the user if not."
+    """Checks if the bot has the required permissions and notifies the user if not."""
 
     if isinstance(interaction.channel, nextcord.abc.GuildChannel):
         role_missing_permissions = []
@@ -138,7 +152,8 @@ async def check_permissions(interaction):
         channel_missing_permissions = []
         for permission in REQUIRED_PERMISSIONS:
             if not getattr(
-                interaction.channel.permissions_for(interaction.guild.me), permission
+                interaction.channel.permissions_for(interaction.guild.me),
+                permission
             ):
                 permission = permission.replace("_", " ").title()
                 channel_missing_permissions.append(permission)
@@ -176,11 +191,13 @@ async def check_permissions(interaction):
 async def on_application_command_error(
     interaction: nextcord.Interaction, error: nextcord.DiscordException
 ):
+    """Handles errors that occur in application commands."""
+
     log.error(f"####### an error occured #######\n{error}")
     traceback.print_exception(type(error), error, error.__traceback__)
 
     error_message = str(error).split(":")[1]
-    if not error_message in admin_commands.application_errors:
+    if error_message not in admin_commands.application_errors:
         admin_commands.application_errors[error_message] = 1
     else:
         admin_commands.application_errors[error_message] += 1
