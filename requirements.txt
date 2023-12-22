@@ -1,4 +1,4 @@
 pyppeteer == 1.0.2
-nextcord == 2.6.0
+nextcord[speed] == 2.6.0
 Pillow == 10.0.1
 coloredlogs == 15.0.1
