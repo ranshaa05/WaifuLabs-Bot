@@ -26,7 +26,7 @@ CLIENT = commands.Bot(intents=nextcord.Intents().all())
 admin_commands = AdminCommands(CLIENT)
 CLIENT.add_cog(admin_commands)
 
-REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
+
 
 
 @CLIENT.event
@@ -45,7 +45,8 @@ connected_users = []
 @CLIENT.slash_command(description="Build-a-waifu!")
 async def waifu(
     interaction: nextcord.Interaction,
-    private: Optional[bool] = nextcord.SlashOption(
+    privacy: Optional[bool] = nextcord.SlashOption(
+        name="private",
         description="Makes it so only you can see your waifus.",
         default=False,
         required=False,
@@ -73,27 +74,15 @@ async def waifu(
             "❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n"
             "_(1/4)_"
         ),
-        ephemeral=private,
+        ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
     log.info(f"Page started for user '{interaction.user.name}'.")
 
     View.stage[interaction.user.id] = 0
-    while View.stage[interaction.user.id] < 4:
-        if navi.page.isClosed():
-            try:
-                await original_message.edit(
-                    "Exiting...", delete_after=5, attachments=[], view=None
-                )
-            except nextcord.errors.HTTPException:
-                pass
-            break
-        
-        else:
-            await ScreenshotHandler(
-                navi, interaction, original_message
-            ).save_send_screenshot()
-        if View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
+    while View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
+        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot()
+        try:    #in case the message was deleted
             await original_message.edit(
                 (
                     "Okay! lets continue. Here's another grid for you to choose from:\n"
@@ -101,20 +90,18 @@ async def waifu(
                 ),
                 view=None,
             )
+        except nextcord.errors.NotFound:
+            break
 
     if not navi.page.isClosed():
-        await ScreenshotHandler(
-            navi, interaction, original_message
-        ).save_send_screenshot()
+        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot()
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
         await navi.page.close()
         log.info(f"Page closed for user '{interaction.user.name}', finished.")
-
-    elif navi.page.isClosed() and navi.timed_out:
+    elif navi.timed_out:
         log.info(f"Page closed for user '{interaction.user.name}', timed out.")
-        #in case the message was deleted
         try:
             await original_message.edit(
                 "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
@@ -124,8 +111,13 @@ async def waifu(
             )
         except nextcord.errors.HTTPException:
             pass
-
     else:
+        try:
+            await original_message.edit(
+                "Exiting...", delete_after=5, attachments=[], view=None
+            )
+        except nextcord.errors.HTTPException:
+            pass
         log.info(f"Page closed for user '{interaction.user.name}'")
 
     View.stage.pop(interaction.user.id, None)
@@ -146,59 +138,51 @@ async def feedback(interaction: nextcord.Interaction):
         )
 
 
+REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
+
 async def check_permissions(interaction):
     """Checks if the bot has the required permissions and notifies the user if not."""
 
     if isinstance(interaction.channel, nextcord.abc.GuildChannel):
-        role_missing_permissions = []
         bot_role = interaction.guild.me.top_role
+        bot_channel_permissions = interaction.channel.permissions_for(interaction.guild.me)
+
+        missing_permissions = {
+            "role": [],
+            "channel": []
+        }
+
         for permission in REQUIRED_PERMISSIONS:
             if not getattr(bot_role.permissions, permission):
-                permission = permission.replace("_", " ").title()
-                role_missing_permissions.append(permission)
+                missing_permissions["role"].append(permission.replace("_", " ").title())
+            if not getattr(bot_channel_permissions, permission):
+                missing_permissions["channel"].append(permission.replace("_", " ").title())
 
-        channel_missing_permissions = []
-        for permission in REQUIRED_PERMISSIONS:
-            if not getattr(
-                interaction.channel.permissions_for(interaction.guild.me),
-                permission
-            ):
-                permission = permission.replace("_", " ").title()
-                channel_missing_permissions.append(permission)
-
-        if role_missing_permissions or channel_missing_permissions:
+        if missing_permissions["role"] or missing_permissions["channel"]:
             embed = nextcord.Embed(
                 title="⚠️ __Missing Permissions__",
                 description="Hey! I'm missing these permissions:",
                 color=0xFF0000,
             )
-            if role_missing_permissions:
-                embed.add_field(
-                    name="❌ Missing in role:",
-                    value="\n".join(role_missing_permissions),
-                    inline=True,
-                )
-            if channel_missing_permissions:
-                embed.add_field(
-                    name="❌ Missing in channel:",
-                    value="\n".join(channel_missing_permissions),
-                    inline=True,
-                )
+            for permission_type, permissions in missing_permissions.items():
+                if permissions:
+                    embed.add_field(
+                        name=f"❌ Missing in {permission_type}:",
+                        value="\n".join(permissions),
+                        inline=True,
+                    )
             embed.set_footer(
                 text="Please grant me these permissions so i can work properly!🙏"
             )
 
             await interaction.response.send_message(embed=embed)
             return False
-        return True
-    else:
-        return True
+    return True
+
 
 
 @CLIENT.event
-async def on_application_command_error(
-    interaction: nextcord.Interaction, error: nextcord.DiscordException
-):
+async def on_application_command_error(interaction: nextcord.Interaction, error: nextcord.DiscordException):
     """Handles errors that occur in application commands."""
 
     log.error(f"####### an error occured #######\n{error}")

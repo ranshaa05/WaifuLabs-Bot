@@ -53,7 +53,8 @@ class AdminCommands(commands.Cog):
     async def error_count(
         self,
         interaction: nextcord.Interaction,
-        private: Optional[bool] = nextcord.SlashOption(
+        privacy: Optional[bool] = nextcord.SlashOption(
+            name="private",
             description="Whether to make the response private.",
             default=True,
             required=False,
@@ -81,7 +82,7 @@ class AdminCommands(commands.Cog):
                     description=f"**__Application errors:__**\n{app_dict_str if app_dict_str else 'No application erros have occured'}\n**__Runtime errors:__**\n{run_dict_str if run_dict_str else 'No runtime errors have occured'}",
                     color=nextcord.Color.red(),
                 )
-                await interaction.response.send_message(embed=embed, ephemeral=private)
+                await interaction.response.send_message(embed=embed, ephemeral=privacy)
             else:
                 await interaction.response.send_message(
                     "No errors have occurred yet.", ephemeral=True
@@ -103,7 +104,8 @@ class AdminCommands(commands.Cog):
             description="The user to perform the action on.",
             required=True,
         ),
-        private: Optional[bool] = nextcord.SlashOption(
+        privacy: Optional[bool] = nextcord.SlashOption(
+            name="private",
             description="Whether to make the response private.",
             default=True,
             required=False,
@@ -117,7 +119,7 @@ class AdminCommands(commands.Cog):
                 and len(AdminCommands.ADMIN_IDS) == 1
             ):
                 await interaction.response.send_message(
-                    "You cannot remove the last admin.", ephemeral=private
+                    "You cannot remove the last admin.", ephemeral=privacy
                 )
                 self.log.info(
                     f"{interaction.user.name}: Tried to remove the last admin, but was denied."
@@ -125,7 +127,7 @@ class AdminCommands(commands.Cog):
                 return
             elif user.id in AdminCommands.ADMIN_IDS and add_or_remove == "add":
                 await interaction.response.send_message(
-                    f"'{user.name}' is already an admin.", ephemeral=private
+                    f"'{user.name}' is already an admin.", ephemeral=privacy
                 )
                 self.log.info(
                     f"{interaction.user.name}: Tried to add user '{user.name}' to the admin list, but they are already an admin."
@@ -133,7 +135,7 @@ class AdminCommands(commands.Cog):
                 return
             elif user.id not in AdminCommands.ADMIN_IDS and add_or_remove == "remove":
                 await interaction.response.send_message(
-                    f"'{user.name}' is not an admin.", ephemeral=private
+                    f"'{user.name}' is not an admin.", ephemeral=privacy
                 )
                 self.log.info(
                     f"{interaction.user.name}: Tried to remove user '{user.name}' from the admin list, but they are not an admin."
@@ -149,7 +151,7 @@ class AdminCommands(commands.Cog):
 
             await interaction.response.send_message(
                 f"User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.",
-                ephemeral=private,
+                ephemeral=privacy,
             )
             self.log.info(
                 f"{interaction.user.name}: User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list."
@@ -165,7 +167,8 @@ class AdminCommands(commands.Cog):
     async def show_servers(
         self,
         interaction: nextcord.Interaction,
-        private: Optional[bool] = nextcord.SlashOption(
+        privacy: Optional[bool] = nextcord.SlashOption(
+            name="private",
             description="Whether to make the list private.",
             default=True,
             required=False,
@@ -186,7 +189,7 @@ class AdminCommands(commands.Cog):
                 description=f"**__Total Servers: {total_servers}__**\n{server_list}",
                 color=0x00FF00,
             )
-            await interaction.response.send_message(embed=embed, ephemeral=private)
+            await interaction.response.send_message(embed=embed, ephemeral=privacy)
         else:
             await self.no_permission(interaction)
 
@@ -197,7 +200,8 @@ class AdminCommands(commands.Cog):
     async def uptime(
         self,
         interaction: nextcord.Interaction,
-        private: Optional[bool] = nextcord.SlashOption(
+        privacy: Optional[bool] = nextcord.SlashOption(
+            name="private",
             description="Whether to make the response private.",
             default=True,
             required=False,
@@ -207,7 +211,7 @@ class AdminCommands(commands.Cog):
         if interaction.user.id in AdminCommands.ADMIN_IDS:
             uptime = nextcord.utils.utcnow() - self.client.start_time
             await interaction.response.send_message(
-                "Uptime: " + str(uptime).split(".")[0], ephemeral=private
+                "Uptime: " + str(uptime).split(".")[0], ephemeral=privacy
             )
         else:
             await self.no_permission(interaction)
@@ -219,7 +223,8 @@ class AdminCommands(commands.Cog):
     async def api_latency(
         self,
         interaction: nextcord.Interaction,
-        private: Optional[bool] = nextcord.SlashOption(
+        privacy: Optional[bool] = nextcord.SlashOption(
+            name="private",
             description="Whether to make the response private.",
             default=True,
             required=False,
@@ -228,7 +233,7 @@ class AdminCommands(commands.Cog):
         "Shows the bot's API latency."
         if interaction.user.id in AdminCommands.ADMIN_IDS:
             await interaction.response.send_message(
-                f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=private
+                f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=privacy
             )
         else:
             await self.no_permission(interaction)
