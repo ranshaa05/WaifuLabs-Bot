@@ -68,11 +68,11 @@ async def waifu(
     original_message = await interaction.response.send_message(
         (
             "Hi there! I'm WaifuBot!\n"
-            "I create waifus using <https://www.waifulabs.com>. Let's get started!\n"
-            "You'll be presented with 4 grids of waifus, each based on your previous choice. "
-            "Click the waifu you like best or use these buttons:\n"
-            "❌ to exit, ⬅ to undo, ➡ to skip forward, 🎲 to choose randomly, or 🔄 to refresh the grid.\n"
-            "_(1/4)_"
+            "I create waifus using <https://www.waifulabs.com>. Let's get started!"
+            "\n* You'll be presented with 4 grids of waifus, each based on your previous choice. "
+            "\n* Click the number corresponding to the waifu you like best in each grid or use these buttons:"
+            "\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid."
+            "\n_(Progress: 1/4)_"
         ),
         ephemeral=privacy,
     )
@@ -86,7 +86,7 @@ async def waifu(
             await original_message.edit(
                 (
                     "Okay! lets continue. Here's another grid for you to choose from:\n"
-                    f"(_{View.stage[interaction.user.id] + 1}/4)_"
+                    f"(_Progress: {View.stage[interaction.user.id] + 1}/4)_"
                 ),
                 view=None,
             )
