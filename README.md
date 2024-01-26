@@ -1,6 +1,8 @@
 # WaifuLabs Bot
 Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a waifu based on user choice!
 
+This bot emulates full functionality of www.waifuLabs.com.
+
 ## Basic Features
 * Customize your waifu entirely through discord.
 * Buttons to refresh the grid, keep current waifu, go back one stage, and more.
@@ -13,7 +15,7 @@ Use this link: www.shorturl.at/eHS09
 
 
 ## Set-up
-* Install python 3.8 or greater.
+* Install Python 3.8 or greater (tested up to Python 3.11).
 * Clone this git repo or download the latest package.
 * Install requirements.
 * Open "config.json".
