@@ -14,6 +14,7 @@ log = setup_logging().log
 
 
 class ScreenshotHandler:
+    """Handles the screenshotting and sending of the screenshot."""
     SCREENSHOT_PATH = os.path.join(os.path.dirname(__file__), "Screenshots")
     MAX_NUMBER_OF_FILES = (
         1000 + 1
@@ -24,35 +25,32 @@ class ScreenshotHandler:
         self.interaction = interaction
         self.original_message = original_message
         self.view = None
+        self.pil_image = None
 
     async def save_send_screenshot(self):
         """saves a screenshot of the current page and sends it to the user."""
         await self.navi.wait_for_not_load_screen()
 
-        file_number = self.get_next_file_number(self.SCREENSHOT_PATH)
-        new_screenshot_path = os.path.join(self.SCREENSHOT_PATH, f"{file_number}.png")
-
         (
             selector,
             crop,
             self.view,
-            new_screenshot_path,
             b64_image
-        ) = await self.get_screenshot_info_by_stage(new_screenshot_path)
+        ) = await self.get_screenshot_info_by_stage()
 
         if b64_image:  # for final stage, where the image is a base64 string, not a screenshot of an element.
             image_bytes = b64.b64decode(b64_image)
-            pil_image = Image.open(BytesIO(image_bytes))
+            self.pil_image = Image.open(BytesIO(image_bytes))
         else:
-            pil_image = await self.navi.screenshot(selector)
+            self.pil_image = await self.navi.screenshot(selector)
 
         if crop:
-            width, height = pil_image.size
-            pil_image = pil_image.crop((0, height - 630, width, height))
+            width, height = self.pil_image.size
+            self.pil_image = self.pil_image.crop((0, height - 630, width, height))
 
         # Convert the PIL image to bytes
         byte_arr = BytesIO()
-        pil_image.save(byte_arr, format="PNG")
+        self.pil_image.save(byte_arr, format="PNG")
         byte_arr.seek(0)
 
         file = nextcord.File(byte_arr, filename="image.png")
@@ -62,7 +60,7 @@ class ScreenshotHandler:
         )
 
         # Close the PIL image
-        del pil_image
+        self.pil_image = None
         byte_arr.close()
 
         self.original_message = await self.original_message.fetch()
@@ -71,13 +69,6 @@ class ScreenshotHandler:
         if self.view:
             await self.view.wait()
             await self.add_reaction()
-
-    def get_next_file_number(self, path):
-        """Get the next available file number in the given directory."""
-        existing_files = glob.glob(os.path.join(path, "*.png"))
-        existing_numbers = {int(os.path.splitext(os.path.basename(f))[0]) for f in existing_files}
-        file_number = next(i for i in range(self.MAX_NUMBER_OF_FILES) if i not in existing_numbers)
-        return file_number
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""
@@ -107,42 +98,37 @@ class ScreenshotHandler:
                 asyncio.create_task(self.original_message.add_reaction(self.view.current_label))
             asyncio.create_task(self.original_message.add_reaction("⏳"))
 
-    async def get_screenshot_info_by_stage(self, new_screenshot_path):
-        """Returns the selector, crop, view, and new_screenshot_path based on the stage of the grid, as well as the base64 image if on the last stage."""
-        selector, crop, view, b64_image = (
-            None,
-            False,
-            None,
-            None,
-        )  # placeholder values.
+    async def get_screenshot_info_by_stage(self):
+        """Returns the selector, crop, and view based on the stage of the grid, as well as the base64 image if on the last stage."""
 
-        if View.stage[self.interaction.user.id] in range(1, 4):
+        stage = View.stage[self.interaction.user.id]
+        
+        if stage in range(1, 4):
             selector = ".waifu-container"
             crop = True
             view = View(self.navi, self.interaction)
+            b64_image = None
 
-        elif View.stage[self.interaction.user.id] == 0:
+        elif stage == 0:
             selector = ".waifu-grid"
+            crop = False
             view = View(self.navi, self.interaction)
+            b64_image = None
 
         else:
             # if on last stage.
             # this is a bit of a hack, but it works
             # the final image is not a screenshot, but a base64 image taken from the element's src attribute
             # this is done because of an issue with pyppeteer's screenshot func
-            file_number = self.get_next_file_number(os.path.join(self.SCREENSHOT_PATH, "final_results"))
-            new_screenshot_path = os.path.join(
-                self.SCREENSHOT_PATH, "final_results", f"{file_number}.png"
-            )
             await self.navi.wait_for_final_image()
 
-            final_image_element = await self.navi.page.querySelector(
-                ".waifu-preview > img"
-            )
-            final_image_url = await self.navi.page.evaluate(
-                "(element) => element.src", final_image_element
-            )
+            final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
+            final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
             final_image_base64 = final_image_url.split(",")[1]
+            
+            selector = None
+            crop = False
+            view = None
             b64_image = final_image_base64
 
-        return selector, crop, view, new_screenshot_path, b64_image
+        return selector, crop, view, b64_image
