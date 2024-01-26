@@ -81,10 +81,14 @@ async def waifu(
     View.stage[interaction.user.id] = 0
     while View.stage[interaction.user.id] < 4:
         if navi.page.isClosed():
-            await original_message.edit(
-                "Exiting...", delete_after=5, attachments=[], view=None
-            )
+            try:
+                await original_message.edit(
+                    "Exiting...", delete_after=5, attachments=[], view=None
+                )
+            except nextcord.errors.HTTPException:
+                pass
             break
+        
         else:
             await ScreenshotHandler(
                 navi, interaction, original_message
@@ -110,12 +114,16 @@ async def waifu(
 
     elif navi.page.isClosed() and navi.timed_out:
         log.info(f"Page closed for user '{interaction.user.name}', timed out.")
-        await original_message.edit(
-            "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
-            delete_after=10,
-            attachments=[],
-            view=None,
-        )
+        #in case the message was deleted
+        try:
+            await original_message.edit(
+                "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
+                delete_after=10,
+                attachments=[],
+                view=None,
+            )
+        except nextcord.errors.HTTPException:
+            pass
 
     else:
         log.info(f"Page closed for user '{interaction.user.name}'")
