@@ -1,5 +1,5 @@
 # WaifuLabs Bot ![Static Badge](https://img.shields.io/badge/Python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
-Fully-featured Discord bot that crawls through www.waifuLabs.com and fetches a waifu based on user choice!
+This is a comprehensive Discord bot that navigates through www.waifuLabs.com and delivers a waifu tailored to user preferences!
 
 This bot emulates full functionality of www.waifuLabs.com.
 
@@ -11,7 +11,7 @@ This bot emulates full functionality of www.waifuLabs.com.
 ## Add this bot to your server! 😄
 Use this link: www.shorturl.at/eHS09
 
-*This bot may be inactive at times.
+*Please note, this bot may be down at times.
 
 
 ## Set-up
@@ -19,7 +19,7 @@ Use this link: www.shorturl.at/eHS09
 * Clone this git repo or download the latest package with `git clone https://github.com/ranshaa05/WaifuLabs-Bot`
 * Install requirements with `pip install -r requirements.txt`
 * Open "config.json".
-* Paste your bot token, your (or another admin's) discord id(s) and the id(s) of the server(s) where you will be able to use special admin commands.
+* Paste your bot token, your discord id and the id of the server(s) where you will be able to use special admin commands.
 * Run "main.py" or "run.bat".
 * Enjoy! 😃
 ---
