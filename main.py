@@ -77,7 +77,7 @@ async def waifu(
 
     collaborator_info = ''
     if co_operator:
-        collaborator_type = 'User' if isinstance(co_operator, nextcord.User) else 'Role'
+        collaborator_type = 'Role' if isinstance(co_operator, nextcord.Role) else 'User'
         collaborator_info = f', Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
 
     original_message = await interaction.response.send_message(
