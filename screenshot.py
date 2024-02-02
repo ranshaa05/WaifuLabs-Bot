@@ -66,10 +66,10 @@ class ScreenshotHandler:
 
         self.original_message = await self.original_message.fetch()
 
-        await self.remove_reaction()
+        asyncio.create_task(self.remove_reaction())
         if self.view:
             await self.view.wait()
-            await self.add_reaction()
+            asyncio.create_task(self.add_reaction())
 
     async def remove_reaction(self):
         """Removes all reactions from the original message."""
@@ -77,7 +77,7 @@ class ScreenshotHandler:
             isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
             and not self.original_message.flags.ephemeral
         ):  # check if message is reactable in the first place
-            asyncio.create_task(self.original_message.clear_reactions())
+            await self.original_message.clear_reactions()
 
     async def add_reaction(self):
         """Adds a reaction to the original message based on the button pressed in the view."""
@@ -94,10 +94,10 @@ class ScreenshotHandler:
                     self.view.current_label[i : i + 3]
                     for i in range(0, len(self.view.current_label), 3)
                 ]:
-                    asyncio.create_task(self.original_message.add_reaction(emoji))
+                    await self.original_message.add_reaction(emoji)
             else:
-                asyncio.create_task(self.original_message.add_reaction(self.view.current_label))
-            asyncio.create_task(self.original_message.add_reaction("⏳"))
+                await self.original_message.add_reaction(self.view.current_label)
+            await self.original_message.add_reaction("⏳")
 
     async def get_screenshot_info_by_stage(self, stage, session_id):
         """Returns the selector, crop, and view based on the stage of the grid, as well as the base64 image if on the last stage."""
