@@ -4,7 +4,7 @@ import nextcord
 class View(nextcord.ui.View):
     stage = {}
 
-    def __init__(self, navi, interaction, co_op, session_id):
+    def __init__(self, navi, interaction, co_operator, session_id):
         super().__init__(timeout=120)
         self.buttons = []
         self.navi = navi
@@ -56,7 +56,7 @@ class View(nextcord.ui.View):
                 label = interaction.data[
                     "custom_id"
                 ]  # sets label to the label of the button that was pressed.
-                await self.button_logic(label, interaction.user.id, co_op, session_id)
+                await self.button_logic(label, interaction.user, co_operator, session_id)
                 if label.isnumeric():
                     label = number_emoji_list[
                         int(label) - 1
@@ -66,9 +66,13 @@ class View(nextcord.ui.View):
             button.callback = button_function
             self.add_item(button)
 
-    async def button_logic(self, label, interactor_id, co_op, session_id):
+    async def button_logic(self, label, interactor, co_operator, session_id):
         """run the appropriate functions based on the label of the button that was pressed."""
-        if interactor_id == self.interaction.user.id or co_op:
+        if (
+            interactor.id == self.interaction.user.id
+            or interactor == co_operator
+            or co_operator in interactor.roles
+        ):
             if label.isnumeric():
                 await self.navi.click_by_index(int(label))
                 View.stage[session_id] += 1

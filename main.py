@@ -46,10 +46,10 @@ connected_users = []
 @CLIENT.slash_command(description="Build-a-waifu!")
 async def waifu(
     interaction: nextcord.Interaction,
-    co_op: Optional[bool] = nextcord.SlashOption(
+    co_operator: nextcord.Mentionable = nextcord.SlashOption(
         name="co-op",
         description="Allows other users to help you build your waifu.",
-        default=False,
+        default=None,
         required=False,
     ),
     privacy: Optional[bool] = nextcord.SlashOption(
@@ -75,6 +75,11 @@ async def waifu(
 
     session_id = uuid.uuid4()
 
+    collaborator_info = ''
+    if co_operator:
+        collaborator_type = 'User' if isinstance(co_operator, nextcord.User) else 'Role'
+        collaborator_info = f', Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
+
     original_message = await interaction.response.send_message(
         (
             "Hi there! I'm WaifuBot!\n"
@@ -87,11 +92,11 @@ async def waifu(
         ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
-    log.info(f"Page started for user '{interaction.user.name}'. {('(collaborative)' if co_op else '')}")
+    log.info(f"Page started for user '{interaction.user.name}'. {collaborator_info}")
 
     View.stage[session_id] = 0
     while View.stage[session_id] < 4 and not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot(co_op, session_id)
+        await ScreenshotHandler(navi, interaction, original_message, co_operator).save_send_screenshot(session_id)
         if View.stage[session_id] <= 3: 
             try:    #in case the message was deleted
                 await original_message.edit(
@@ -105,15 +110,18 @@ async def waifu(
                 break
 
     if not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot(co_op, session_id)
+        await ScreenshotHandler(navi, interaction, original_message, co_operator).save_send_screenshot( session_id)
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
         await navi.page.close()
-        log.info(f"Page closed for user '{interaction.user.name}', finished. {('(collaborative)' if co_op else '')}")
+        log.info(
+            f"Page closed for user '{interaction.user.name}', finished. {collaborator_info})"
+        )
 
     elif navi.timed_out:
-        log.info(f"Page closed for user '{interaction.user.name}', timed out. {('(collaborative)' if co_op else '')}")
+        log.info(
+            f"Page closed for user '{interaction.user.name}', timed out. {collaborator_info}")
         try:
             await original_message.edit(
                 "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
@@ -130,7 +138,8 @@ async def waifu(
             )
         except nextcord.errors.HTTPException:
             pass
-        log.info(f"Page closed for user '{interaction.user.name}' {('(collaborative)' if co_op else '')}")
+        log.info(
+            f"Page closed for user '{interaction.user.name}'. {collaborator_info}")
 
     View.stage.pop(interaction.user.id, None)
     connected_users.remove(interaction.user.id)

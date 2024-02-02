@@ -20,14 +20,15 @@ class ScreenshotHandler:
         1000 + 1
     )  # +num is for any additional files and folders in the folder
 
-    def __init__(self, navi, interaction, original_message):
+    def __init__(self, navi, interaction, original_message, co_operator):
         self.navi = navi
         self.interaction = interaction
+        self.co_operator = co_operator
         self.original_message = original_message
         self.view = None
         self.pil_image = None
 
-    async def save_send_screenshot(self, co_op, session_id):
+    async def save_send_screenshot(self, session_id):
         """saves a screenshot of the current page and sends it to the user."""
         await self.navi.wait_for_not_load_screen()
 
@@ -36,7 +37,7 @@ class ScreenshotHandler:
             crop,
             self.view,
             b64_image
-        ) = await self.get_screenshot_info_by_stage(View.stage[session_id], co_op, session_id)
+        ) = await self.get_screenshot_info_by_stage(View.stage[session_id], session_id)
 
         if b64_image:  # for final stage, where the image is a base64 string, not a screenshot of an element.
             image_bytes = b64.b64decode(b64_image)
@@ -98,18 +99,18 @@ class ScreenshotHandler:
                 asyncio.create_task(self.original_message.add_reaction(self.view.current_label))
             asyncio.create_task(self.original_message.add_reaction("⏳"))
 
-    async def get_screenshot_info_by_stage(self, stage, co_op, session_id):
+    async def get_screenshot_info_by_stage(self, stage, session_id):
         """Returns the selector, crop, and view based on the stage of the grid, as well as the base64 image if on the last stage."""
         if stage in range(1, 4):
             selector = ".waifu-container"
             crop = True
-            view = View(self.navi, self.interaction, co_op, session_id)
+            view = View(self.navi, self.interaction, self.co_operator, session_id)
             b64_image = None
 
         elif stage == 0:
             selector = ".waifu-grid"
             crop = False
-            view = View(self.navi, self.interaction, co_op, session_id)
+            view = View(self.navi, self.interaction, self.co_operator, session_id)
             b64_image = None
 
         else:
