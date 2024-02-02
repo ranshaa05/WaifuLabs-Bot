@@ -1,5 +1,6 @@
 import json
 import traceback
+import uuid
 from typing import Optional
 
 import nextcord
@@ -45,6 +46,12 @@ connected_users = []
 @CLIENT.slash_command(description="Build-a-waifu!")
 async def waifu(
     interaction: nextcord.Interaction,
+    co_op: Optional[bool] = nextcord.SlashOption(
+        name="co-op",
+        description="Allows other users to help you build your waifu.",
+        default=False,
+        required=False,
+    ),
     privacy: Optional[bool] = nextcord.SlashOption(
         name="private",
         description="Makes it so only you can see your waifus.",
@@ -57,14 +64,17 @@ async def waifu(
         return
     if interaction.user.id in connected_users:
         await interaction.response.send_message(
-            "Whoops! One user cannot start me twice."
-            "You can continue or press ❌ to exit.",
+            "Whoops! One user cannot start me twice at the same time."
+            "You can continue making your waifu or press ❌ to exit.",
             ephemeral=True,
             delete_after=10,
         )
         return
 
     connected_users.append(interaction.user.id)
+
+    session_id = uuid.uuid4()
+
     original_message = await interaction.response.send_message(
         (
             "Hi there! I'm WaifuBot!\n"
@@ -77,31 +87,33 @@ async def waifu(
         ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
-    log.info(f"Page started for user '{interaction.user.name}'.")
+    log.info(f"Page started for user '{interaction.user.name}'. {('(collaborative)' if co_op else '')}")
 
-    View.stage[interaction.user.id] = 0
-    while View.stage[interaction.user.id] < 4 and not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot()
-        try:    #in case the message was deleted
-            await original_message.edit(
-                (
-                    "Okay! lets continue. Here's another grid for you to choose from:\n"
-                    f"(_Progress: {View.stage[interaction.user.id] + 1}/4)_"
-                ),
-                view=None,
-            )
-        except nextcord.errors.NotFound:
-            break
+    View.stage[session_id] = 0
+    while View.stage[session_id] < 4 and not navi.page.isClosed():
+        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot(co_op, session_id)
+        if View.stage[session_id] <= 3: 
+            try:    #in case the message was deleted
+                await original_message.edit(
+                    (
+                        "Okay! lets continue. Here's another grid for you to choose from:\n"
+                        f"(_Progress: {View.stage[session_id] + 1}/4)_"
+                    ),
+                    view=None,
+                )
+            except nextcord.errors.NotFound:
+                break
 
     if not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot()
+        await ScreenshotHandler(navi, interaction, original_message).save_send_screenshot(co_op, session_id)
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
         await navi.page.close()
-        log.info(f"Page closed for user '{interaction.user.name}', finished.")
+        log.info(f"Page closed for user '{interaction.user.name}', finished. {('(collaborative)' if co_op else '')}")
+
     elif navi.timed_out:
-        log.info(f"Page closed for user '{interaction.user.name}', timed out.")
+        log.info(f"Page closed for user '{interaction.user.name}', timed out. {('(collaborative)' if co_op else '')}")
         try:
             await original_message.edit(
                 "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
@@ -118,7 +130,7 @@ async def waifu(
             )
         except nextcord.errors.HTTPException:
             pass
-        log.info(f"Page closed for user '{interaction.user.name}'")
+        log.info(f"Page closed for user '{interaction.user.name}' {('(collaborative)' if co_op else '')}")
 
     View.stage.pop(interaction.user.id, None)
     connected_users.remove(interaction.user.id)

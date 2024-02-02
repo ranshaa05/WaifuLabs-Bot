@@ -4,7 +4,7 @@ import nextcord
 class View(nextcord.ui.View):
     stage = {}
 
-    def __init__(self, navi, interaction):
+    def __init__(self, navi, interaction, co_op, session_id):
         super().__init__(timeout=120)
         self.buttons = []
         self.navi = navi
@@ -47,7 +47,7 @@ class View(nextcord.ui.View):
                 label=label,
                 style=style,
                 disabled=True
-                if self.stage[interaction.user.id] == 0
+                if self.stage[session_id] == 0
                 and (label == "⬅" or label == "➡")
                 else False,
             )
@@ -56,7 +56,7 @@ class View(nextcord.ui.View):
                 label = interaction.data[
                     "custom_id"
                 ]  # sets label to the label of the button that was pressed.
-                await self.button_logic(label, interaction.user.id)
+                await self.button_logic(label, interaction.user.id, co_op, session_id)
                 if label.isnumeric():
                     label = number_emoji_list[
                         int(label) - 1
@@ -66,27 +66,27 @@ class View(nextcord.ui.View):
             button.callback = button_function
             self.add_item(button)
 
-    async def button_logic(self, label, interactor):
+    async def button_logic(self, label, interactor_id, co_op, session_id):
         """run the appropriate functions based on the label of the button that was pressed."""
-        if interactor == self.interaction.user.id:
+        if interactor_id == self.interaction.user.id or co_op:
             if label.isnumeric():
                 await self.navi.click_by_index(int(label))
-                View.stage[interactor] += 1
+                View.stage[session_id] += 1
             elif label == "❌":
                 await self.navi.exit()
             elif label == "🎲":
                 await self.navi.rand()
-                View.stage[interactor] += 1
+                View.stage[session_id] += 1
             elif label == "🔄":
                 await self.navi.refresh()
             if label == "⬅":
-                if View.stage[interactor] > 0:
-                    View.stage[interactor] -= 1
+                if View.stage[session_id] > 0:
+                    View.stage[session_id] -= 1
                     await self.navi.undo()
             elif label == "➡":
-                if View.stage[interactor] > 0:
+                if View.stage[session_id] > 0:
                     await self.navi.keep()
-                    View.stage[interactor] += 1
+                    View.stage[session_id] += 1
 
             self.stop()
 
