@@ -5,6 +5,7 @@ This bot emulates full functionality of www.waifuLabs.com.
 
 ## Basic Features
 * Customize your waifu entirely through discord.
+* Customize your waifu with your friends!
 * Buttons to refresh the grid, keep current waifu, go back one stage, and more.
 
 
