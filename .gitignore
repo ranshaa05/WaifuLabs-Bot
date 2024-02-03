@@ -1,4 +1,3 @@
 .gitignore
-*.png
 __pycache__/
 config.json
