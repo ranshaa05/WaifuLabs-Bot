@@ -116,7 +116,7 @@ async def waifu(
         )
         await navi.page.close()
         log.info(
-            f"Page closed for user '{interaction.user.name}', finished. {collaborator_info})"
+            f"Page closed for user '{interaction.user.name}', finished. {collaborator_info}"
         )
 
     elif navi.timed_out:
