@@ -24,7 +24,7 @@ def _page_stack(coroutine):
 
 class PageNavigator:
     browser = asyncio.get_event_loop().run_until_complete(
-        launch(headless=False, autoClose=True)
+        launch(headless=True, autoClose=True)
     )
     active_page = None
 
