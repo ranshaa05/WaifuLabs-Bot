@@ -8,7 +8,7 @@ With this bot, you can emulate the full functionality of WaifuLabs.com from Disc
 * Customize your waifu with your friends!
 
 ## Add this bot to your server! 😄
-Use this link: [www.shorturl.at/eHS09](https://shorturl.at/uxMS1)
+Use this link: [shorturl.at/uxMS1](https://shorturl.at/uxMS1)
 
 *Please note, this bot may be down at times.
 
