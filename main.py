@@ -74,11 +74,11 @@ async def waifu(
     connected_users.append(interaction.user.id)
 
     session_id = uuid.uuid4()
-
-    collaborator_info = ''
     if co_operator:
         collaborator_type = 'Role' if isinstance(co_operator, nextcord.Role) else 'User'
-        collaborator_info = f', Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
+        collaborator_info = f'Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
+    else:
+        collaborator_info = ''
 
     original_message = await interaction.response.send_message(
         (
