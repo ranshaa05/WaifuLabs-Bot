@@ -1,25 +1,15 @@
 import asyncio
 import base64 as b64
-import glob
-import os
 from io import BytesIO
 
 from PIL import Image
 import nextcord
 
-from logger import setup_logging
 from view import View
-
-log = setup_logging().log
 
 
 class ScreenshotHandler:
     """Handles the screenshotting and sending of the screenshot."""
-    SCREENSHOT_PATH = os.path.join(os.path.dirname(__file__), "Screenshots")
-    MAX_NUMBER_OF_FILES = (
-        1000 + 1
-    )  # +num is for any additional files and folders in the folder
-
     def __init__(self, navi, interaction, original_message, co_operator):
         self.navi = navi
         self.interaction = interaction
@@ -65,13 +55,13 @@ class ScreenshotHandler:
         byte_arr.close()
 
         self.original_message = await self.original_message.fetch()
-
-        asyncio.create_task(self.remove_reaction())
+        
+        asyncio.create_task(self.remove_reactions())
         if self.view:
             await self.view.wait()
             asyncio.create_task(self.add_reaction())
 
-    async def remove_reaction(self):
+    async def remove_reactions(self):
         """Removes all reactions from the original message."""
         if (
             isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
@@ -100,33 +90,30 @@ class ScreenshotHandler:
             await self.original_message.add_reaction("⏳")
 
     async def get_screenshot_info_by_stage(self, stage, session_id):
-        """Returns the selector, crop, and view based on the stage of the grid, as well as the base64 image if on the last stage."""
+        """Returns the selector, crop, view, and base64 image based on the stage of the grid."""
+        selector = None
+        crop = False
+        view = None
+        b64_image = None
+    
         if stage in range(1, 4):
             selector = ".waifu-container"
             crop = True
             view = View(self.navi, self.interaction, self.co_operator, session_id)
-            b64_image = None
-
+    
         elif stage == 0:
             selector = ".waifu-grid"
-            crop = False
             view = View(self.navi, self.interaction, self.co_operator, session_id)
-            b64_image = None
-
+    
         else:
-            # if on last stage.
             # this is a bit of a hack, but it works
             # the final image is not a screenshot, but a base64 image taken from the element's src attribute
             # this is done because of an issue with pyppeteer's screenshot func
             await self.navi.wait_for_final_image()
-
+    
             final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
             final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
             final_image_base64 = final_image_url.split(",")[1]
-            
-            selector = None
-            crop = False
-            view = None
             b64_image = final_image_base64
-
+    
         return selector, crop, view, b64_image

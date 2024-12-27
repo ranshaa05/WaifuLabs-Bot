@@ -10,8 +10,8 @@ class View(nextcord.ui.View):
         self.navi = navi
         self.interaction = interaction
         self.current_label = "❓"  # placeholder
-        label_list = []
-        color_list = []
+        self.label_list = []
+        self.color_list = []
         emoji_label_list = ["⬅", "➡", "🎲", "🔄", "❌"]
         number_emoji_list = [
             "1️⃣",
@@ -31,17 +31,15 @@ class View(nextcord.ui.View):
             "1️⃣5️⃣",
         ]
 
-        color_list = []
-        label_list = []
-
+        # determine color for each button
         for i, emoji in enumerate(emoji_label_list[:3]):
-            color_list += [nextcord.ButtonStyle.blurple] * 4 + [nextcord.ButtonStyle.green]
-            label_list += [str(i) for i in range((i * 4) + 1, (i * 4) + 5)] + [emoji]
+            self.color_list += [nextcord.ButtonStyle.blurple] * 4 + [nextcord.ButtonStyle.green]
+            self.label_list += [str(i) for i in range((i * 4) + 1, (i * 4) + 5)] + [emoji]
 
-        color_list += [nextcord.ButtonStyle.blurple] * 3 + [nextcord.ButtonStyle.grey, nextcord.ButtonStyle.red]
-        label_list += [str(i) for i in range(13, 16)] + emoji_label_list[-2:]
+        self.color_list += [nextcord.ButtonStyle.blurple] * 3 + [nextcord.ButtonStyle.grey, nextcord.ButtonStyle.red]
+        self.label_list += [str(i) for i in range(13, 16)] + emoji_label_list[-2:]
 
-        for label, style in zip(label_list, color_list):  # make the buttons.
+        for label, style in zip(self.label_list, self.color_list):  # make the buttons
             button = nextcord.ui.Button(
                 custom_id=label,
                 label=label,
@@ -84,11 +82,9 @@ class View(nextcord.ui.View):
             elif label == "🔄":
                 await self.navi.refresh()
             if label == "⬅":
-                if View.stage[session_id] > 0:
-                    View.stage[session_id] -= 1
                     await self.navi.undo()
+                    View.stage[session_id] -= 1
             elif label == "➡":
-                if View.stage[session_id] > 0:
                     await self.navi.keep()
                     View.stage[session_id] += 1
 
