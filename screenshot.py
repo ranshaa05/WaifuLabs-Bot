@@ -41,10 +41,10 @@ class ScreenshotHandler:
 
         # Convert the PIL image to bytes
         byte_arr = BytesIO()
-        self.pil_image.save(byte_arr, format="PNG")
+        self.pil_image.save(byte_arr, format="WEBP")
         byte_arr.seek(0)
 
-        file = nextcord.File(byte_arr, filename="image.png")
+        file = nextcord.File(byte_arr, filename="image.webp")
         await self.original_message.edit(
             file=file,
             view=self.view if self.view else None,
