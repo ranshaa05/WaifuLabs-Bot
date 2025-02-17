@@ -83,7 +83,7 @@ async def waifu(
     original_message = await interaction.response.send_message(
         (
             "Hi there! I'm WaifuBot!\n"
-            "I create waifus using <https://www.waifulabs.com>. Let's get started!"
+            "I create waifus using [waifulabs.com](https://www.waifulabs.com). Let's get started!"
             "\n* You'll be presented with 4 grids of waifus, each based on your previous choice. "
             "\n* Click the number corresponding to the waifu you like best in each grid or use these buttons:"
             "\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid."
@@ -150,8 +150,7 @@ async def feedback(interaction: nextcord.Interaction):
     """Link to the issues page."""
     await interaction.response.send_message(
         ("If you've encountered a bug or have a suggestion for Waifu Bot, "
-         "please head over to the issues page on Github: "
-         "<https://github.com/ranshaa05/WaifuLabs-Bot/issues>.\n"
+         "please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues).\n"
          "There, you can report bugs, suggest features, or ask for help with "
          "any issues you're having.\n"
          "Thanks for helping us make Waifu Bot better! :slight_smile:"),
