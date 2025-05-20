@@ -1,4 +1,4 @@
-setuptools == 75.6.0
+setuptools == 78.1.1
 pyppeteer == 1.0.2
 nextcord[speed] == 2.6.0
 Pillow == 11.0.0
