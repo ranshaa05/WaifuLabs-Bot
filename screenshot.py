@@ -25,7 +25,7 @@ class ScreenshotHandler:
             crop,
             self.view,
             b64_string,
-        ) = await self.get_screenshot_info_by_stage(View.stage[session_id], session_id)
+        ) = await self._get_screenshot_info_by_stage(View.stage[session_id], session_id)
 
         if not b64_string:  # For intermediate stages
             image_bytes = await self.navi.screenshot(selector)
@@ -88,28 +88,30 @@ class ScreenshotHandler:
                 await original_message.add_reaction(self.view.current_label)
             await original_message.add_reaction("⏳")
 
-    async def get_screenshot_info_by_stage(self, stage, session_id):
+    async def _get_screenshot_info_by_stage(self, stage, session_id):
         """Returns the selector, crop, view, and base64 image based on the stage of the grid."""
-        selector = None
-        crop = False
-        view = None
-        b64_string = None
-    
-        if stage in range(1, 4):
-            selector = ".waifu-container"
-            crop = True
-            view = View(self.navi, self.interaction, self.co_operator, session_id)
-    
-        elif stage == 0:
-            selector = ".waifu-grid"
-            view = View(self.navi, self.interaction, self.co_operator, session_id)
-    
+        stage_configs = {
+            0: {"selector": ".waifu-grid", "crop": False, "view": True},
+            1: {"selector": ".waifu-container", "crop": True, "view": True},
+            2: {"selector": ".waifu-container", "crop": True, "view": True},
+            3: {"selector": ".waifu-container", "crop": True, "view": True},
+        }
+
+        if stage in stage_configs:
+            config = stage_configs[stage]
+            selector = config["selector"]
+            crop = config["crop"]
+            view = View(self.navi, self.interaction, self.co_operator, session_id) if config["view"] else None
+            b64_string = None
         else:
             # this is a bit of a hack, but it works
             # the final image is not a screenshot, but a base64 image taken from the element's src attribute
             # this is done because of an issue with pyppeteer's screenshot func
+            selector = None
+            crop = False
+            view = None
             await self.navi.wait_for_final_image()
-    
+
             final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
             final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
             b64_string = final_image_url.split(",")[1]
