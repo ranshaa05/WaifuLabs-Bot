@@ -94,10 +94,10 @@ async def waifu(
     navi = await PageNavigator.create_navi()
     log.info(f"Page started for user '{interaction.user.name}'. {collaborator_info}")
 
-    handler = ScreenshotHandler(navi, interaction, original_message, co_operator)
+    handler = ScreenshotHandler(navi, interaction, co_operator)
     View.stage[session_id] = 0
     while View.stage[session_id] < 4 and not navi.page.isClosed():
-        await handler.save_send_screenshot(session_id)
+        await handler.save_send_screenshot(session_id, original_message)
         if View.stage[session_id] <= 3:
             try:    #in case the message was deleted
                 await original_message.edit(
@@ -110,9 +110,9 @@ async def waifu(
             except nextcord.errors.NotFound:
                 break
 
-    #final image
+    #final images
     if not navi.page.isClosed():
-        await handler.save_send_screenshot(session_id)
+        await handler.save_send_screenshot(session_id, original_message)
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )

@@ -10,14 +10,13 @@ from view import View
 
 class ScreenshotHandler:
     """Handles the screenshotting and sending of the screenshot."""
-    def __init__(self, navi, interaction, original_message, co_operator):
+    def __init__(self, navi, interaction, co_operator):
         self.navi = navi
         self.interaction = interaction
         self.co_operator = co_operator
-        self.original_message = original_message
         self.view = None
 
-    async def save_send_screenshot(self, session_id):
+    async def save_send_screenshot(self, session_id, original_message):
         """saves a screenshot of the current page and sends it to the user."""
         await self.navi.wait_for_not_load_screen()
 
@@ -44,31 +43,31 @@ class ScreenshotHandler:
                 byte_arr.seek(0)
 
                 file = nextcord.File(byte_arr, filename="image.webp")
-                await self.original_message.edit(
+                await original_message.edit(
                     file=file,
                     view=self.view if self.view else None,
                 )
 
-        self.original_message = await self.original_message.fetch()
+        original_message = await original_message.fetch()
 
-        asyncio.create_task(self.remove_reactions())
+        asyncio.create_task(self.remove_reactions(original_message))
         if self.view:
             await self.view.wait()
-            asyncio.create_task(self.add_reaction())
+            asyncio.create_task(self.add_reaction(original_message))
 
-    async def remove_reactions(self):
+    async def remove_reactions(self, original_message):
         """Removes all reactions from the original message."""
         if (
-            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
-            and not self.original_message.flags.ephemeral
+            isinstance(original_message.channel, nextcord.abc.GuildChannel)
+            and not original_message.flags.ephemeral
         ):  # check if message is reactable in the first place
-            await self.original_message.clear_reactions()
+            await original_message.clear_reactions()
 
-    async def add_reaction(self):
+    async def add_reaction(self, original_message):
         """Adds a reaction to the original message based on the button pressed in the view."""
         if (
-            isinstance(self.original_message.channel, nextcord.abc.GuildChannel)
-            and not self.original_message.flags.ephemeral
+            isinstance(original_message.channel, nextcord.abc.GuildChannel)
+            and not original_message.flags.ephemeral
         ):  # check if message is reactable
             if self.view.current_label == "❓":
                 return
@@ -79,10 +78,10 @@ class ScreenshotHandler:
                     self.view.current_label[i : i + 3]
                     for i in range(0, len(self.view.current_label), 3)
                 ]:
-                    await self.original_message.add_reaction(emoji)
+                    await original_message.add_reaction(emoji)
             else:
-                await self.original_message.add_reaction(self.view.current_label)
-            await self.original_message.add_reaction("⏳")
+                await original_message.add_reaction(self.view.current_label)
+            await original_message.add_reaction("⏳")
 
     async def get_screenshot_info_by_stage(self, stage, session_id):
         """Returns the selector, crop, view, and base64 image based on the stage of the grid."""
