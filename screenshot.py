@@ -16,7 +16,6 @@ class ScreenshotHandler:
         self.co_operator = co_operator
         self.original_message = original_message
         self.view = None
-        self.pil_image = None
 
     async def save_send_screenshot(self, session_id):
         """saves a screenshot of the current page and sends it to the user."""
@@ -26,36 +25,32 @@ class ScreenshotHandler:
             selector,
             crop,
             self.view,
-            b64_image
+            b64_string,
         ) = await self.get_screenshot_info_by_stage(View.stage[session_id], session_id)
 
-        if b64_image:  # for final stage, where the image is a base64 string, not a screenshot of an element.
-            image_bytes = b64.b64decode(b64_image)
-            self.pil_image = Image.open(BytesIO(image_bytes))
-        else:
-            self.pil_image = await self.navi.screenshot(selector)
+        if not b64_string:  # For intermediate stages
+            image_bytes = await self.navi.screenshot(selector)
+        else:  # For the final stage, the image is a base64 string that needs decoding.
+            image_bytes = b64.b64decode(b64_string)
 
-        if crop:
-            width, height = self.pil_image.size
-            self.pil_image = self.pil_image.crop((0, height - 630, width, height))
+        with Image.open(BytesIO(image_bytes)) as pil_image:
+            if crop:
+                width, height = pil_image.size
+                pil_image = pil_image.crop((0, height - 630, width, height))
 
-        # Convert the PIL image to bytes
-        byte_arr = BytesIO()
-        self.pil_image.save(byte_arr, format="WEBP")
-        byte_arr.seek(0)
 
-        file = nextcord.File(byte_arr, filename="image.webp")
-        await self.original_message.edit(
-            file=file,
-            view=self.view if self.view else None,
-        )
+            with BytesIO() as byte_arr:
+                pil_image.save(byte_arr, format="WEBP")
+                byte_arr.seek(0)
 
-        # Close the PIL image
-        self.pil_image = None
-        byte_arr.close()
+                file = nextcord.File(byte_arr, filename="image.webp")
+                await self.original_message.edit(
+                    file=file,
+                    view=self.view if self.view else None,
+                )
 
         self.original_message = await self.original_message.fetch()
-        
+
         asyncio.create_task(self.remove_reactions())
         if self.view:
             await self.view.wait()
@@ -94,7 +89,7 @@ class ScreenshotHandler:
         selector = None
         crop = False
         view = None
-        b64_image = None
+        b64_string = None
     
         if stage in range(1, 4):
             selector = ".waifu-container"
@@ -113,7 +108,6 @@ class ScreenshotHandler:
     
             final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
             final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
-            final_image_base64 = final_image_url.split(",")[1]
-            b64_image = final_image_base64
+            b64_string = final_image_url.split(",")[1]
     
-        return selector, crop, view, b64_image
+        return selector, crop, view, b64_string

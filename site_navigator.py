@@ -1,7 +1,5 @@
 import asyncio
-from io import BytesIO
 import functools
-from PIL import Image
 from pyppeteer import launch
 from random import randint
 from time import sleep
@@ -79,7 +77,7 @@ class PageNavigator:
     @_page_stack
     async def screenshot(self, selector):
         screenshot_bytes = await (await self.page.querySelector(selector)).screenshot()
-        return Image.open(BytesIO(screenshot_bytes))
+        return screenshot_bytes
 
     async def find_all_girls(self):
         return await self.page.querySelectorAll(".waifu-grid > div")
