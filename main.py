@@ -1,10 +1,10 @@
 import json
 import traceback
-import uuid
 from typing import Optional
 
 import nextcord
 from nextcord.ext import commands
+from uuid import uuid4
 
 from cogs.admin_commands import AdminCommands
 from logger import setup_logging
@@ -73,7 +73,7 @@ async def waifu(
 
     connected_users.append(interaction.user.id)
 
-    session_id = uuid.uuid4()
+    session_id = uuid4()
     if co_operator:
         collaborator_type = 'Role' if isinstance(co_operator, nextcord.Role) else 'User'
         collaborator_info = f'Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
@@ -109,6 +109,7 @@ async def waifu(
             except nextcord.errors.NotFound:
                 break
 
+    #final image
     if not navi.page.isClosed():
         await ScreenshotHandler(navi, interaction, original_message, co_operator).save_send_screenshot( session_id)
         await original_message.edit(
@@ -141,7 +142,7 @@ async def waifu(
         log.info(
             f"Page closed for user '{interaction.user.name}'. {collaborator_info}")
 
-    View.stage.pop(interaction.user.id, None)
+    View.stage.pop(session_id, None)
     connected_users.remove(interaction.user.id)
 
 
