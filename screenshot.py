@@ -55,20 +55,25 @@ class ScreenshotHandler:
             await self.view.wait()
             asyncio.create_task(self.add_reaction(original_message))
 
+    def _is_message_reactable(self, message: nextcord.Message) -> bool:
+        """
+        Checks if a message can have reactions added to it.
+        Reactions are only possible on non-ephemeral messages in guild channels.
+        """
+        # An InteractionMessage (from an ephemeral response) is not a full Message object and cannot have reactions.
+        if not isinstance(message, nextcord.Message):
+            return False
+        
+        return isinstance(message.channel, nextcord.abc.GuildChannel) and not message.flags.ephemeral
+
     async def remove_reactions(self, original_message):
         """Removes all reactions from the original message."""
-        if (
-            isinstance(original_message.channel, nextcord.abc.GuildChannel)
-            and not original_message.flags.ephemeral
-        ):  # check if message is reactable in the first place
+        if self._is_message_reactable(original_message):
             await original_message.clear_reactions()
 
     async def add_reaction(self, original_message):
         """Adds a reaction to the original message based on the button pressed in the view."""
-        if (
-            isinstance(original_message.channel, nextcord.abc.GuildChannel)
-            and not original_message.flags.ephemeral
-        ):  # check if message is reactable
+        if self._is_message_reactable(original_message):
             if self.view.current_label == "❓":
                 return
             # if the label is a single emoji (3 chars), it can be added directly.
