@@ -94,10 +94,11 @@ async def waifu(
     navi = await PageNavigator.create_navi()
     log.info(f"Page started for user '{interaction.user.name}'. {collaborator_info}")
 
+    handler = ScreenshotHandler(navi, interaction, original_message, co_operator)
     View.stage[session_id] = 0
     while View.stage[session_id] < 4 and not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message, co_operator).save_send_screenshot(session_id)
-        if View.stage[session_id] <= 3: 
+        await handler.save_send_screenshot(session_id)
+        if View.stage[session_id] <= 3:
             try:    #in case the message was deleted
                 await original_message.edit(
                     (
@@ -111,7 +112,7 @@ async def waifu(
 
     #final image
     if not navi.page.isClosed():
-        await ScreenshotHandler(navi, interaction, original_message, co_operator).save_send_screenshot( session_id)
+        await handler.save_send_screenshot(session_id)
         await original_message.edit(
             content="Here's your waifu! Thanks for playing :slight_smile:"
         )
