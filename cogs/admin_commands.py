@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Optional
 
 import nextcord
@@ -6,7 +7,11 @@ from nextcord.ext import commands
 
 from logger import setup_logging
 
-with open("config.json", "r") as config_file:
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+CONFIG_PATH = os.path.join(project_root, "config.json")
+
+with open(CONFIG_PATH, "r") as config_file:
     config_data = json.load(config_file)
 
 
@@ -159,11 +164,13 @@ class AdminCommands(commands.Cog):
             
             elif add_or_remove == "add":
                 AdminCommands.ADMIN_IDS.append(user.id)
-                json.dump(config_data, open("config.json", "w"), indent=4)
+                with open(CONFIG_PATH, "w") as f:
+                    json.dump(config_data, f, indent=4)
 
             elif add_or_remove == "remove":
                 AdminCommands.ADMIN_IDS.remove(user.id)
-                json.dump(config_data, open("config.json", "w"), indent=4)
+                with open(CONFIG_PATH, "w") as f:
+                    json.dump(config_data, f, indent=4)
 
             await interaction.response.send_message(
                 f"User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.",

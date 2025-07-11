@@ -1,4 +1,5 @@
 import json
+import os
 import traceback
 from typing import Optional
 
@@ -16,7 +17,9 @@ from view import View
 log = setup_logging().log
 
 ### Bot setup ###
-with open("config.json", "r") as config_file:
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, "config.json")
+with open(config_path, "r") as config_file:
     config_data = json.load(config_file)
 
 TOKEN = config_data["bot_token"]
