@@ -21,7 +21,7 @@ class PageNavigator:
     @staticmethod
     async def _initialize_browser():
         """Initializes the pyppeteer browser instance if it hasn't been already."""
-        if PageNavigator.browser is None or not PageNavigator.browser.isConnected():
+        if PageNavigator.browser is None or PageNavigator.browser.process.poll() is not None:
             PageNavigator.browser = await launch(headless=True, autoClose=True)
 
     @staticmethod
