@@ -16,7 +16,6 @@ with open(CONFIG_PATH, "r") as config_file:
 
 
 class AdminCommands(commands.Cog):
-    ADMIN_IDS = config_data["admin_ids"]
     ADMIN_SERVER_IDS = config_data["admin_server_ids"]
     application_errors = {}
     runtime_errors = {}
@@ -28,9 +27,23 @@ class AdminCommands(commands.Cog):
         self.log = setup_logging().log
         AdminCommands.client = client
 
+    def _get_admin_ids(self):
+        """Reads config.json and returns the list of admin IDs. The list can dynamically change."""
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+        return config.get("admin_ids", [])
+
+    def _save_admin_ids(self, admin_list):
+        """Saves the provided admin list to config.json."""
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+        config["admin_ids"] = admin_list
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(config, f, indent=4)
+
     def validate_admins(self):
         "Checks if the admin IDs and admin server IDs are valid."
-        for user_id in AdminCommands.ADMIN_IDS:
+        for user_id in self._get_admin_ids():
             user = self.client.get_user(int(user_id))
             if user is None:
                 self.log.error(
@@ -46,7 +59,7 @@ class AdminCommands(commands.Cog):
 
     async def check_permission(self, interaction):
         "Sends a message saying the user doesn't have permission to use the command."
-        if not interaction.user.id in AdminCommands.ADMIN_IDS:
+        if not interaction.user.id in self._get_admin_ids():
             await interaction.response.send_message(
                 "You do not have permission to use this command since you are not an admin of this bot.",
                 ephemeral=True,
@@ -128,20 +141,21 @@ class AdminCommands(commands.Cog):
     ):
         "Adds or removes a user from the admin list."
         if await self.check_permission(interaction):
+            admin_ids = self._get_admin_ids()
             if (
                 add_or_remove == "remove"
-                and [user.id] == AdminCommands.ADMIN_IDS
+                and len(admin_ids) == 1 and user.id in admin_ids
             ):
                 await interaction.response.send_message(
                     "You cannot remove the last admin.", ephemeral=privacy
                 )
                 self.log.info(
-                    f"{interaction.user.name}: Tried to remove the last admin, but was denied."
+                    f"{interaction.user.name}: Tried to remove themselves from the admin list, but they are the last admin, so they were denied."
                 )
                 return
             elif (
                 add_or_remove == "add"
-                and user.id in AdminCommands.ADMIN_IDS
+                and user.id in admin_ids
             ):
                 await interaction.response.send_message(
                     f"'{user.name}' is already an admin.", ephemeral=privacy
@@ -152,7 +166,7 @@ class AdminCommands(commands.Cog):
                 return
             elif (
                 add_or_remove == "remove"
-                and user.id not in AdminCommands.ADMIN_IDS
+                and user.id not in admin_ids
             ):
                 await interaction.response.send_message(
                     f"'{user.name}' is not an admin.", ephemeral=privacy
@@ -163,14 +177,12 @@ class AdminCommands(commands.Cog):
                 return
             
             elif add_or_remove == "add":
-                AdminCommands.ADMIN_IDS.append(user.id)
-                with open(CONFIG_PATH, "w") as f:
-                    json.dump(config_data, f, indent=4)
+                admin_ids.append(user.id)
+                self._save_admin_ids(admin_ids)
 
             elif add_or_remove == "remove":
-                AdminCommands.ADMIN_IDS.remove(user.id)
-                with open(CONFIG_PATH, "w") as f:
-                    json.dump(config_data, f, indent=4)
+                admin_ids.remove(user.id)
+                self._save_admin_ids(admin_ids)
 
             await interaction.response.send_message(
                 f"User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.",
