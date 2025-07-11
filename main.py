@@ -63,6 +63,14 @@ async def waifu(
     ),
 ):
     """Starts the bot."""
+    if co_operator and privacy:
+        await interaction.response.send_message(
+            "Whoops! You cannot use co-op mode and private mode at the same time.",
+            ephemeral=True,
+            delete_after=5,
+        )
+        return
+
     if not await check_permissions(interaction):
         return
     if interaction.user.id in connected_users:
