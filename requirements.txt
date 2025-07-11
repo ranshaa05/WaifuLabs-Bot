@@ -1,5 +1,5 @@
 setuptools == 78.1.1
 pyppeteer == 1.0.2
-nextcord[speed] == 2.6.0
-Pillow == 11.0.0
+nextcord == 3.1.0
+Pillow == 11.3.0
 coloredlogs == 15.0.1
