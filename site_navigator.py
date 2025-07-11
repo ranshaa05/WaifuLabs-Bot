@@ -1,6 +1,6 @@
+import asyncio
 from pyppeteer import launch
 from random import randint
-from time import sleep
 
 UNDO_BUTTON_SELECTOR = ".sc-bdvvtL:nth-child(1)"
 KEEP_BUTTON_SELECTOR = ".sc-bdvvtL:nth-child(2)"
@@ -56,11 +56,11 @@ class PageNavigator:
 
     async def wait_for_not_load_screen(self):
         while await self.page.querySelector(LOADING_SELECTOR):
-            sleep(0.01)
+            await asyncio.sleep(0.01)
 
     async def wait_for_final_image(self):
         while await self.page.querySelector(FINAL_IMAGE_LOADING_SELECTOR):
-            sleep(0.01)
+            await asyncio.sleep(0.01)
 
     async def screenshot(self, selector):
         element = await self.page.querySelector(selector)
