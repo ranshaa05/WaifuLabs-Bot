@@ -26,20 +26,27 @@ class AdminCommands(commands.Cog):
     def __init__(self, client):
         self.log = setup_logging().log
         AdminCommands.client = client
+        self._ready = False
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        """When the bot is ready, validate the admin and server IDs."""
+        if not self._ready:
+            self.validate_admins()
+            self._ready = True
 
     def _get_admin_ids(self):
-        """Reads config.json and returns the list of admin IDs. The list can dynamically change."""
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
-        return config.get("admin_ids", [])
+        """
+        Returns the list of admin IDs from the cached config.
+        This will not pick up manually added admin IDs, only ones added through the manage_admins command.
+        """
+        return config_data.get("admin_ids", [])
 
     def _save_admin_ids(self, admin_list):
-        """Saves the provided admin list to config.json."""
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
-        config["admin_ids"] = admin_list
+        """Saves the provided admin list to config.json and updates the cached config."""
+        config_data["admin_ids"] = admin_list
         with open(CONFIG_PATH, "w") as f:
-            json.dump(config, f, indent=4)
+            json.dump(config_data, f, indent=4)
 
     def validate_admins(self):
         "Checks if the admin IDs and admin server IDs are valid."

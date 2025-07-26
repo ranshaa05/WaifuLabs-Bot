@@ -40,7 +40,6 @@ async def on_ready():
     await CLIENT.change_presence(
         activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu")
     )
-    admin_commands.validate_admins()
 
 
 connected_users = []
