@@ -1,27 +1,22 @@
-import json
-import os
 from typing import Optional
 
 import nextcord
 from nextcord.ext import commands
 
 from logger import setup_logging
+from .config_manager import load_config, save_admin_ids, get_admin_ids
+from .admin_validation import validate_admins
+from .permissions import check_permission # Import the global check_permission
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(script_dir)
-CONFIG_PATH = os.path.join(project_root, "config.json")
-
-with open(CONFIG_PATH, "r") as config_file:
-    config_data = json.load(config_file)
-
+config_data = load_config()
 
 class AdminCommands(commands.Cog):
-    ADMIN_SERVER_IDS = config_data["admin_server_ids"]
+    admin_server_ids = config_data["admin_server_ids"]
     application_errors = {}
     runtime_errors = {}
-    client = (
-        commands.Bot()
-    )  # Placeholder to make  the linter happy. this is used for the decorators
+    #client = (
+    #    commands.Bot()
+    #)  # Placeholder to make  the linter happy. this is used for the decorators
 
     def __init__(self, client):
         self.log = setup_logging().log
@@ -32,52 +27,12 @@ class AdminCommands(commands.Cog):
     async def on_ready(self):
         """When the bot is ready, validate the admin and server IDs."""
         if not self._ready:
-            self.validate_admins()
+            await validate_admins(AdminCommands.client)
             self._ready = True
-
-    def _get_admin_ids(self):
-        """
-        Returns the list of admin IDs from the cached config.
-        This will not pick up manually added admin IDs, only ones added through the manage_admins command.
-        """
-        return config_data.get("admin_ids", [])
-
-    def _save_admin_ids(self, admin_list):
-        """Saves the provided admin list to config.json and updates the cached config."""
-        config_data["admin_ids"] = admin_list
-        with open(CONFIG_PATH, "w") as f:
-            json.dump(config_data, f, indent=4)
-
-    def validate_admins(self):
-        "Checks if the admin IDs and admin server IDs are valid."
-        for user_id in self._get_admin_ids():
-            user = self.client.get_user(int(user_id))
-            if user is None:
-                self.log.error(
-                    f"Admin ID '{user_id}' is not a valid user ID. Please check your config.json file."
-                )
-
-        for server_id in AdminCommands.ADMIN_SERVER_IDS:
-            guild = nextcord.utils.get(self.client.guilds, id=int(server_id))
-            if guild is None:
-                self.log.error(
-                    f"Admin Server ID '{server_id}' is not a valid server ID. Please check your config.json file."
-                )
-
-    async def check_permission(self, interaction):
-        "Sends a message saying the user doesn't have permission to use the command."
-        if not interaction.user.id in self._get_admin_ids():
-            await interaction.response.send_message(
-                "You do not have permission to use this command since you are not an admin of this bot.",
-                ephemeral=True,
-            )
-            return False
-        else:
-            return True
 
     @nextcord.slash_command(
         name="error_count",
-        guild_ids=ADMIN_SERVER_IDS,
+        guild_ids=admin_server_ids,
     )
     async def error_count(
         self,
@@ -90,7 +45,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Counts each type of error the bot encountered since last restart individually"
-        if await self.check_permission(interaction):
+        if await check_permission(interaction): # Use the global check_permission
             application_errors = AdminCommands.application_errors
             runtime_errors = AdminCommands.runtime_errors
 
@@ -111,7 +66,7 @@ class AdminCommands(commands.Cog):
                     description=f"""
                     **__Application errors:__**
                     {app_dict_str if app_dict_str else 'No application errors have occurred'}
-                    
+
                     **__Runtime errors:__**
                     {run_dict_str if run_dict_str else 'No runtime errors have occurred'}
                     """,
@@ -125,7 +80,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="manage_admins",
-        guild_ids=ADMIN_SERVER_IDS,
+        guild_ids=admin_server_ids,
     )
     async def manage_admins(
         self,
@@ -147,8 +102,8 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Adds or removes a user from the admin list."
-        if await self.check_permission(interaction):
-            admin_ids = self._get_admin_ids()
+        if await check_permission(interaction): # Use the global check_permission
+            admin_ids = get_admin_ids()
             if (
                 add_or_remove == "remove"
                 and len(admin_ids) == 1 and user.id in admin_ids
@@ -182,14 +137,14 @@ class AdminCommands(commands.Cog):
                     f"{interaction.user.name}: Tried to remove user '{user.name}' from the admin list, but they are not an admin."
                 )
                 return
-            
+
             elif add_or_remove == "add":
                 admin_ids.append(user.id)
-                self._save_admin_ids(admin_ids)
+                save_admin_ids(admin_ids)
 
             elif add_or_remove == "remove":
                 admin_ids.remove(user.id)
-                self._save_admin_ids(admin_ids)
+                save_admin_ids(admin_ids)
 
             await interaction.response.send_message(
                 f"User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.",
@@ -201,7 +156,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="show_servers",
-        guild_ids=ADMIN_SERVER_IDS,
+        guild_ids=admin_server_ids,
     )
     async def show_servers(
         self,
@@ -214,7 +169,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows the list of servers the bot is in."
-        if await self.check_permission(interaction):
+        if await check_permission(interaction): # Use the global check_permission
             servers = self.client.guilds
             server_list = "\n".join(
                 [
@@ -232,7 +187,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="uptime",
-        guild_ids=ADMIN_SERVER_IDS,
+        guild_ids=admin_server_ids,
     )
     async def uptime(
         self,
@@ -245,7 +200,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows how long the bot has been running for since the last restart."
-        if await self.check_permission(interaction):
+        if await check_permission(interaction): # Use the global check_permission
             uptime = nextcord.utils.utcnow() - self.client.start_time
             await interaction.response.send_message(
                 "Uptime: " + str(uptime).split(".")[0], ephemeral=privacy
@@ -253,7 +208,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="api_latency",
-        guild_ids=ADMIN_SERVER_IDS,
+        guild_ids=admin_server_ids,
     )
     async def api_latency(
         self,
@@ -266,7 +221,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows the bot's API latency."
-        if await self.check_permission(interaction):
+        if await check_permission(interaction): # Use the global check_permission
             await interaction.response.send_message(
                 f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=privacy
             )

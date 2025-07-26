@@ -27,8 +27,7 @@ TOKEN = config_data["bot_token"]
 
 CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
-admin_commands = AdminCommands(CLIENT)
-CLIENT.add_cog(admin_commands)
+CLIENT.add_cog(AdminCommands(CLIENT))
 
 
 
