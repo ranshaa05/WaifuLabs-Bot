@@ -91,17 +91,17 @@ class ScreenshotHandler:
     async def _get_screenshot_info_by_stage(self, stage, session_id):
         """Returns the selector, crop, view, and base64 image based on the stage of the grid."""
         stage_configs = {
-            0: {"selector": ".waifu-grid", "crop": False, "view": True},
-            1: {"selector": ".waifu-container", "crop": True, "view": True},
-            2: {"selector": ".waifu-container", "crop": True, "view": True},
-            3: {"selector": ".waifu-container", "crop": True, "view": True},
+            0: {"selector": ".waifu-grid", "crop": False},
+            1: {"selector": ".waifu-container", "crop": True},
+            2: {"selector": ".waifu-container", "crop": True},
+            3: {"selector": ".waifu-container", "crop": True},
         }
 
         if stage in stage_configs:
             config = stage_configs[stage]
             selector = config["selector"]
             crop = config["crop"]
-            view = View(self.navi, self.interaction, self.co_operator, session_id) if config["view"] else None
+            view = View(self.navi, self.interaction, self.co_operator, session_id)
             b64_string = None
         else:
             # this is a bit of a hack, but it works
