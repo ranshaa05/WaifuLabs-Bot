@@ -14,9 +14,6 @@ class AdminCommands(commands.Cog):
     admin_server_ids = config_data["admin_server_ids"]
     application_errors = {}
     runtime_errors = {}
-    #client = (
-    #    commands.Bot()
-    #)  # Placeholder to make  the linter happy. this is used for the decorators
 
     def __init__(self, client):
         self.log = setup_logging().log
