@@ -101,6 +101,14 @@ async def waifu(
         ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
+    if navi is None:
+        await original_message.edit(
+            "Whoops! It looks like WaifuLabs.com is currently offline. Please try again later!",
+            delete_after=10
+        )
+        connected_users.remove(interaction.user.id)
+        return
+    
     log.info(f"Page started for user '{interaction.user.name}'. {collaborator_info}")
 
     handler = ScreenshotHandler(navi, interaction, co_operator)
@@ -220,10 +228,10 @@ async def on_application_command_error(interaction: nextcord.Interaction, error:
     traceback.print_exception(type(error), error, error.__traceback__)
 
     error_message = str(error).split(":")[1]
-    if error_message not in admin_commands.application_errors:
-        admin_commands.application_errors[error_message] = 1
+    if error_message not in AdminCommands.application_errors:
+        AdminCommands.application_errors[error_message] = 1
     else:
-        admin_commands.application_errors[error_message] += 1
+        AdminCommands.application_errors[error_message] += 1
 
 
 if __name__ == "__main__":

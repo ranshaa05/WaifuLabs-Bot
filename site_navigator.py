@@ -1,5 +1,6 @@
 import asyncio
 from pyppeteer import launch
+from pyppeteer.errors import NetworkError, TimeoutError, PageError
 from random import randint
 
 UNDO_BUTTON_SELECTOR = ".sc-bdvvtL:nth-child(1)"
@@ -30,8 +31,15 @@ class PageNavigator:
         navi = PageNavigator()
         navi.page = await PageNavigator.browser.newPage()
         await navi.page.setViewport({"width": 1200, "height": 630})
-        await navi.page.goto("https://waifulabs.com/generate")
-        return navi
+        
+        try:
+            await navi.page.goto("https://www.waifulabs.com/generate", {"timeout": 10000})
+            return navi
+            
+        except (NetworkError, TimeoutError, PageError) as e:
+            print(f"[Error] Connection failed. The site might be offline: {e}")
+            await navi.page.close()
+            return None
 
     async def click_by_index(self, index):
         girls = await self.find_all_girls()
