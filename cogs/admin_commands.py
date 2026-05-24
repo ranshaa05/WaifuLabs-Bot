@@ -4,14 +4,14 @@ import nextcord
 from nextcord.ext import commands
 
 from logger import setup_logging
-from .config_manager import load_config, save_admin_ids, get_admin_ids
+from .config_manager import load_config, save_admin_ids, get_admin_ids, get_admin_server_ids
 from .admin_validation import validate_admins
-from .permissions import check_permission # Import the global check_permission
+from .admin_permissions import check_permission # Import the global check_permission
 
 config_data = load_config()
 
 class AdminCommands(commands.Cog):
-    admin_server_ids = config_data["admin_server_ids"]
+    admin_server_ids = get_admin_server_ids()
     application_errors = {}
     runtime_errors = {}
 
@@ -29,7 +29,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="error_count",
-        guild_ids=admin_server_ids,
+        guild_ids=admin_server_ids or None,
     )
     async def error_count(
         self,
@@ -77,7 +77,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="manage_admins",
-        guild_ids=admin_server_ids,
+        guild_ids=admin_server_ids or None,
     )
     async def manage_admins(
         self,
@@ -153,7 +153,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="show_servers",
-        guild_ids=admin_server_ids,
+        guild_ids=admin_server_ids or None,
     )
     async def show_servers(
         self,
@@ -184,7 +184,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="uptime",
-        guild_ids=admin_server_ids,
+        guild_ids=admin_server_ids or None,
     )
     async def uptime(
         self,
@@ -205,7 +205,7 @@ class AdminCommands(commands.Cog):
 
     @nextcord.slash_command(
         name="api_latency",
-        guild_ids=admin_server_ids,
+        guild_ids=admin_server_ids or None,
     )
     async def api_latency(
         self,

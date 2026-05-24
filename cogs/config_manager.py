@@ -24,6 +24,12 @@ def get_admin_ids():
     return config_data.get("admin_ids", [])
 
 
+def get_admin_server_ids():
+    """Returns the list of admin server IDs from the config."""
+    config_data = load_config()
+    return config_data.get("admin_server_ids", [])
+
+
 def save_admin_ids(admin_list):
     """Saves the provided admin list to config.json."""
     config_data = load_config()

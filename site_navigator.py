@@ -30,12 +30,12 @@ class PageNavigator:
         await PageNavigator._initialize_browser()
         navi = PageNavigator()
         navi.page = await PageNavigator.browser.newPage()
-        await navi.page.setViewport({"width": 1200, "height": 630})
-        
+        await navi.page.setViewport({"width": 1200, "height": 600})
+
         try:
             await navi.page.goto("https://waifulabs.com/generate", {"timeout": 10000})
             return navi
-            
+
         except (NetworkError, TimeoutError, PageError) as e:
             print(f"[Error] Connection failed. The site might be offline: {e}")
             await navi.page.close()

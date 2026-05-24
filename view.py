@@ -53,11 +53,11 @@ class View(nextcord.ui.View):
             and isinstance(self.co_operator, nextcord.Role)
             and self.co_operator in interaction.user.roles
         )
-        
+
         authorized = is_author or is_co_op_user or is_co_op_role
         if not authorized:
             await interaction.response.send_message("You don't have permission to use these buttons.", ephemeral=True, delete_after=5)
-            
+
         return authorized
 
     async def _button_callback(self, interaction: nextcord.Interaction):
@@ -69,7 +69,7 @@ class View(nextcord.ui.View):
             self.current_label = self._number_emoji_list[int(label) - 1]
         else:
             self.current_label = label
-        
+
         self.stop()
 
     async def _button_logic(self, label: str):
@@ -81,7 +81,7 @@ class View(nextcord.ui.View):
             "🔄": (self.navi.refresh, 0),
             "❌": (self.navi.exit, 0),
         }
-
+        
         if label.isnumeric():
             await self.navi.click_by_index(int(label))
             View.stage[self.session_id] += 1

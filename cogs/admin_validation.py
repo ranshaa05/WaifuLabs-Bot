@@ -8,8 +8,7 @@ async def _check_config_not_empty(log, client, admin_list, server_list):
     if not server_list:
         log.error("No valid server IDs found. Please add at least one server ID to config.json.")
 
-    if not admin_list or not server_list:
-        await client.close()
+    return
 
 async def validate_admins(client):
     "Checks if the admin IDs and admin server IDs are valid."

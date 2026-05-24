@@ -1,6 +1,5 @@
 import json
 import os
-import traceback
 from typing import Optional
 
 import nextcord
@@ -12,6 +11,7 @@ from logger import setup_logging
 from screenshot import ScreenshotHandler
 from site_navigator import PageNavigator
 from view import View
+from permissions import check_permissions
 
 ### Logging setup ###
 log = setup_logging().log
@@ -24,11 +24,9 @@ with open(config_path, "r") as config_file:
 
 TOKEN = config_data["bot_token"]
 
-
 CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
 CLIENT.add_cog(AdminCommands(CLIENT))
-
 
 
 
@@ -49,13 +47,13 @@ async def waifu(
     interaction: nextcord.Interaction,
     co_operator: nextcord.Mentionable = nextcord.SlashOption(
         name="co-op",
-        description="Allows other users to help you build your waifu.",
+        description="Allows other users to help you build your character.",
         default=None,
         required=False,
     ),
     privacy: Optional[bool] = nextcord.SlashOption(
         name="private",
-        description="Makes it so only you can see your waifus.",
+        description="Makes it so only you can see your characters.",
         default=False,
         required=False,
     ),
@@ -69,12 +67,13 @@ async def waifu(
         )
         return
 
+    #check weather bot should start or not 
     if not await check_permissions(interaction):
         return
     if interaction.user.id in connected_users:
         await interaction.response.send_message(
             "Whoops! One user cannot start me twice at the same time."
-            "You can continue making your waifu or press ❌ to exit.",
+            "You can continue making your character or press ❌ to exit.",
             ephemeral=True,
             delete_after=10,
         )
@@ -92,9 +91,9 @@ async def waifu(
     original_message = await interaction.response.send_message(
         (
             "Hi there! I'm WaifuBot!\n"
-            "I create waifus using [waifulabs.com](https://www.waifulabs.com). Let's get started!"
-            "\n* You'll be presented with 4 grids of waifus, each based on your previous choice. "
-            "\n* Click the number corresponding to the waifu you like best in each grid or use these buttons:"
+            "I create characters using [waifulabs.com](https://www.waifulabs.com). Let's get started!"
+            "\n* You'll be presented with 4 grids of characters, each based on your previous choice. "
+            "\n* Click the number corresponding to the character you like best in each grid or use these buttons:"
             "\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid."
             "\n_(Progress: 1/4)_"
         ),
@@ -105,36 +104,42 @@ async def waifu(
         await original_message.edit(
             "Whoops! I'm having trouble connecting to the server right now.\n"
             "Please try again later.\n"
-            "For now, you can use the official site: [waifulabs.com](https://www.waifulabs.com)",
+            "For now, you can use the official site instead: [waifulabs.com](https://www.waifulabs.com)",
             delete_after=60
         )
         connected_users.remove(interaction.user.id)
         return
-    
+
     log.info(f"Page started for user '{interaction.user.name}'. {collaborator_info}")
 
-    handler = ScreenshotHandler(navi, interaction, co_operator)
-    View.stage[session_id] = 0
-    while View.stage[session_id] < 4 and not navi.page.isClosed():
-        await handler.save_send_screenshot(session_id, original_message)
-        if View.stage[session_id] <= 3:
-            try:    #in case the message was deleted
-                await original_message.edit(
-                    (
-                        "Okay! lets continue. Here's another grid for you to choose from:\n"
-                        f"(_Progress: {View.stage[session_id] + 1}/4)_"
-                    ),
-                    view=None,
-                )
-            except nextcord.errors.NotFound:
-                break
+    screenshot_handler = ScreenshotHandler(navi, interaction, co_operator)
 
-    #final images
+    View.stage.setdefault(session_id, 0)
+    view_instance = View(navi, interaction, co_operator, session_id)
+    while view_instance.stage[session_id] < 4 and not navi.page.isClosed():
+        await screenshot_handler.save_send_screenshot(session_id, original_message)
+        try:
+            if view_instance.stage[session_id] <= 3:
+                    await original_message.edit(
+                        (
+                            "Okay! lets continue. Here's another grid for you to choose from:\n"
+                            f"(_Progress: {view_instance.stage[session_id] + 1}/4)_"
+                        ),
+                        view=None,
+                    )
+
+            # final image
+            else:
+                await original_message.edit(
+                content="Here's your character! Thanks for playing :slight_smile:"
+            )
+                await screenshot_handler.save_send_screenshot(session_id, original_message)
+            
+        except nextcord.errors.NotFound:    # in case the message gets deleted, and timeout occurs.
+            break
+
+    # Cleanup
     if not navi.page.isClosed():
-        await handler.save_send_screenshot(session_id, original_message)
-        await original_message.edit(
-            content="Here's your waifu! Thanks for playing :slight_smile:"
-        )
         await navi.page.close()
         log.info(
             f"Page closed for user '{interaction.user.name}', finished. {collaborator_info}"
@@ -162,7 +167,6 @@ async def waifu(
         log.info(
             f"Page closed for user '{interaction.user.name}'. {collaborator_info}")
 
-    View.stage.pop(session_id, None)
     connected_users.remove(interaction.user.id)
 
 
@@ -177,63 +181,6 @@ async def feedback(interaction: nextcord.Interaction):
          "Thanks for helping us make Waifu Bot better! :slight_smile:"),
         ephemeral=True
         )
-
-
-REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
-
-async def check_permissions(interaction):
-    """Checks if the bot has the required permissions and notifies the user if not."""
-
-    if isinstance(interaction.channel, nextcord.abc.GuildChannel):
-        bot_role = interaction.guild.me.top_role
-        bot_channel_permissions = interaction.channel.permissions_for(interaction.guild.me)
-
-        missing_permissions = {
-            "role": [],
-            "channel": []
-        }
-
-        for permission in REQUIRED_PERMISSIONS:
-            if not getattr(bot_role.permissions, permission):
-                missing_permissions["role"].append(permission.replace("_", " ").title())
-            if not getattr(bot_channel_permissions, permission):
-                missing_permissions["channel"].append(permission.replace("_", " ").title())
-
-        if missing_permissions["role"] or missing_permissions["channel"]:
-            embed = nextcord.Embed(
-                title="⚠️ __Missing Permissions__",
-                description="Hey! I'm missing these permissions:",
-                color=0xFF0000,
-            )
-            for permission_type, permissions in missing_permissions.items():
-                if permissions:
-                    embed.add_field(
-                        name=f"❌ Missing in {permission_type}:",
-                        value="\n".join(permissions),
-                        inline=True,
-                    )
-            embed.set_footer(
-                text="Please grant me these permissions so i can work properly!🙏"
-            )
-
-            await interaction.response.send_message(embed=embed)
-            return False
-    return True
-
-
-
-@CLIENT.event
-async def on_application_command_error(interaction: nextcord.Interaction, error: nextcord.DiscordException):
-    """Handles errors that occur in application commands."""
-
-    log.error(f"####### an error occured #######\n{error}")
-    traceback.print_exception(type(error), error, error.__traceback__)
-
-    error_message = str(error).split(":")[1]
-    if error_message not in AdminCommands.application_errors:
-        AdminCommands.application_errors[error_message] = 1
-    else:
-        AdminCommands.application_errors[error_message] += 1
 
 
 if __name__ == "__main__":
