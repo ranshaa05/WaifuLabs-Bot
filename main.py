@@ -103,8 +103,10 @@ async def waifu(
     navi = await PageNavigator.create_navi()
     if navi is None:
         await original_message.edit(
-            "Whoops! It looks like WaifuLabs.com is currently offline. Please try again later!",
-            delete_after=10
+            "Whoops! I'm having trouble connecting to the server right now.\n"
+            "Please try again later.\n"
+            "For now, you can use the official site: [waifulabs.com](https://www.waifulabs.com)",
+            delete_after=60
         )
         connected_users.remove(interaction.user.id)
         return

@@ -33,7 +33,7 @@ class PageNavigator:
         await navi.page.setViewport({"width": 1200, "height": 630})
         
         try:
-            await navi.page.goto("https://www.waifulabs.com/generate", {"timeout": 10000})
+            await navi.page.goto("https://waifulabs.com/generate", {"timeout": 10000})
             return navi
             
         except (NetworkError, TimeoutError, PageError) as e:
