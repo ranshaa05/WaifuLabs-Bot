@@ -1,6 +1,7 @@
 from .config_manager import save_admin_ids, save_admin_server_ids, get_admin_ids, load_config
 from logger import setup_logging
 
+
 async def _check_config_not_empty(log, client, admin_list, server_list):
     if not admin_list:
         log.error("No admin IDs found. Please add at least one admin ID to config.json.")
@@ -9,6 +10,7 @@ async def _check_config_not_empty(log, client, admin_list, server_list):
         log.error("No valid server IDs found. Please add at least one server ID to config.json.")
 
     return
+
 
 async def validate_admins(client):
     "Checks if the admin IDs and admin server IDs are valid."

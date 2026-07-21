@@ -3,6 +3,7 @@ import nextcord
 
 REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
 
+
 async def check_permissions(interaction):
     """Checks if the bot has the required permissions and notifies the user if not."""
 
@@ -10,10 +11,7 @@ async def check_permissions(interaction):
         bot_role = interaction.guild.me.top_role
         bot_channel_permissions = interaction.channel.permissions_for(interaction.guild.me)
 
-        missing_permissions = {
-            "role": [],
-            "channel": []
-        }
+        missing_permissions = {"role": [], "channel": []}
 
         for permission in REQUIRED_PERMISSIONS:
             if not getattr(bot_role.permissions, permission):
@@ -34,9 +32,7 @@ async def check_permissions(interaction):
                         value="\n".join(permissions),
                         inline=True,
                     )
-            embed.set_footer(
-                text="Please grant me these permissions so i can work properly!🙏"
-            )
+            embed.set_footer(text="Please grant me these permissions so i can work properly!🙏")
 
             await interaction.response.send_message(embed=embed)
             return False

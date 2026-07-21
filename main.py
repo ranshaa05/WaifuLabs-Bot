@@ -29,7 +29,6 @@ CLIENT = commands.Bot(intents=nextcord.Intents().all())
 CLIENT.add_cog(AdminCommands(CLIENT))
 
 
-
 @CLIENT.event
 async def on_ready():
     log.info("Bot Ready.")
@@ -67,7 +66,7 @@ async def waifu(
         )
         return
 
-    #check weather bot should start or not 
+    # check weather bot should start or not
     if not await check_permissions(interaction):
         return
     if interaction.user.id in connected_users:
@@ -83,10 +82,10 @@ async def waifu(
 
     session_id = uuid4()
     if co_operator:
-        collaborator_type = 'Role' if isinstance(co_operator, nextcord.Role) else 'User'
-        collaborator_info = f'Co-operator: {co_operator}. Co-operator type: ({collaborator_type})'
+        collaborator_type = "Role" if isinstance(co_operator, nextcord.Role) else "User"
+        collaborator_info = f"Co-operator: {co_operator}. Co-operator type: ({collaborator_type})"
     else:
-        collaborator_info = ''
+        collaborator_info = ""
 
     original_message = await interaction.response.send_message(
         (
@@ -105,7 +104,7 @@ async def waifu(
             "Whoops! I'm having trouble connecting to the server right now.\n"
             "Please try again later.\n"
             "For now, you can use the official site instead: [waifulabs.com](https://www.waifulabs.com)",
-            delete_after=60
+            delete_after=60,
         )
         connected_users.remove(interaction.user.id)
         return
@@ -120,34 +119,31 @@ async def waifu(
         await screenshot_handler.save_send_screenshot(session_id, original_message)
         try:
             if view_instance.stage[session_id] <= 3:
-                    await original_message.edit(
-                        (
-                            "Okay! lets continue. Here's another grid for you to choose from:\n"
-                            f"(_Progress: {view_instance.stage[session_id] + 1}/4)_"
-                        ),
-                        view=None,
-                    )
+                await original_message.edit(
+                    (
+                        "Okay! lets continue. Here's another grid for you to choose from:\n"
+                        f"(_Progress: {view_instance.stage[session_id] + 1}/4)_"
+                    ),
+                    view=None,
+                )
 
             # final image
             else:
                 await original_message.edit(
-                content="Here's your character! Thanks for playing :slight_smile:"
-            )
+                    content="Here's your character! Thanks for playing :slight_smile:"
+                )
                 await screenshot_handler.save_send_screenshot(session_id, original_message)
-            
-        except nextcord.errors.NotFound:    # in case the message gets deleted, and timeout occurs.
+
+        except nextcord.errors.NotFound:  # in case the message gets deleted, and timeout occurs.
             break
 
     # Cleanup
     if not navi.page.isClosed():
         await navi.page.close()
-        log.info(
-            f"Page closed for user '{interaction.user.name}', finished. {collaborator_info}"
-        )
+        log.info(f"Page closed for user '{interaction.user.name}', finished. {collaborator_info}")
 
     elif navi.timed_out:
-        log.info(
-            f"Page closed for user '{interaction.user.name}', timed out. {collaborator_info}")
+        log.info(f"Page closed for user '{interaction.user.name}', timed out. {collaborator_info}")
         try:
             await original_message.edit(
                 "Hey, anybody there? No? Okay, I'll shut down then :slight_frown:",
@@ -159,13 +155,10 @@ async def waifu(
             pass
     else:
         try:
-            await original_message.edit(
-                "Exiting...", delete_after=5, attachments=[], view=None
-            )
+            await original_message.edit("Exiting...", delete_after=5, attachments=[], view=None)
         except nextcord.errors.HTTPException:
             pass
-        log.info(
-            f"Page closed for user '{interaction.user.name}'. {collaborator_info}")
+        log.info(f"Page closed for user '{interaction.user.name}'. {collaborator_info}")
 
     connected_users.remove(interaction.user.id)
 
@@ -174,13 +167,15 @@ async def waifu(
 async def feedback(interaction: nextcord.Interaction):
     """Link to the issues page."""
     await interaction.response.send_message(
-        ("If you've encountered a bug or have a suggestion for Waifu Bot, "
-         "please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues).\n"
-         "There, you can report bugs, suggest features, or ask for help with "
-         "any issues you're having.\n"
-         "Thanks for helping us make Waifu Bot better! :slight_smile:"),
-        ephemeral=True
-        )
+        (
+            "If you've encountered a bug or have a suggestion for Waifu Bot, "
+            "please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues).\n"
+            "There, you can report bugs, suggest features, or ask for help with "
+            "any issues you're having.\n"
+            "Thanks for helping us make Waifu Bot better! :slight_smile:"
+        ),
+        ephemeral=True,
+    )
 
 
 if __name__ == "__main__":

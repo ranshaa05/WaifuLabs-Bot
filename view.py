@@ -4,9 +4,21 @@ import nextcord
 class View(nextcord.ui.View):
     stage = {}
     _number_emoji_list = [
-        "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣",
-        "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟",
-        "1️⃣🇮", "1️⃣2️⃣", "1️⃣3️⃣", "1️⃣4️⃣", "1️⃣5️⃣",
+        "1️⃣",
+        "2️⃣",
+        "3️⃣",
+        "4️⃣",
+        "5️⃣",
+        "6️⃣",
+        "7️⃣",
+        "8️⃣",
+        "9️⃣",
+        "🔟",
+        "1️⃣🇮",
+        "1️⃣2️⃣",
+        "1️⃣3️⃣",
+        "1️⃣4️⃣",
+        "1️⃣5️⃣",
     ]
 
     def __init__(self, navi, interaction, co_operator, session_id):
@@ -18,26 +30,26 @@ class View(nextcord.ui.View):
         self.current_label = "❓"  # placeholder
 
         button_groups = [
-            {'labels': [str(i) for i in range(1, 5)], 'style': nextcord.ButtonStyle.blurple},
-            {'labels': ["⬅"], 'style': nextcord.ButtonStyle.green, 'disabled_at_stage_0': True},
-            {'labels': [str(i) for i in range(5, 9)], 'style': nextcord.ButtonStyle.blurple},
-            {'labels': ["➡"], 'style': nextcord.ButtonStyle.green, 'disabled_at_stage_0': True},
-            {'labels': [str(i) for i in range(9, 13)], 'style': nextcord.ButtonStyle.blurple},
-            {'labels': ["🎲"], 'style': nextcord.ButtonStyle.green},
-            {'labels': [str(i) for i in range(13, 16)], 'style': nextcord.ButtonStyle.blurple},
-            {'labels': ["🔄"], 'style': nextcord.ButtonStyle.grey},
-            {'labels': ["❌"], 'style': nextcord.ButtonStyle.red},
+            {"labels": [str(i) for i in range(1, 5)], "style": nextcord.ButtonStyle.blurple},
+            {"labels": ["⬅"], "style": nextcord.ButtonStyle.green, "disabled_at_stage_0": True},
+            {"labels": [str(i) for i in range(5, 9)], "style": nextcord.ButtonStyle.blurple},
+            {"labels": ["➡"], "style": nextcord.ButtonStyle.green, "disabled_at_stage_0": True},
+            {"labels": [str(i) for i in range(9, 13)], "style": nextcord.ButtonStyle.blurple},
+            {"labels": ["🎲"], "style": nextcord.ButtonStyle.green},
+            {"labels": [str(i) for i in range(13, 16)], "style": nextcord.ButtonStyle.blurple},
+            {"labels": ["🔄"], "style": nextcord.ButtonStyle.grey},
+            {"labels": ["❌"], "style": nextcord.ButtonStyle.red},
         ]
 
         for group in button_groups:
-            style = group['style']
-            disabled_at_stage_0 = group.get('disabled_at_stage_0', False)
-            for label in group['labels']:
+            style = group["style"]
+            disabled_at_stage_0 = group.get("disabled_at_stage_0", False)
+            for label in group["labels"]:
                 button = nextcord.ui.Button(
                     custom_id=label,
                     label=label,
                     style=style,
-                    disabled=(self.stage[session_id] == 0 and disabled_at_stage_0)
+                    disabled=(self.stage[session_id] == 0 and disabled_at_stage_0),
                 )
                 button.callback = self._button_callback
                 self.add_item(button)
@@ -56,7 +68,9 @@ class View(nextcord.ui.View):
 
         authorized = is_author or is_co_op_user or is_co_op_role
         if not authorized:
-            await interaction.response.send_message("You don't have permission to use these buttons.", ephemeral=True, delete_after=5)
+            await interaction.response.send_message(
+                "You don't have permission to use these buttons.", ephemeral=True, delete_after=5
+            )
 
         return authorized
 
@@ -81,7 +95,7 @@ class View(nextcord.ui.View):
             "🔄": (self.navi.refresh, 0),
             "❌": (self.navi.exit, 0),
         }
-        
+
         if label.isnumeric():
             await self.navi.click_by_index(int(label))
             View.stage[self.session_id] += 1

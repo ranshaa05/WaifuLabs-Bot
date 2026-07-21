@@ -10,6 +10,7 @@ from view import View
 
 class ScreenshotHandler:
     """Handles the screenshotting and sending of the screenshot."""
+
     def __init__(self, navi, interaction, co_operator):
         self.navi = navi
         self.interaction = interaction
@@ -37,7 +38,6 @@ class ScreenshotHandler:
                 width, height = pil_image.size
                 pil_image = pil_image.crop((0, height - 630, width, height))
 
-
             with BytesIO() as byte_arr:
                 pil_image.save(byte_arr, format="WEBP")
                 byte_arr.seek(0)
@@ -63,8 +63,10 @@ class ScreenshotHandler:
         # An InteractionMessage (from an ephemeral response) is not a full Message object and cannot have reactions.
         if not isinstance(message, nextcord.Message):
             return False
-        
-        return isinstance(message.channel, nextcord.abc.GuildChannel) and not message.flags.ephemeral
+
+        return (
+            isinstance(message.channel, nextcord.abc.GuildChannel) and not message.flags.ephemeral
+        )
 
     async def remove_reactions(self, original_message):
         """Removes all reactions from the original message."""
@@ -113,7 +115,9 @@ class ScreenshotHandler:
             await self.navi.wait_for_final_image()
 
             final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
-            final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
+            final_image_url = await self.navi.page.evaluate(
+                "(element) => element.src", final_image_element
+            )
             b64_string = final_image_url.split(",")[1]
-    
+
         return selector, crop, view, b64_string

@@ -6,9 +6,10 @@ from nextcord.ext import commands
 from logger import setup_logging
 from .config_manager import load_config, save_admin_ids, get_admin_ids, get_admin_server_ids
 from .admin_validation import validate_admins
-from .admin_permissions import check_permission # Import the global check_permission
+from .admin_permissions import check_permission  # Import the global check_permission
 
 config_data = load_config()
+
 
 class AdminCommands(commands.Cog):
     admin_server_ids = get_admin_server_ids()
@@ -42,7 +43,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Counts each type of error the bot encountered since last restart individually"
-        if await check_permission(interaction): # Use the global check_permission
+        if await check_permission(interaction):  # Use the global check_permission
             application_errors = AdminCommands.application_errors
             runtime_errors = AdminCommands.runtime_errors
 
@@ -62,10 +63,10 @@ class AdminCommands(commands.Cog):
                     title="Error count",
                     description=f"""
                     **__Application errors:__**
-                    {app_dict_str if app_dict_str else 'No application errors have occurred'}
+                    {app_dict_str if app_dict_str else "No application errors have occurred"}
 
                     **__Runtime errors:__**
-                    {run_dict_str if run_dict_str else 'No runtime errors have occurred'}
+                    {run_dict_str if run_dict_str else "No runtime errors have occurred"}
                     """,
                     color=nextcord.Color.red(),
                 )
@@ -99,12 +100,9 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Adds or removes a user from the admin list."
-        if await check_permission(interaction): # Use the global check_permission
+        if await check_permission(interaction):  # Use the global check_permission
             admin_ids = get_admin_ids()
-            if (
-                add_or_remove == "remove"
-                and len(admin_ids) == 1 and user.id in admin_ids
-            ):
+            if add_or_remove == "remove" and len(admin_ids) == 1 and user.id in admin_ids:
                 await interaction.response.send_message(
                     "You cannot remove the last admin.", ephemeral=privacy
                 )
@@ -112,10 +110,7 @@ class AdminCommands(commands.Cog):
                     f"{interaction.user.name}: Tried to remove themselves from the admin list, but they are the last admin, so they were denied."
                 )
                 return
-            elif (
-                add_or_remove == "add"
-                and user.id in admin_ids
-            ):
+            elif add_or_remove == "add" and user.id in admin_ids:
                 await interaction.response.send_message(
                     f"'{user.name}' is already an admin.", ephemeral=privacy
                 )
@@ -123,10 +118,7 @@ class AdminCommands(commands.Cog):
                     f"{interaction.user.name}: Tried to add user '{user.name}' to the admin list, but they are already an admin."
                 )
                 return
-            elif (
-                add_or_remove == "remove"
-                and user.id not in admin_ids
-            ):
+            elif add_or_remove == "remove" and user.id not in admin_ids:
                 await interaction.response.send_message(
                     f"'{user.name}' is not an admin.", ephemeral=privacy
                 )
@@ -166,13 +158,10 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows the list of servers the bot is in."
-        if await check_permission(interaction): # Use the global check_permission
+        if await check_permission(interaction):  # Use the global check_permission
             servers = self.client.guilds
             server_list = "\n".join(
-                [
-                    f"{i+1}. {server.name} ({server.id})"
-                    for i, server in enumerate(servers)
-                ]
+                [f"{i + 1}. {server.name} ({server.id})" for i, server in enumerate(servers)]
             )
             total_servers = len(servers)
             embed = nextcord.Embed(
@@ -197,7 +186,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows how long the bot has been running for since the last restart."
-        if await check_permission(interaction): # Use the global check_permission
+        if await check_permission(interaction):  # Use the global check_permission
             uptime = nextcord.utils.utcnow() - self.client.start_time
             await interaction.response.send_message(
                 "Uptime: " + str(uptime).split(".")[0], ephemeral=privacy
@@ -218,7 +207,7 @@ class AdminCommands(commands.Cog):
         ),
     ):
         "Shows the bot's API latency."
-        if await check_permission(interaction): # Use the global check_permission
+        if await check_permission(interaction):  # Use the global check_permission
             await interaction.response.send_message(
                 f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=privacy
             )

@@ -1,9 +1,9 @@
 from .config_manager import get_admin_ids, get_admin_server_ids
 
+
 async def check_permission(interaction):
     "Sends a message saying the user doesn't have permission to use the command."
     admin_server_ids = get_admin_server_ids()
-
 
     if not interaction.guild or interaction.guild.id not in admin_server_ids:
         await interaction.response.send_message(
