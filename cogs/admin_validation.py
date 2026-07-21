@@ -26,9 +26,7 @@ async def validate_admins(client):
             invalid_admin_ids.append(user_id)
 
     if invalid_admin_ids:
-        log.warning(
-            f"The following admin IDs were removed because they do not point to valid users: {', '.join(map(str, invalid_admin_ids))}"
-        )
+        log.warning(f"The following admin IDs were removed because they do not point to valid users: {', '.join(map(str, invalid_admin_ids))}")
         save_admin_ids(valid_admin_ids)
 
     config_data = load_config()
@@ -42,9 +40,7 @@ async def validate_admins(client):
             invalid_server_ids.append(server_id)
 
     if invalid_server_ids:
-        log.warning(
-            f"The following Admin Server IDs were removed because they do not point to valid guilds: {', '.join(map(str, invalid_server_ids))}"
-        )
+        log.warning(f"The following Admin Server IDs were removed because they do not point to valid guilds: {', '.join(map(str, invalid_server_ids))}")
         save_admin_server_ids(valid_server_ids)
 
     await _check_config_not_empty(log, client, valid_admin_ids, valid_server_ids)

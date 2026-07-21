@@ -1,17 +1,16 @@
 import json
 import os
-from typing import Optional
+from uuid import uuid4
 
 import nextcord
 from nextcord.ext import commands
-from uuid import uuid4
 
 from cogs.admin_commands import AdminCommands
 from logger import setup_logging
+from permissions import check_permissions
 from screenshot import ScreenshotHandler
 from site_navigator import PageNavigator
 from view import View
-from permissions import check_permissions
 
 ### Logging setup ###
 log = setup_logging().log
@@ -19,7 +18,7 @@ log = setup_logging().log
 ### Bot setup ###
 script_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(script_dir, "config.json")
-with open(config_path, "r") as config_file:
+with open(config_path) as config_file:
     config_data = json.load(config_file)
 
 TOKEN = config_data["bot_token"]
@@ -33,9 +32,7 @@ CLIENT.add_cog(AdminCommands(CLIENT))
 async def on_ready():
     log.info("Bot Ready.")
     CLIENT.start_time = nextcord.utils.utcnow()
-    await CLIENT.change_presence(
-        activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu")
-    )
+    await CLIENT.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="/waifu"))
 
 
 connected_users = []
@@ -50,7 +47,7 @@ async def waifu(
         default=None,
         required=False,
     ),
-    privacy: Optional[bool] = nextcord.SlashOption(
+    privacy: bool | None = nextcord.SlashOption(
         name="private",
         description="Makes it so only you can see your characters.",
         default=False,
@@ -71,8 +68,7 @@ async def waifu(
         return
     if interaction.user.id in connected_users:
         await interaction.response.send_message(
-            "Whoops! One user cannot start me twice at the same time."
-            "You can continue making your character or press ❌ to exit.",
+            "Whoops! One user cannot start me twice at the same time.You can continue making your character or press ❌ to exit.",
             ephemeral=True,
             delete_after=10,
         )
@@ -88,22 +84,13 @@ async def waifu(
         collaborator_info = ""
 
     original_message = await interaction.response.send_message(
-        (
-            "Hi there! I'm WaifuBot!\n"
-            "I create characters using [waifulabs.com](https://www.waifulabs.com). Let's get started!"
-            "\n* You'll be presented with 4 grids of characters, each based on your previous choice. "
-            "\n* Click the number corresponding to the character you like best in each grid or use these buttons:"
-            "\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid."
-            "\n_(Progress: 1/4)_"
-        ),
+        ("Hi there! I'm WaifuBot!\nI create characters using [waifulabs.com](https://www.waifulabs.com). Let's get started!\n* You'll be presented with 4 grids of characters, each based on your previous choice. \n* Click the number corresponding to the character you like best in each grid or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(Progress: 1/4)_"),
         ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
     if navi is None:
         await original_message.edit(
-            "Whoops! I'm having trouble connecting to the server right now.\n"
-            "Please try again later.\n"
-            "For now, you can use the official site instead: [waifulabs.com](https://www.waifulabs.com)",
+            "Whoops! I'm having trouble connecting to the server right now.\nPlease try again later.\nFor now, you can use the official site instead: [waifulabs.com](https://www.waifulabs.com)",
             delete_after=60,
         )
         connected_users.remove(interaction.user.id)
@@ -120,18 +107,13 @@ async def waifu(
         try:
             if view_instance.stage[session_id] <= 3:
                 await original_message.edit(
-                    (
-                        "Okay! lets continue. Here's another grid for you to choose from:\n"
-                        f"(_Progress: {view_instance.stage[session_id] + 1}/4)_"
-                    ),
+                    (f"Okay! lets continue. Here's another grid for you to choose from:\n(_Progress: {view_instance.stage[session_id] + 1}/4)_"),
                     view=None,
                 )
 
             # final image
             else:
-                await original_message.edit(
-                    content="Here's your character! Thanks for playing :slight_smile:"
-                )
+                await original_message.edit(content="Here's your character! Thanks for playing :slight_smile:")
                 await screenshot_handler.save_send_screenshot(session_id, original_message)
 
         except nextcord.errors.NotFound:  # in case the message gets deleted, and timeout occurs.
@@ -167,13 +149,7 @@ async def waifu(
 async def feedback(interaction: nextcord.Interaction):
     """Link to the issues page."""
     await interaction.response.send_message(
-        (
-            "If you've encountered a bug or have a suggestion for Waifu Bot, "
-            "please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues).\n"
-            "There, you can report bugs, suggest features, or ask for help with "
-            "any issues you're having.\n"
-            "Thanks for helping us make Waifu Bot better! :slight_smile:"
-        ),
+        ("If you've encountered a bug or have a suggestion for Waifu Bot, please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues).\nThere, you can report bugs, suggest features, or ask for help with any issues you're having.\nThanks for helping us make Waifu Bot better! :slight_smile:"),
         ephemeral=True,
     )
 

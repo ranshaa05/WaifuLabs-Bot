@@ -2,8 +2,8 @@ import asyncio
 import base64 as b64
 from io import BytesIO
 
-from PIL import Image
 import nextcord
+from PIL import Image
 
 from view import View
 
@@ -64,9 +64,7 @@ class ScreenshotHandler:
         if not isinstance(message, nextcord.Message):
             return False
 
-        return (
-            isinstance(message.channel, nextcord.abc.GuildChannel) and not message.flags.ephemeral
-        )
+        return isinstance(message.channel, nextcord.abc.GuildChannel) and not message.flags.ephemeral
 
     async def remove_reactions(self, original_message):
         """Removes all reactions from the original message."""
@@ -81,10 +79,7 @@ class ScreenshotHandler:
             # if the label is a single emoji (3 chars), it can be added directly.
             # if it is a string of emojis, it must be split into chunks of 3 chars.
             elif len(self.view.current_label) > 3:
-                for emoji in [
-                    self.view.current_label[i : i + 3]
-                    for i in range(0, len(self.view.current_label), 3)
-                ]:
+                for emoji in [self.view.current_label[i : i + 3] for i in range(0, len(self.view.current_label), 3)]:
                     await original_message.add_reaction(emoji)
             else:
                 await original_message.add_reaction(self.view.current_label)
@@ -115,9 +110,7 @@ class ScreenshotHandler:
             await self.navi.wait_for_final_image()
 
             final_image_element = await self.navi.page.querySelector(".waifu-preview > img")
-            final_image_url = await self.navi.page.evaluate(
-                "(element) => element.src", final_image_element
-            )
+            final_image_url = await self.navi.page.evaluate("(element) => element.src", final_image_element)
             b64_string = final_image_url.split(",")[1]
 
         return selector, crop, view, b64_string

@@ -1,7 +1,8 @@
 import asyncio
-from pyppeteer import launch
-from pyppeteer.errors import NetworkError, TimeoutError, PageError
 from random import randint
+
+from pyppeteer import launch
+from pyppeteer.errors import NetworkError, PageError, TimeoutError
 
 UNDO_BUTTON_SELECTOR = ".sc-bdvvtL:nth-child(1)"
 KEEP_BUTTON_SELECTOR = ".sc-bdvvtL:nth-child(2)"
