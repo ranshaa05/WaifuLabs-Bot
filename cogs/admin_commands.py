@@ -1,4 +1,3 @@
-
 import nextcord
 from nextcord.ext import commands
 
@@ -72,9 +71,7 @@ class AdminCommands(commands.Cog):
                 )
                 await interaction.response.send_message(embed=embed, ephemeral=privacy)
             else:
-                await interaction.response.send_message(
-                    "No errors have occurred yet.", ephemeral=True
-                )
+                await interaction.response.send_message("No errors have occurred yet.", ephemeral=True)
 
     @nextcord.slash_command(
         name="manage_admins",
@@ -103,28 +100,16 @@ class AdminCommands(commands.Cog):
         if await check_permission(interaction):  # Use the global check_permission
             admin_ids = get_admin_ids()
             if add_or_remove == "remove" and len(admin_ids) == 1 and user.id in admin_ids:
-                await interaction.response.send_message(
-                    "You cannot remove the last admin.", ephemeral=privacy
-                )
-                self.log.info(
-                    f"{interaction.user.name}: Tried to remove themselves from the admin list, but they are the last admin, so they were denied."
-                )
+                await interaction.response.send_message("You cannot remove the last admin.", ephemeral=privacy)
+                self.log.info(f"{interaction.user.name}: Tried to remove themselves from the admin list, but they are the last admin, so they were denied.")
                 return
             elif add_or_remove == "add" and user.id in admin_ids:
-                await interaction.response.send_message(
-                    f"'{user.name}' is already an admin.", ephemeral=privacy
-                )
-                self.log.info(
-                    f"{interaction.user.name}: Tried to add user '{user.name}' to the admin list, but they are already an admin."
-                )
+                await interaction.response.send_message(f"'{user.name}' is already an admin.", ephemeral=privacy)
+                self.log.info(f"{interaction.user.name}: Tried to add user '{user.name}' to the admin list, but they are already an admin.")
                 return
             elif add_or_remove == "remove" and user.id not in admin_ids:
-                await interaction.response.send_message(
-                    f"'{user.name}' is not an admin.", ephemeral=privacy
-                )
-                self.log.info(
-                    f"{interaction.user.name}: Tried to remove user '{user.name}' from the admin list, but they are not an admin."
-                )
+                await interaction.response.send_message(f"'{user.name}' is not an admin.", ephemeral=privacy)
+                self.log.info(f"{interaction.user.name}: Tried to remove user '{user.name}' from the admin list, but they are not an admin.")
                 return
 
             elif add_or_remove == "add":
@@ -139,9 +124,7 @@ class AdminCommands(commands.Cog):
                 f"User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.",
                 ephemeral=privacy,
             )
-            self.log.info(
-                f"{interaction.user.name}: User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list."
-            )
+            self.log.info(f"{interaction.user.name}: User '{user.name}' was {'added to' if add_or_remove == 'add' else 'removed from'} the admin list.")
 
     @nextcord.slash_command(
         name="show_servers",
@@ -160,9 +143,7 @@ class AdminCommands(commands.Cog):
         "Shows the list of servers the bot is in."
         if await check_permission(interaction):  # Use the global check_permission
             servers = self.client.guilds
-            server_list = "\n".join(
-                [f"{i + 1}. {server.name} ({server.id})" for i, server in enumerate(servers)]
-            )
+            server_list = "\n".join([f"{i + 1}. {server.name} ({server.id})" for i, server in enumerate(servers)])
             total_servers = len(servers)
             embed = nextcord.Embed(
                 title="Server List",
@@ -188,9 +169,7 @@ class AdminCommands(commands.Cog):
         "Shows how long the bot has been running for since the last restart."
         if await check_permission(interaction):  # Use the global check_permission
             uptime = nextcord.utils.utcnow() - self.client.start_time
-            await interaction.response.send_message(
-                "Uptime: " + str(uptime).split(".")[0], ephemeral=privacy
-            )
+            await interaction.response.send_message("Uptime: " + str(uptime).split(".")[0], ephemeral=privacy)
 
     @nextcord.slash_command(
         name="api_latency",
@@ -208,9 +187,7 @@ class AdminCommands(commands.Cog):
     ):
         "Shows the bot's API latency."
         if await check_permission(interaction):  # Use the global check_permission
-            await interaction.response.send_message(
-                f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=privacy
-            )
+            await interaction.response.send_message(f"API Latency: {round(self.client.latency * 1000)}ms", ephemeral=privacy)
 
 
 def setup(client):

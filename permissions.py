@@ -1,6 +1,5 @@
 import nextcord
 
-
 REQUIRED_PERMISSIONS = ["view_channel", "manage_messages", "add_reactions"]
 
 
