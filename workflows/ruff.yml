@@ -1,4 +1,4 @@
-name: Ruff Checks
+name: Ruff
 
 on:
   push:
@@ -6,19 +6,14 @@ on:
   pull_request:
     branches: [ main, master ]
 
-# Grant explicit permissions so ruff-action can write annotations and report status back to GitHub
 permissions:
   contents: read
   checks: write
 
 jobs:
   ruff:
-    name: Ruff (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false # Continues running on Windows even if Linux fails (and vice versa)
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Ruff
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
