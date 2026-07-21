@@ -31,7 +31,7 @@ jobs:
       - name: Auto-format code
         uses: astral-sh/ruff-action@v3
         with:
-          args: "format . --line-length 99999"
+          args: "format . --line-length 1000"
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
