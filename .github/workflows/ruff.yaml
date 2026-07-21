@@ -6,8 +6,9 @@ on:
   pull_request:
     branches: [ main, master ]
 
+# Requires write permissions for contents so it can push fixes back to the repo
 permissions:
-  contents: read
+  contents: write
   checks: write
 
 jobs:
@@ -18,13 +19,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch full history so commits can be pushed cleanly
+          fetch-depth: 0
 
-      - name: Run Ruff Linter
+      - name: Auto-fix lint errors
         uses: astral-sh/ruff-action@v3
         with:
-          args: "check . --ignore E501 --output-format=github"
+          args: "check . --fix --ignore E501"
 
-      - name: Run Ruff Formatter
+      - name: Auto-format code
         uses: astral-sh/ruff-action@v3
         with:
-          args: "format --check . --line-length 99999"
+          args: "format . --line-length 99999"
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix lint & formatting [ruff]"
+          branch: ${{ github.head_ref || github.ref_name }}
