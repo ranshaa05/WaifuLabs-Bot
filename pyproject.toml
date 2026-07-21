@@ -1,0 +1,7 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# E: pycodestyle, F: Pyflakes, I: isort, UP: pyupgrade
+select = ["E", "F", "I", "UP"]
