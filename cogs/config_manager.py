@@ -8,7 +8,7 @@ CONFIG_PATH = os.path.join(project_root, "config.json")
 
 def load_config():
     """Loads the configuration from config.json."""
-    with open(CONFIG_PATH, "r") as config_file:
+    with open(CONFIG_PATH) as config_file:
         return json.load(config_file)
 
 

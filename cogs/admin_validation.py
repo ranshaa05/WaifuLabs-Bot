@@ -1,5 +1,6 @@
-from .config_manager import save_admin_ids, save_admin_server_ids, get_admin_ids, load_config
 from logger import setup_logging
+
+from .config_manager import get_admin_ids, load_config, save_admin_ids, save_admin_server_ids
 
 
 async def _check_config_not_empty(log, client, admin_list, server_list):

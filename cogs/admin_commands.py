@@ -1,12 +1,12 @@
-from typing import Optional
 
 import nextcord
 from nextcord.ext import commands
 
 from logger import setup_logging
-from .config_manager import load_config, save_admin_ids, get_admin_ids, get_admin_server_ids
-from .admin_validation import validate_admins
+
 from .admin_permissions import check_permission  # Import the global check_permission
+from .admin_validation import validate_admins
+from .config_manager import get_admin_ids, get_admin_server_ids, load_config, save_admin_ids
 
 config_data = load_config()
 
@@ -35,7 +35,7 @@ class AdminCommands(commands.Cog):
     async def error_count(
         self,
         interaction: nextcord.Interaction,
-        privacy: Optional[bool] = nextcord.SlashOption(
+        privacy: bool | None = nextcord.SlashOption(
             name="private",
             description="Whether to make the response private.",
             default=True,
@@ -92,7 +92,7 @@ class AdminCommands(commands.Cog):
             description="The user to perform the action on.",
             required=True,
         ),
-        privacy: Optional[bool] = nextcord.SlashOption(
+        privacy: bool | None = nextcord.SlashOption(
             name="private",
             description="Whether to make the response private.",
             default=True,
@@ -150,7 +150,7 @@ class AdminCommands(commands.Cog):
     async def show_servers(
         self,
         interaction: nextcord.Interaction,
-        privacy: Optional[bool] = nextcord.SlashOption(
+        privacy: bool | None = nextcord.SlashOption(
             name="private",
             description="Whether to make the list private.",
             default=True,
@@ -178,7 +178,7 @@ class AdminCommands(commands.Cog):
     async def uptime(
         self,
         interaction: nextcord.Interaction,
-        privacy: Optional[bool] = nextcord.SlashOption(
+        privacy: bool | None = nextcord.SlashOption(
             name="private",
             description="Whether to make the response private.",
             default=True,
@@ -199,7 +199,7 @@ class AdminCommands(commands.Cog):
     async def api_latency(
         self,
         interaction: nextcord.Interaction,
-        privacy: Optional[bool] = nextcord.SlashOption(
+        privacy: bool | None = nextcord.SlashOption(
             name="private",
             description="Whether to make the response private.",
             default=True,

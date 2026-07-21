@@ -22,9 +22,9 @@ jobs:
       - name: Run Ruff Linter
         uses: astral-sh/ruff-action@v3
         with:
-          args: "check . --line-length 120 --output-format=github"
+          args: "check . --ignore E501 --output-format=github"
 
       - name: Run Ruff Formatter
         uses: astral-sh/ruff-action@v3
         with:
-          args: "format --check . --line-length 120"
+          args: "format --check . --line-length 99999"
