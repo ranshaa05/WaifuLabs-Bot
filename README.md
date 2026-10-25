@@ -1,4 +1,4 @@
-# WaifuLabs Bot ![Static Badge](https://img.shields.io/badge/3.12%20%7C%203.13-blue?style=plastic&logo=python&logoColor=yellow)
+# WaifuLabs Bot ![Static Badge](https://img.shields.io/badge/3.12%20%7C%203.13%20%7C%203.14-blue?style=plastic&logo=python&logoColor=yellow) [![Tests](https://github.com/ranshaa05/WaifuLabs-Bot/actions/workflows/tests.yaml/badge.svg)](https://github.com/ranshaa05/WaifuLabs-Bot/actions/workflows/tests.yaml)
 WaifuLabs Bot is a fun and easy-to-use Discord bot that lets you customize your own anime character using www.waifuLabs.com.
 
 With this bot, you can emulate the full functionality of WaifuLabs.com from Discord.
@@ -15,7 +15,7 @@ Use this link: [shorturl.at/lYJFj](https://shorturl.at/lYJFj)
 
 
 ## Set-up
-* Make sure you have Python 3.12 or higher installed on your system (tested up to Python 3.13).
+* Make sure you have Python 3.12 or higher installed on your system (tested up to Python 3.14).
 * Clone this git repo or download the latest package with `git clone https://github.com/ranshaa05/WaifuLabs-Bot`
 * Install requirements with `pip install -r requirements.txt`
 * Get a bot token from [Discord Developer Portal](https://discord.com/developers/applications)
@@ -23,5 +23,10 @@ Use this link: [shorturl.at/lYJFj](https://shorturl.at/lYJFj)
 * Paste your bot token, your Discord ID, and the ID of the server where you will be able to use special admin commands (Multiple IDs will also work).
 * Run "main.py" or "run.bat".
 * Enjoy! 😃
+
+## Running tests
+* Install the dev requirements with `pip install -r requirements-dev.txt`
+* Run `pytest`
+* `tests/test_live_site.py` runs a full session against the real waifulabs.com to check the site hasn't changed. It needs a network connection and is skipped on GitHub Actions.
 ---
 Note: This is my first Discord bot/Python program. Hope you like it! 😃
