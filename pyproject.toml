@@ -5,3 +5,13 @@ line-length = 100
 [tool.ruff.lint]
 # E: pycodestyle, F: Pyflakes, I: isort, UP: pyupgrade
 select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+# Deprecations inside third-party libraries on newer Python; nothing to fix on our side.
+filterwarnings = [
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning:nextcord",
+    "ignore:remove loop argument:DeprecationWarning:websockets",
+]
