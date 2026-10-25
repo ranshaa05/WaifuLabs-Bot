@@ -60,17 +60,11 @@ class View(nextcord.ui.View):
         """
         is_author = interaction.user.id == self.interaction.user.id
         is_co_op_user = self.co_operator and interaction.user == self.co_operator
-        is_co_op_role = (
-            self.co_operator
-            and isinstance(self.co_operator, nextcord.Role)
-            and self.co_operator in interaction.user.roles
-        )
+        is_co_op_role = self.co_operator and isinstance(self.co_operator, nextcord.Role) and self.co_operator in interaction.user.roles
 
         authorized = is_author or is_co_op_user or is_co_op_role
         if not authorized:
-            await interaction.response.send_message(
-                "You don't have permission to use these buttons.", ephemeral=True, delete_after=5
-            )
+            await interaction.response.send_message("You don't have permission to use these buttons.", ephemeral=True, delete_after=5)
 
         return authorized
 

@@ -15,9 +15,7 @@ from site_navigator import (
     PageNavigator,
 )
 
-pytestmark = pytest.mark.skipif(
-    os.environ.get("GITHUB_ACTIONS") == "true", reason="hits the live site"
-)
+pytestmark = pytest.mark.skipif(os.environ.get("GITHUB_ACTIONS") == "true", reason="hits the live site")
 
 
 async def test_full_run_on_live_site():
