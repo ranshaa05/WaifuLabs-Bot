@@ -27,6 +27,8 @@ CLIENT = commands.Bot(intents=nextcord.Intents().all())
 
 CLIENT.add_cog(AdminCommands(CLIENT))
 
+TOTAL_STEPS = 4
+
 
 @CLIENT.event
 async def on_ready():
@@ -106,10 +108,10 @@ async def waifu(
 
     View.stage.setdefault(session_id, 0)
     view_instance = View(navi, interaction, co_operator, session_id)
-    while view_instance.stage[session_id] < 4 and not navi.page.isClosed():
+    while view_instance.stage[session_id] < TOTAL_STEPS and not navi.page.isClosed():
         await screenshot_handler.save_send_screenshot(session_id, original_message)
         try:
-            if view_instance.stage[session_id] <= 3:
+            if view_instance.stage[session_id] < TOTAL_STEPS:
                 await original_message.edit(
                     (
                         f"Okay! lets continue. Here's another grid for you to choose from:\n(_Progress: {view_instance.stage[session_id] + 1}/4)_"
