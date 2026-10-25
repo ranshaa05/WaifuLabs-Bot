@@ -86,9 +86,7 @@ async def waifu(
         collaborator_info = ""
 
     original_message = await interaction.response.send_message(
-        (
-            "Hi there! I'm WaifuBot!\nI create characters using [waifulabs.com](<https://www.waifulabs.com>). Let's get started!\n* You'll be presented with 4 grids of characters, each based on your previous choice. \n* Click the number corresponding to the character you like best in each grid or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(Progress: 1/4)_"
-        ),
+        ("Hi there! I'm WaifuBot!\nI create characters using [waifulabs.com](<https://www.waifulabs.com>). Let's get started!\n* You'll be presented with 4 grids of characters, each based on your previous choice. \n* Click the number corresponding to the character you like best in each grid or use these buttons:\n❌ to exit, ⬅ to undo, ➡ to skip a stage, 🎲 to choose randomly, or 🔄 to refresh the grid.\n_(Progress: 1/4)_"),
         ephemeral=privacy,
     )
     navi = await PageNavigator.create_navi()
@@ -153,9 +151,7 @@ async def waifu(
 async def feedback(interaction: nextcord.Interaction):
     """Link to the issues page."""
     await interaction.response.send_message(
-        (
-            "If you've encountered a bug or have a suggestion for Waifu Bot, please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues>).\nThere, you can report bugs, suggest features, or ask for help with any issues you're having.\nThanks for helping us make Waifu Bot better! :slight_smile:"
-        ),
+        ("If you've encountered a bug or have a suggestion for Waifu Bot, please head over to the issues page on [Github](<https://github.com/ranshaa05/WaifuLabs-Bot/issues>).\nThere, you can report bugs, suggest features, or ask for help with any issues you're having.\nThanks for helping us make Waifu Bot better! :slight_smile:"),
         ephemeral=True,
     )
 
